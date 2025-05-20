@@ -138,14 +138,21 @@ namespace Infrastructure.Repository
         public async Task<bool> ChangePasswordAsync(int accountId, ChangePasswordDTO changePasswordDTO)
         {
             var account = await _context.Accounts
-                                       .FirstOrDefaultAsync(x => x.AccountId == accountId);
+                                        .FirstOrDefaultAsync(x => x.AccountId == accountId);
+
             if (account == null)
+            {            
                 return false;
-            if (account.Password != changePasswordDTO.OldPassword)
+            }
+            if (!BCrypt.Net.BCrypt.Verify(changePasswordDTO.OldPassword, account.Password))
+            {               
                 return false;
+            }
             if (changePasswordDTO.NewPassword != changePasswordDTO.ConfirmPassword)
+            {
                 return false;
-            account.Password = changePasswordDTO.NewPassword;
+            }
+            account.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDTO.NewPassword);
             await _context.SaveChangesAsync();
             return true;
         }
