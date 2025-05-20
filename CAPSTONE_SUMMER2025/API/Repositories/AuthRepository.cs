@@ -75,6 +75,14 @@ namespace API.Repositories
                 Address = req.Address,
                 Account = account
             };
+            //  Tạo BIO liên kết với account
+            var bio = new Bio
+            {
+                Account = account,
+                IsPublicProfile = true 
+                                      
+            };
+            account.Bio = bio;  
             account.AccountProfile = profile;
 
             try
