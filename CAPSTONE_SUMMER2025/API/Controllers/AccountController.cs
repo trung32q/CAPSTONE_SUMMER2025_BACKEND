@@ -12,42 +12,31 @@ using API.Utils.Constants;
 using API.DTO.AccountDTO;
 using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
+using API.Service.Interface;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IAccountRepository _accountRepository;
-        public AccountController(IAccountRepository accountRepository)
+        private readonly IAccountService _accountService;
+        public AccountController(IAccountService accountService)
         {
-            _accountRepository = accountRepository;
+            _accountService = accountService;
         }
         [HttpGet("GetAllAccount")]
         public async Task<ActionResult<IEnumerable<ResAccountDTO>>> GetAccounts()
         {
-            var accounts = await _accountRepository.GetAllAccountAsync();
+            var accounts = await _accountService.GetAllAccountAsync();
             return Ok(accounts);
         }
 
-        // GET: api/Account/email@example.com
-        [HttpGet("{email}")]
-        public async Task<ActionResult<ResAccountDTO>> GetAccountByEmail(string email)
-        {
-            var account = await _accountRepository.GetAccountByEmailAsync(email);
-
-            if (account == null)
-            {
-                return NotFound($"Account with email {email} not found");
-            }
-
-            return Ok(account);
-        }
+       
 
         [HttpGet("get-account-info/{accountId}")]
         public async Task<ActionResult<ResAccountInfoDTO>> GetAccountInoByAccountID(int accountId)
         {
-            var account = await _accountRepository.GetAccountByAccountIDAsync(accountId);
+            var account = await _accountService.GetAccountByAccountIDAsync(accountId);
             if (account == null)
             {
                 return NotFound($"Account with ID {accountId} not found");
@@ -58,14 +47,14 @@ namespace API.Controllers
         [HttpGet("get-following/{accountId}")]
         public async Task<ActionResult<List<ResAccountInfoDTO>>> GetFollowing(int accountId)
         {
-            var following = await _accountRepository.GetFollowingAsync(accountId);
+            var following = await _accountService.GetFollowingAsync(accountId);
             return Ok(following);
         }
 
         [HttpGet("get-follower/{accountId}")]
         public async Task<ActionResult<List<ResAccountInfoDTO>>> GetFollowers(int accountId)
         {
-            var followers = await _accountRepository.GetFollowersAsync(accountId);
+            var followers = await _accountService.GetFollowersAsync(accountId);
             return Ok(followers);
         }
 
@@ -75,7 +64,7 @@ namespace API.Controllers
             if (updateProfileDTO == null)
                 return BadRequest("Profile data is required");
 
-            var updatedAccount = await _accountRepository.UpdateProfileAsync(accountId, updateProfileDTO);
+            var updatedAccount = await _accountService.UpdateProfileAsync(accountId, updateProfileDTO);
             if (updatedAccount == null)
                 return NotFound($"Account with ID {accountId} not found");
             return Ok(updatedAccount);
@@ -87,7 +76,7 @@ namespace API.Controllers
             if (updateBioDTO == null)
                 return BadRequest("Profile data is required");
 
-            var updatedAccount = await _accountRepository.UpdateBioAsync(accountId, updateBioDTO);
+            var updatedAccount = await _accountService.UpdateBioAsync(accountId, updateBioDTO);
             if (updatedAccount == null)
                 return NotFound($"Account with ID {accountId} not found");
             return Ok(updatedAccount);
@@ -102,7 +91,7 @@ namespace API.Controllers
                 string.IsNullOrEmpty(changePasswordDTO.ConfirmPassword))
                 return BadRequest("Old password, new password, and confirm password are required");
 
-            var success = await _accountRepository.ChangePasswordAsync(accountId, changePasswordDTO);
+            var success = await _accountService.ChangePasswordAsync(accountId, changePasswordDTO);
             if (!success)
                 return BadRequest("Invalid old password, confirm password does not match, or account not found");
 

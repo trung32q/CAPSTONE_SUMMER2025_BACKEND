@@ -1,11 +1,11 @@
-﻿using API.Repositories.Interfaces;
-using System.Management;
+﻿using System.Management;
 using System.Net.Mail;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
 using System.Net;
+using API.Service.Interface;
 
 namespace API.Service
 {

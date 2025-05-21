@@ -1,8 +1,10 @@
 ﻿using API.Attributes;
 using API.DTO.AccountDTO;
 using API.DTO.AuthDTO;
+using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service;
+using API.Service.Interface;
 using AutoMapper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
@@ -19,16 +21,16 @@ namespace API.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthRepository _authRepository;
+        private readonly IAuthSevice _authSevice;
         private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
         private readonly JwtService _jwtService;
         private readonly GoogleService _googleService;
         private IConfiguration _configuration;
 
-        public AuthController(IAuthRepository authRepository, IMapper mapper , JwtService jwtService, IConfiguration configuration, GoogleService googleService, IAccountRepository accountRepository)
+        public AuthController(IAuthSevice authSevice, IMapper mapper , JwtService jwtService, IConfiguration configuration, GoogleService googleService, IAccountRepository accountRepository)
         {
-            _authRepository = authRepository;
+            _authSevice = authSevice;
             _mapper = mapper;
             _jwtService = jwtService;
             _configuration = configuration;
@@ -41,7 +43,7 @@ namespace API.Controllers
         {
             try
             {
-                var account = await _authRepository.Register(req);
+                var account = await _authSevice.RegisterAsync(req);
                 var resAccount = _mapper.Map<ResAccountDTO>(account);
 
                 return Ok(resAccount);
@@ -57,7 +59,7 @@ namespace API.Controllers
         {
             ResLoginDTO res = new ResLoginDTO();
 
-            var accountCurrentDB = await _authRepository.Login(loginDTO);
+            var accountCurrentDB = await _authSevice.LoginAsync(loginDTO);
 
             if (accountCurrentDB == null)
             {
@@ -71,7 +73,7 @@ namespace API.Controllers
 
             // Lưu refresh token vào cơ sở dữ liệu (hoặc hash của nó)
             // Đảm bảo bạn có cơ chế để xử lý việc ghi đè hoặc thêm mới token một cách an toàn
-            await _authRepository.UpdateAccountRefreshTokenAsync(accountCurrentDB.AccountId, refresh_token, DateTime.UtcNow.AddSeconds(_configuration.GetValue<int>("Jwt:RefreshTokenExpiration")));
+            await _authSevice.UpdateAccountRefreshTokenAsync(accountCurrentDB.AccountId, refresh_token, DateTime.UtcNow.AddSeconds(_configuration.GetValue<int>("Jwt:RefreshTokenExpiration")));
 
             var resCookie = new CookieOptions
             {
@@ -109,7 +111,7 @@ namespace API.Controllers
             res.AccessToken = access_token;
 
             string refresh_token = _jwtService.CreateRefreshToken(res);
-            //await _accountRepository.UpdateAccountRefreshTokenAsync(refresh_token, res.Email);
+            await _authSevice.UpdateAccountRefreshTokenAsync(accountCurrentDB.AccountId, refresh_token, DateTime.UtcNow.AddSeconds(_configuration.GetValue<int>("Jwt:RefreshTokenExpiration")));
 
             var resCookie = new CookieOptions
             {
@@ -134,14 +136,14 @@ namespace API.Controllers
                     {
                         return NotFound(new { message = "Account not found" });
                     }
-                var OTP = await _authRepository.GetActiveUserOtpAsync(Account.AccountId);
+                var OTP = await _authSevice.GetActiveUserOtpAsync(Account.AccountId);
                 bool isOtpValid = BCrypt.Net.BCrypt.Verify(req.Otp, OTP.OtpCode);
 
                 if (!isOtpValid)
                 {
                     return BadRequest(new ResVerifyOtpDTO { Success = false, Message = "Mã OTP không chính xác." });
                 }
-                await _authRepository.UpdateStatusAccountAsync(req);
+                await _authSevice.UpdateStatusAccountAsync(req);
                 return Ok(new ResVerifyOtpDTO
                 {
                     Success = true,
@@ -191,7 +193,7 @@ namespace API.Controllers
 
             // 2. Kiểm tra oldRefreshToken trong cơ sở dữ liệu
             // Giả sử _authRepository.GetUserByIdAsync trả về đối tượng người dùng bao gồm RefreshToken và RefreshTokenExpiryTime
-            var user = await _authRepository.GetUserById(int.Parse(userId));
+            var user = await _accountRepository.GetAccountByIdAsync(int.Parse(userId));
 
             // Kiểm tra xem người dùng có tồn tại không, refresh token trong DB có khớp với token từ cookie không,
             // và thời gian hết hạn trong DB có còn hợp lệ không.
@@ -208,7 +210,7 @@ namespace API.Controllers
             var newRefreshTokenExpiryTime = DateTime.UtcNow.AddSeconds(_configuration.GetValue<int>("Jwt:RefreshTokenExpiration"));
 
             // Cập nhật refresh token mới và thời gian hết hạn trong DB
-            await _authRepository.UpdateAccountRefreshTokenAsync(int.Parse(userId), newRefreshToken, newRefreshTokenExpiryTime);
+            await _authSevice.UpdateAccountRefreshTokenAsync(int.Parse(userId), newRefreshToken, newRefreshTokenExpiryTime);
 
             // Gửi refresh token MỚI qua cookie
             var cookieOptions = new CookieOptions

@@ -1,0 +1,18 @@
+﻿using API.DTO.AccountDTO;
+using API.DTO.BioDTO;
+using API.DTO.ProfileDTO;
+using Infrastructure.Models;
+
+namespace API.Service.Interface
+{
+    public interface IAccountService
+    {
+        Task<List<ResAccountDTO>> GetAllAccountAsync();
+        Task<ResAccountInfoDTO> GetAccountByAccountIDAsync(int accountId);
+        Task<List<ResAccountInfoDTO>> GetFollowingAsync(int accountId);
+        Task<List<ResAccountInfoDTO>> GetFollowersAsync(int accountId);
+        Task<ResAccountInfoDTO> UpdateProfileAsync(int accountId, ReqUpdateProfileDTO updateProfileDTO);
+        Task<ResAccountInfoDTO> UpdateBioAsync(int accountId, ReqUpdateBioDTO updateBioDTO);
+        Task<bool> ChangePasswordAsync(int accountId, ChangePasswordDTO changePasswordDTO);
+    }
+}

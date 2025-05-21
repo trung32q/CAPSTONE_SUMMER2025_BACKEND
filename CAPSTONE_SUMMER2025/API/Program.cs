@@ -12,6 +12,7 @@ using AutoMapper;
 using API.Mapping;
 using API.Repositories;
 using API.Service;
+using API.Service.Interface;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -112,8 +113,10 @@ builder.Services.AddScoped<CAPSTONE_SUMMER2025Context>();
 // Dependency Injection
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IEmailService, EmailService>();
 
+builder.Services.AddScoped<IAuthSevice, AuthService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<GoogleService>();
 // AutoMapper

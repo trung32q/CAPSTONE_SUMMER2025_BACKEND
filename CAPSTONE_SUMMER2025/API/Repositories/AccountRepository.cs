@@ -36,29 +36,27 @@ namespace Infrastructure.Repository
         }
 
 
-        public async Task<List<ResAccountDTO>> GetAllAccountAsync()
+        public async Task<List<Account>> GetAllAccountAsync()
         {
             var accounts = await _context.Accounts.Include(a => a.AccountProfile).ToListAsync();
-            return _mapper.Map<List<ResAccountDTO>>(accounts);
+            return accounts;
         }
 
-        public async Task<ResAccountInfoDTO> GetAccountByAccountIDAsync(int accountId)
+        public async Task<Account> GetAccountByAccountIDAsync(int accountId)
         {
-            var account = await _context.Accounts
+            return await _context.Accounts
                                        .Include(a => a.AccountProfile)
                                        .Include(a => a.Bio)
                                        .Include(a => a.Posts)
                                        .Include(a => a.FollowFollowerAccounts)
                                        .Include(a => a.FollowFollowingAccounts)
-                                       .FirstOrDefaultAsync(x => x.AccountId == accountId);
-            if (account == null) return null;
-            return _mapper.Map<ResAccountInfoDTO>(account);
+                                       .FirstOrDefaultAsync(x => x.AccountId == accountId);           
         }
 
 
-        public async Task<List<ResAccountInfoDTO>> GetFollowingAsync(int accountId)
+        public async Task<List<Account>> GetFollowingAsync(int accountId)
         {
-            var following = await _context.Follows
+           return await _context.Follows
                                          .Where(f => f.FollowerAccountId == accountId)
                                          .Join(_context.Accounts,
                                                f => f.FollowingAccountId,
@@ -70,12 +68,12 @@ namespace Infrastructure.Repository
                                          .Include(a => a.FollowFollowerAccounts)
                                          .Include(a => a.FollowFollowingAccounts)
                                          .ToListAsync();
-            return _mapper.Map<List<ResAccountInfoDTO>>(following);
+          
         }
 
-        public async Task<List<ResAccountInfoDTO>> GetFollowersAsync(int accountId)
+        public async Task<List<Account>> GetFollowersAsync(int accountId)
         {
-            var followers = await _context.Follows
+            return await _context.Follows
                                          .Where(f => f.FollowingAccountId == accountId)
                                          .Join(_context.Accounts,
                                                f => f.FollowerAccountId,
@@ -87,30 +85,32 @@ namespace Infrastructure.Repository
                                          .Include(a => a.FollowFollowerAccounts)
                                          .Include(a => a.FollowFollowingAccounts)
                                          .ToListAsync();
-            return _mapper.Map<List<ResAccountInfoDTO>>(followers);
+        }
+        public async Task<Account> GetAccountWithProfileByIdAsync(int accountId)
+        {
+            return await _context.Accounts
+                                 .Include(a => a.AccountProfile)
+                                 .Include(a => a.Bio)
+                                 .Include(a => a.Posts)
+                                 .Include(a => a.FollowFollowerAccounts)
+                                 .Include(a => a.FollowFollowingAccounts)
+                                 .FirstOrDefaultAsync(x => x.AccountId == accountId);
+        }
+        public async Task<Account> GetAccountWithBioByIdAsync(int accountId)
+        {
+            return await _context.Accounts
+                                 .Include(a => a.AccountProfile)
+                                 .Include(a => a.Bio)
+                                 .Include(a => a.Posts)
+                                 .Include(a => a.FollowFollowerAccounts)
+                                 .Include(a => a.FollowFollowingAccounts)
+                                 .FirstOrDefaultAsync(x => x.AccountId == accountId);
         }
 
-        public async Task<ResAccountInfoDTO> UpdateProfileAsync(int accountId, ReqUpdateProfileDTO updateProfileDTO)
+        public async Task SaveChangesAsync()
         {
-            var account = await _context.Accounts
-                                       .Include(a => a.AccountProfile)
-                                       .Include(a => a.Bio)
-                                       .Include(a => a.Posts)
-                                       .Include(a => a.FollowFollowerAccounts)
-                                       .Include(a => a.FollowFollowingAccounts)
-                                       .FirstOrDefaultAsync(x => x.AccountId == accountId);
-            if (account == null || account.AccountProfile == null)
-                return null;
-            if (updateProfileDTO.FirstName != null) account.AccountProfile.FirstName = updateProfileDTO.FirstName;
-            if (updateProfileDTO.LastName != null) account.AccountProfile.LastName = updateProfileDTO.LastName;
-            if (updateProfileDTO.Gender != null) account.AccountProfile.Gender = updateProfileDTO.Gender;
-            if (updateProfileDTO.Dob.HasValue) account.AccountProfile.Dob = updateProfileDTO.Dob;
-            if (updateProfileDTO.Address != null) account.AccountProfile.Address = updateProfileDTO.Address;
-            if (updateProfileDTO.PhoneNumber != null) account.AccountProfile.PhoneNumber = updateProfileDTO.PhoneNumber;
-            if (updateProfileDTO.AvatarUrl != null) account.AccountProfile.AvatarUrl = updateProfileDTO.AvatarUrl;
             await _context.SaveChangesAsync();
-            return _mapper.Map<ResAccountInfoDTO>(account);
-        }
+        }    
 
         public async Task<ResAccountInfoDTO> UpdateBioAsync(int accountId, ReqUpdateBioDTO updateBioDTO)
         {
@@ -155,6 +155,12 @@ namespace Infrastructure.Repository
             account.Password = BCrypt.Net.BCrypt.HashPassword(changePasswordDTO.NewPassword);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Account> GetAccountByIdAsync(int accountId)
+        {
+            return await _context.Accounts
+                       .FirstOrDefaultAsync(x => x.AccountId == accountId);
         }
     }
 }

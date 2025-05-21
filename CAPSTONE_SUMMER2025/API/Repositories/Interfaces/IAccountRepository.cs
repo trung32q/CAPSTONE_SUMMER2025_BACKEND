@@ -12,13 +12,15 @@ namespace API.Repositories.Interfaces
 {
     public interface IAccountRepository
     {
-        Task<List<ResAccountDTO>> GetAllAccountAsync();
+        Task<List<Account>> GetAllAccountAsync();
         Task<Account> GetAccountByEmailAsync(string email);
-        Task<ResAccountInfoDTO> GetAccountByAccountIDAsync(int accountId);
-        Task<List<ResAccountInfoDTO>> GetFollowingAsync(int accountId);
-        Task<List<ResAccountInfoDTO>> GetFollowersAsync(int accountId);
-        Task<ResAccountInfoDTO> UpdateProfileAsync(int accountId, ReqUpdateProfileDTO updateProfileDTO);
-        Task<ResAccountInfoDTO> UpdateBioAsync(int accountId, ReqUpdateBioDTO updateBioDTO);
-        Task<bool> ChangePasswordAsync(int accountId, ChangePasswordDTO changePasswordDTO);
+        Task<Account> GetAccountByAccountIDAsync(int accountId);
+        Task<List<Account>> GetFollowingAsync(int accountId);
+        Task<List<Account>> GetFollowersAsync(int accountId);
+        Task<Account> GetAccountWithProfileByIdAsync(int accountId);
+        Task<Account> GetAccountWithBioByIdAsync(int accountId);
+        Task<Account> GetAccountByIdAsync(int accountId);
+        Task SaveChangesAsync();        
+      
     }
 }
