@@ -12,7 +12,7 @@ using AutoMapper;
 using API.Mapping;
 using API.Repositories;
 using API.Service;
-
+using Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -113,9 +113,9 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<GoogleService>();
+builder.Services.AddScoped<IAccountBlockRepository, AccountBlockRepository>();
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program),
                                typeof(MappingAccount),
