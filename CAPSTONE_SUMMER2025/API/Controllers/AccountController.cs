@@ -12,6 +12,7 @@ using API.Utils.Constants;
 using API.DTO.AccountDTO;
 using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
+using Application.DTO.AccountDTO;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -107,6 +108,24 @@ namespace API.Controllers
                 return BadRequest("Invalid old password, confirm password does not match, or account not found");
 
             return Ok("Password changed successfully");
+        }
+
+        [HttpGet("suggestion-account")]
+        public async Task<ActionResult<IEnumerable<ResSuggestionsAccountDTO>>> GetSuggestionsAccount([FromQuery] ReqSuggestionsAccountDTO request)
+        {
+            if (string.IsNullOrEmpty(request.Position))
+            {
+                return BadRequest("Position is required");
+            }
+
+            var suggestions = await _accountRepository.GetSuggestionsAccountAsync(request.Position);
+            
+            if (!suggestions.Any())
+            {
+                return NotFound($"No accounts found with position: {request.Position}");
+            }
+
+            return Ok(suggestions);
         }
     }
 }

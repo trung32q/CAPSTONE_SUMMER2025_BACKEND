@@ -108,17 +108,18 @@ builder.Services.AddAuthorization();
 builder.Services.AddDbContext<CAPSTONE_SUMMER2025Context>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DBContext")));
 builder.Services.AddScoped<CAPSTONE_SUMMER2025Context>();
-
 // Dependency Injection
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<GoogleService>();
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program),
-                               typeof(MappingAccount));
+                               typeof(MappingAccount),
+                               typeof(MappingPost));
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

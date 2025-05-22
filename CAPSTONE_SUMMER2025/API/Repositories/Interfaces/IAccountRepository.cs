@@ -8,6 +8,7 @@ using API.DTO;
 using API.DTO.AccountDTO;
 using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
+using Application.DTO.AccountDTO;
 namespace API.Repositories.Interfaces
 {
     public interface IAccountRepository
@@ -20,5 +21,6 @@ namespace API.Repositories.Interfaces
         Task<ResAccountInfoDTO> UpdateProfileAsync(int accountId, ReqUpdateProfileDTO updateProfileDTO);
         Task<ResAccountInfoDTO> UpdateBioAsync(int accountId, ReqUpdateBioDTO updateBioDTO);
         Task<bool> ChangePasswordAsync(int accountId, ChangePasswordDTO changePasswordDTO);
+        Task<IEnumerable<ResSuggestionsAccountDTO>> GetSuggestionsAccountAsync( string position);
     }
 }

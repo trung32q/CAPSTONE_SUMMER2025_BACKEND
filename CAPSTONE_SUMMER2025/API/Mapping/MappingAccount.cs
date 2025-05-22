@@ -9,6 +9,7 @@ using AutoMapper;
 using API.DTO.AccountDTO;
 using API.Utils.Constants;
 using API.DTO.AuthDTO;
+using Application.DTO.AccountDTO;
 namespace API.Mapping
 {
     public class MappingAccount : Profile
@@ -37,6 +38,15 @@ namespace API.Mapping
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
                 .ForMember(dest => dest.AccessToken, opt => opt.Ignore());
+
+            // Ánh xạ từ Account sang ResSuggestionsAccountDTO
+            CreateMap<Account, ResSuggestionsAccountDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.AccountProfile.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.AccountProfile.LastName))
+                .ForMember(dest => dest.Position, opt => opt.MapFrom(src => src.Bio.Position))
+                .ForMember(dest => dest.Bio, opt => opt.MapFrom(src => src.Bio.IntroTitle));
 
             CreateMap<Account, ResAccountInfoDTO>()
                 .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))

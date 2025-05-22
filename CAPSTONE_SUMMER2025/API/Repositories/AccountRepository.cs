@@ -11,6 +11,7 @@ using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
+using Application.DTO.AccountDTO;
 namespace Infrastructure.Repository
 {
     public class AccountRepository : IAccountRepository
@@ -148,6 +149,15 @@ namespace Infrastructure.Repository
             account.Password = changePasswordDTO.NewPassword;
             await _context.SaveChangesAsync();
             return true;
+        }
+        public async Task<IEnumerable<ResSuggestionsAccountDTO>> GetSuggestionsAccountAsync(string position)
+        {
+            var accounts = await _context.Accounts
+                .Include(a => a.AccountProfile)
+                .Include(a => a.Bio)
+                .Where(a => a.Bio != null && a.Bio.Position == position)
+                .ToListAsync();
+            return _mapper.Map<List<ResSuggestionsAccountDTO>>(accounts);
         }
     }
 }
