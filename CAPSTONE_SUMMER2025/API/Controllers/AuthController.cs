@@ -5,6 +5,7 @@ using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service;
 using API.Service.Interface;
+using API.Utils.Constants;
 using AutoMapper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
@@ -65,7 +66,10 @@ namespace API.Controllers
             {
                 return Unauthorized();
             }
-
+            if (accountCurrentDB.Status == AccountStatusConst.BANNED)
+            {
+                return Unauthorized("Account not valid");
+            }
             res = _mapper.Map<ResLoginDTO>(accountCurrentDB);
             string access_token = _jwtService.CreateAccessToken(res); 
                                                                      
