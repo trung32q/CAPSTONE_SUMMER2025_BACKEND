@@ -113,12 +113,20 @@ builder.Services.AddScoped<CAPSTONE_SUMMER2025Context>();
 // Dependency Injection
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IPolicyRepository, PolicyRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<IFilebaseHandler, FilebaseHandler>();
+builder.Services.AddScoped<IChatGPTRepository, ChatGPTRepository>();
 
+builder.Services.AddScoped<IChatGPTService, ChatGPTService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IPolicyService, PolicyService>();
 builder.Services.AddScoped<IAuthSevice, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<GoogleService>();
+builder.Services.AddHttpClient<IChatGPTRepository, ChatGPTRepository>();
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program),
                                typeof(MappingAccount));

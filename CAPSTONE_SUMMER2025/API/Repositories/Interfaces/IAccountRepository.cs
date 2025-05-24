@@ -20,6 +20,7 @@ namespace API.Repositories.Interfaces
         Task<Account> GetAccountWithProfileByIdAsync(int accountId);
         Task<Account> GetAccountWithBioByIdAsync(int accountId);
         Task<Account> GetAccountByIdAsync(int accountId);
+        Task<bool> IsBlockedAsync(int blockerAccountId, int blockedAccountId);
         Task SaveChangesAsync();        
       
     }
