@@ -18,13 +18,11 @@ namespace API.Repositories
     {
         
         private readonly CAPSTONE_SUMMER2025Context _context;
-        private readonly IMapper _mapper;
         private readonly IFilebaseHandler _filebaseHandler;
 
-        public PostRepository(IFilebaseHandler filebaseHandler ,CAPSTONE_SUMMER2025Context context, IMapper mapper)
+        public PostRepository(IFilebaseHandler filebaseHandler ,CAPSTONE_SUMMER2025Context context)
         {
             _context = context;
-            _mapper = mapper;
             _filebaseHandler = filebaseHandler;
         }
 
@@ -49,6 +47,46 @@ namespace API.Repositories
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        //hàm like bài viết
+        public async Task<bool> LikePostAsync(int postId, int accountId)
+        {
+            if (await IsPostLikedAsync(postId, accountId))
+                return false;
+
+            var like = new PostLike { PostId = postId, AccountId = accountId };
+            _context.PostLikes.Add(like);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        //hàm hủy like
+        public async Task<bool> UnlikePostAsync(int postId, int accountId)
+        {
+            var existing = await _context.PostLikes
+                .FirstOrDefaultAsync(pl => pl.PostId == postId && pl.AccountId == accountId);
+
+            if (existing == null) return false;
+
+            _context.PostLikes.Remove(existing);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        //hàm lấy số lượng like của 1 bài viết
+        public async Task<int> GetPostLikeCountAsync(int postId)
+        {
+            return await _context.PostLikes.CountAsync(pl => pl.PostId == postId);
+        }
+
+        public async Task<int> GetPostCommentCountAsync(int postId)
+        {
+            return await _context.PostComments.CountAsync(pl => pl.PostId == postId);
+        }
+
+        //hàm check xem account đã like bài viết chưa
+        public async Task<bool> IsPostLikedAsync(int postId, int accountId)
+        {
+            return await _context.PostLikes.AnyAsync(pl => pl.PostId == postId && pl.AccountId == accountId);
         }
 
         // hàm lấy ra danh sách thông tin của người like bài post
@@ -87,17 +125,21 @@ namespace API.Repositories
             var postMedias = new List<PostMedium>();
             int displayOrder = 0;
 
-            foreach (var file in reqPostDTO.MediaFiles)
+            if (!(reqPostDTO.MediaFiles == null || !reqPostDTO.MediaFiles.Any()))
             {
-                var fileUrl = await _filebaseHandler.UploadMediaFile(file);
-
-                postMedias.Add(new PostMedium
+                foreach (var file in reqPostDTO.MediaFiles)
                 {
-                    PostId = post.PostId,
-                    MediaUrl = fileUrl,
-                    DisplayOrder = displayOrder++,
-                });
+                    var fileUrl = await _filebaseHandler.UploadMediaFile(file);
+
+                    postMedias.Add(new PostMedium
+                    {
+                        PostId = post.PostId,
+                        MediaUrl = fileUrl,
+                        DisplayOrder = displayOrder++,
+                    });
+                }
             }
+
 
             await _context.PostMedia.AddRangeAsync(postMedias);
             await _context.SaveChangesAsync();

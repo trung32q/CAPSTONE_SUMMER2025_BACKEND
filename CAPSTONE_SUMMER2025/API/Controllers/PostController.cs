@@ -2,6 +2,7 @@
 using API.Repositories.Interfaces;
 using API.Service.Interface;
 using AutoMapper;
+using Google.Api;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -79,10 +80,15 @@ namespace API.Controllers
             return Ok(new { message = result });
         }
 
-        //create post
+        // Create post
         [HttpPost("CreatePost")]
-        public async Task<IActionResult> CreatePost(ReqPostDTO reqPostDTO)
+        public async Task<IActionResult> CreatePost([FromForm] ReqPostDTO reqPostDTO)
         {
+            if (reqPostDTO == null)
+            {
+                return BadRequest(new { error = "Request body is missing or malformed" });
+            }
+
             var result = await _postService.CreatePost(reqPostDTO);
 
             if (result == null)
@@ -95,9 +101,62 @@ namespace API.Controllers
                 return StatusCode(500, new { error = result });
             }
 
+            if (result.StartsWith("Vi phạm"))
+            {
+                // Tách lỗi nếu có file vi phạm
+                var parts = result.Split(" (File:");
+                var message = parts[0].Trim();
+                var fileInfo = parts.Length > 1 ? parts[1].Replace(")", "").Trim() : null;
+
+                return BadRequest(new
+                {
+                    violated = true,
+                    message,
+                    file = fileInfo
+                });
+            }
+
             return Ok(new { message = result });
         }
 
-       
+        // hàm like bài viết
+        [HttpPost("like")]
+        public async Task<IActionResult> LikePost([FromBody] LikeRequestDTO dto)
+        {
+            var success = await _postService.LikePostAsync(dto);
+            return success ? Ok("Liked") : BadRequest("Already liked");
+        }
+
+        // hàm hủy like bài viết
+        [HttpPost("unlike")]
+        public async Task<IActionResult> UnlikePost([FromBody] LikeRequestDTO dto)
+        {
+            var success = await _postService.UnlikePostAsync(dto);
+            return success ? Ok("Unliked") : NotFound("Like not found");
+        }
+
+        // hàm đếm số lượng like bài viết
+        [HttpGet("{postId}/like-count")]
+        public async Task<IActionResult> GetPostLikeCount(int postId)
+        {
+            var count = await _postService.GetPostLikeCountAsync(postId);
+            return Ok(count);
+        }
+
+        // hàm đếm số lượng like bài viết
+        [HttpGet("{postId}/comment-count")]
+        public async Task<IActionResult> GetPostCommentCount(int postId)
+        {
+            var count = await _postService.GetPostCommentCountAsync(postId);
+            return Ok(count);
+        }
+
+        //hàm kiểm tra xem bài viết được like chưa
+        [HttpGet("{postId}/liked")]
+        public async Task<IActionResult> IsPostLikedAsync([FromBody] LikeRequestDTO dto)
+        {
+            var success = await _postService.IsPostLikedAsync(dto);
+            return Ok(success);
+        }
     }
 }

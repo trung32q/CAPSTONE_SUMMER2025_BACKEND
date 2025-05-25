@@ -25,7 +25,7 @@ namespace API.Repositories
             var systemPrompt = _configuration["OpenAI:SystemPrompt"];
 
             var policiesText = "";
-            foreach (var policy in policies) 
+            foreach (var policy in policies)
             {
                 policiesText += policy.Description;
             }

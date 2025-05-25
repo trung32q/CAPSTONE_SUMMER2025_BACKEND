@@ -10,5 +10,10 @@ namespace API.Repositories.Interfaces
         Task<List<PostComment>> GetPostCommentByPostId(int postId);
         Task<bool> CreatePostComment(reqPostCommentDTO reqPostCommentDTO);
         Task<List<PostLike>> GetPostLikeByPostId(int postId);
+        Task<bool> LikePostAsync(int postId, int accountId);
+        Task<bool> UnlikePostAsync(int postId, int accountId);
+        Task<int> GetPostLikeCountAsync(int postId);
+        Task<bool> IsPostLikedAsync(int postId, int accountId);
+        Task<int> GetPostCommentCountAsync(int postId);
     }
 }

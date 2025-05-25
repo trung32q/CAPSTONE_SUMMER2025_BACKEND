@@ -9,16 +9,16 @@ namespace API.Service.Interface
     {
         Task<List<resPolicyTypeDTO>> GetAllPolicyTypesAsync();
         Task<resPolicyTypeDTO> GetPolicyTypeByIdAsync(int id);
-        Task AddPolicyTypeAsync(reqPolicyTypeDTO dto);
-        Task UpdatePolicyTypeAsync(int id, reqPolicyTypeDTO dto);
-        Task DeletePolicyTypeAsync(int id);
+        Task<(bool Success, string Message)> AddPolicyTypeAsync(reqPolicyTypeDTO dto);
+        Task<(bool Success, string Message)> UpdatePolicyTypeAsync(int id, reqPolicyTypeDTO dto);
+        Task<(bool Success, string Message)> DeletePolicyTypeAsync(int id);
 
         // === Policy ===
         Task<List<resPolicyDTO>> GetAllPoliciesAsync();
         Task<resPolicyDTO> GetPolicyByIdAsync(int id);
-        Task AddPolicyAsync(reqPolicyDTO dto);
-        Task UpdatePolicyAsync(int id, reqPolicyDTO dto);
-        Task DeletePolicyAsync(int id);
+        Task<(bool Success, string Message)> AddPolicyAsync(reqPolicyDTO dto);
+        Task<(bool Success, string Message)> UpdatePolicyAsync(int id, reqPolicyDTO dto);
+        Task<(bool Success, string Message)> DeletePolicyAsync(int id);
         Task<List<resPolicyDTO>> GetPoliciesByPolicyTypeAsync(int policyTypeId);
     }
 }

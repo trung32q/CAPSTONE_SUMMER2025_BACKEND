@@ -52,6 +52,54 @@ namespace API.Service
             }
         }
 
+        //hàm like bài viết
+        public async Task<bool> LikePostAsync(LikeRequestDTO dto)
+        {
+            return await _repository.LikePostAsync(dto.PostId, dto.AccountId);
+        }
+
+        //hàm hủy like bài viết
+        public async Task<bool> UnlikePostAsync(LikeRequestDTO dto)
+        {
+            return await _repository.UnlikePostAsync(dto.PostId, dto.AccountId);
+        }
+
+        //hàm lấy ra số lượng like ở 1 bài viết
+        public async Task<int> GetPostLikeCountAsync(int postId)
+        {
+            return await _repository.GetPostLikeCountAsync(postId);
+        }
+
+        // hàm lấy số lượng comment ở 1 bài viết
+        public async Task<int> GetPostCommentCountAsync(int postId)
+        {
+            return await _repository.GetPostCommentCountAsync(postId);
+        }
+
+        // hàm  check xem bài viết có bao nhiêu like
+        public async Task<bool> IsPostLikedAsync(LikeRequestDTO dto)
+        {
+            return await _repository.IsPostLikedAsync(dto.PostId, dto.AccountId);
+        }
+
+        public async Task<List<PostLikeDTO>> GetPostLikeByPostId(int postId)
+        {
+            try
+            {
+                var postLikes = await _repository.GetPostLikeByPostId(postId);
+
+                if (postLikes == null)
+                    return null;
+
+                var postLikeDTOs = _mapper.Map<List<PostLikeDTO>>(postLikes);
+                return postLikeDTOs;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error: {ex.Message}");
+            }
+        }
+
         public async Task<string> CreatePost(ReqPostDTO reqPostDTO)
         {
             try
@@ -80,24 +128,6 @@ namespace API.Service
             }
         }
 
-
-        public async Task<List<PostLikeDTO>> GetPostLikeByPostId(int postId)
-        {
-            try
-            {
-                var postLikes = await _repository.GetPostLikeByPostId(postId);
-
-                if (postLikes == null)
-                    return null;
-
-                var postLikeDTOs = _mapper.Map<List<PostLikeDTO>>(postLikes);
-                return postLikeDTOs;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error: {ex.Message}");
-            }
-        }
 
         public async Task<string> CreatePostComment(reqPostCommentDTO reqPostCommentDTO)
         {

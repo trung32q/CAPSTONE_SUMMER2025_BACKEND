@@ -1,11 +1,10 @@
 ﻿using API.DTO.PolicyDTO;
 using API.Service.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     [ApiController]
     public class PolicyController : ControllerBase
     {
@@ -16,84 +15,100 @@ namespace API.Controllers
             _service = service;
         }
 
-        // === POLICY TYPE ===
+        // ===== POLICY TYPES =====
 
-        [HttpGet("types")]
-        public async Task<ActionResult<List<resPolicyTypeDTO>>> GetAllPolicyTypes()
+        [HttpGet("policy-types")]
+        public async Task<IActionResult> GetAllPolicyTypes()
         {
             var result = await _service.GetAllPolicyTypesAsync();
             return Ok(result);
         }
 
-        [HttpGet("types/{id}")]
-        public async Task<ActionResult<resPolicyTypeDTO>> GetPolicyTypeById(int id)
+        [HttpGet("policy-types/{id}")]
+        public async Task<IActionResult> GetPolicyTypeById(int id)
         {
             var result = await _service.GetPolicyTypeByIdAsync(id);
-            if (result == null) return NotFound();
+            if (result == null)
+                return NotFound(new { error = $"Policy type with ID {id} not found" });
+
             return Ok(result);
         }
 
-        [HttpPost("types")]
+        [HttpPost("policy-types")]
         public async Task<IActionResult> CreatePolicyType([FromBody] reqPolicyTypeDTO dto)
         {
-            await _service.AddPolicyTypeAsync(dto);
-            return Ok();
+            var result = await _service.AddPolicyTypeAsync(dto);
+            return Ok(new { message = result.Message });
         }
 
-        [HttpPut("types/{id}")]
+        [HttpPut("policy-types/{id}")]
         public async Task<IActionResult> UpdatePolicyType(int id, [FromBody] reqPolicyTypeDTO dto)
         {
-            await _service.UpdatePolicyTypeAsync(id, dto);
-            return Ok();
+            var result = await _service.UpdatePolicyTypeAsync(id, dto);
+            if (!result.Success)
+                return NotFound(new { error = result.Message });
+
+            return Ok(new { message = result.Message });
         }
 
-        [HttpDelete("types/{id}")]
+        [HttpDelete("policy-types/{id}")]
         public async Task<IActionResult> DeletePolicyType(int id)
         {
-            await _service.DeletePolicyTypeAsync(id);
-            return Ok();
+            var result = await _service.DeletePolicyTypeAsync(id);
+            if (!result.Success)
+                return NotFound(new { error = result.Message });
+
+            return Ok(new { message = result.Message });
         }
 
-        // === POLICY ===
+        // ===== POLICIES =====
 
-        [HttpGet]
-        public async Task<ActionResult<List<resPolicyDTO>>> GetAllPolicies()
+        [HttpGet("policies")]
+        public async Task<IActionResult> GetAllPolicies()
         {
             var result = await _service.GetAllPoliciesAsync();
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<resPolicyDTO>> GetPolicyById(int id)
+        [HttpGet("policies/{id}")]
+        public async Task<IActionResult> GetPolicyById(int id)
         {
             var result = await _service.GetPolicyByIdAsync(id);
-            if (result == null) return NotFound();
+            if (result == null)
+                return NotFound(new { error = $"Policy with ID {id} not found" });
+
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("policies")]
         public async Task<IActionResult> CreatePolicy([FromBody] reqPolicyDTO dto)
         {
-            await _service.AddPolicyAsync(dto);
-            return Ok();
+            var result = await _service.AddPolicyAsync(dto);
+            return Ok(new { message = result.Message });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("policies/{id}")]
         public async Task<IActionResult> UpdatePolicy(int id, [FromBody] reqPolicyDTO dto)
         {
-            await _service.UpdatePolicyAsync(id, dto);
-            return Ok();
+            var result = await _service.UpdatePolicyAsync(id, dto);
+            if (!result.Success)
+                return NotFound(new { error = result.Message });
+
+            return Ok(new { message = result.Message });
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("policies/{id}")]
         public async Task<IActionResult> DeletePolicy(int id)
         {
-            await _service.DeletePolicyAsync(id);
-            return Ok();
+            var result = await _service.DeletePolicyAsync(id);
+            if (!result.Success)
+                return NotFound(new { error = result.Message });
+
+            return Ok(new { message = result.Message });
         }
 
-        [HttpGet("by-type/{policyTypeId}")]
-        public async Task<ActionResult<List<resPolicyDTO>>> GetPoliciesByPolicyType(int policyTypeId)
+        [HttpGet("policy-types/{policyTypeId}/policies")]
+        public async Task<IActionResult> GetPoliciesByPolicyType(int policyTypeId)
         {
             var result = await _service.GetPoliciesByPolicyTypeAsync(policyTypeId);
             return Ok(result);

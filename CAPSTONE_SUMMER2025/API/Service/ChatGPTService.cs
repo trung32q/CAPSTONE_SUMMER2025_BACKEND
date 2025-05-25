@@ -21,22 +21,32 @@ namespace API.Service
                 return await _chatGPTRepository.CheckPostPolicyAsync(reqPostDTO.Content, policies);
             }
 
-            // Có media — kiểm tra loại media
-            var file = reqPostDTO.MediaFiles.First();
-            var contentType = file.ContentType.ToLower();
+            // Có media — kiểm tra từng file
+            foreach (var file in reqPostDTO.MediaFiles)
+            {
+                var contentType = file.ContentType.ToLower();
 
-            if (contentType.StartsWith("image/"))
-            {
-                return await _chatGPTRepository.CheckPostPolicyWithUploadedImageAsync(reqPostDTO.Content, file, policies);
+                if (contentType.StartsWith("image/"))
+                {
+                    var result = await _chatGPTRepository.CheckPostPolicyWithUploadedImageAsync(reqPostDTO.Content, file, policies);
+                    if (result.Contains("Vi phạm"))
+                        return result;
+                }
+                else if (contentType.StartsWith("video/"))
+                {
+                    var result = await _chatGPTRepository.CheckPostPolicyWithVideoAsync(reqPostDTO.Content, file, policies);
+                    if (result.Contains("Vi phạm"))
+                        return result;
+                }
+                else
+                {
+                    return "Vi phạm: Định dạng media không được hỗ trợ";
+                }
             }
-            else if (contentType.StartsWith("video/"))
-            {
-                return await _chatGPTRepository.CheckPostPolicyWithVideoAsync(reqPostDTO.Content, file, policies);
-            }
-            else
-            {
-                return "Vi phạm: Định dạng media không được hỗ trợ";
-            }
+
+            // Nếu không có vi phạm nào
+            return await _chatGPTRepository.CheckPostPolicyAsync(reqPostDTO.Content, policies);
         }
+
     }
 }

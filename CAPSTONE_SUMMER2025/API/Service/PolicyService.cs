@@ -6,7 +6,7 @@ using Infrastructure.Models;
 
 namespace API.Service
 {
-    public class PolicyService:IPolicyService
+    public class PolicyService : IPolicyService
     {
         private readonly IPolicyRepository _repository;
         private readonly IMapper _mapper;
@@ -24,29 +24,36 @@ namespace API.Service
             return _mapper.Map<List<resPolicyTypeDTO>>(entities);
         }
 
-        public async Task<resPolicyTypeDTO> GetPolicyTypeByIdAsync(int id)
+        public async Task<resPolicyTypeDTO?> GetPolicyTypeByIdAsync(int id)
         {
             var entity = await _repository.GetPolicyTypeByIdAsync(id);
-            return _mapper.Map<resPolicyTypeDTO>(entity);
+            return entity == null ? null : _mapper.Map<resPolicyTypeDTO>(entity);
         }
 
-        public async Task AddPolicyTypeAsync(reqPolicyTypeDTO dto)
+        public async Task<(bool Success, string Message)> AddPolicyTypeAsync(reqPolicyTypeDTO dto)
         {
             var entity = _mapper.Map<PolicyType>(dto);
             await _repository.AddPolicyTypeAsync(entity);
+            return (true, "Policy type created successfully");
         }
 
-        public async Task UpdatePolicyTypeAsync(int id, reqPolicyTypeDTO dto)
+        public async Task<(bool Success, string Message)> UpdatePolicyTypeAsync(int id, reqPolicyTypeDTO dto)
         {
             var existing = await _repository.GetPolicyTypeByIdAsync(id);
-            if (existing == null) return;
+            if (existing == null) return (false, "Policy type not found");
+
             _mapper.Map(dto, existing);
             await _repository.UpdatePolicyTypeAsync(existing);
+            return (true, "Policy type updated successfully");
         }
 
-        public async Task DeletePolicyTypeAsync(int id)
+        public async Task<(bool Success, string Message)> DeletePolicyTypeAsync(int id)
         {
+            var existing = await _repository.GetPolicyTypeByIdAsync(id);
+            if (existing == null) return (false, "Policy type not found");
+
             await _repository.DeletePolicyTypeAsync(id);
+            return (true, "Policy type deleted successfully");
         }
 
         // === Policy ===
@@ -56,30 +63,36 @@ namespace API.Service
             return _mapper.Map<List<resPolicyDTO>>(entities);
         }
 
-        public async Task<resPolicyDTO> GetPolicyByIdAsync(int id)
+        public async Task<resPolicyDTO?> GetPolicyByIdAsync(int id)
         {
             var entity = await _repository.GetPolicyByIdAsync(id);
-            return _mapper.Map<resPolicyDTO>(entity);
+            return entity == null ? null : _mapper.Map<resPolicyDTO>(entity);
         }
 
-        public async Task AddPolicyAsync(reqPolicyDTO dto)
+        public async Task<(bool Success, string Message)> AddPolicyAsync(reqPolicyDTO dto)
         {
             var entity = _mapper.Map<Policy>(dto);
-            entity.CreateAt = DateTime.UtcNow;
             await _repository.AddPolicyAsync(entity);
+            return (true, "Policy created successfully");
         }
 
-        public async Task UpdatePolicyAsync(int id, reqPolicyDTO dto)
+        public async Task<(bool Success, string Message)> UpdatePolicyAsync(int id, reqPolicyDTO dto)
         {
             var existing = await _repository.GetPolicyByIdAsync(id);
-            if (existing == null) return;
+            if (existing == null) return (false, "Policy not found");
+
             _mapper.Map(dto, existing);
             await _repository.UpdatePolicyAsync(existing);
+            return (true, "Policy updated successfully");
         }
 
-        public async Task DeletePolicyAsync(int id)
+        public async Task<(bool Success, string Message)> DeletePolicyAsync(int id)
         {
+            var existing = await _repository.GetPolicyByIdAsync(id);
+            if (existing == null) return (false, "Policy not found");
+
             await _repository.DeletePolicyAsync(id);
+            return (true, "Policy deleted successfully");
         }
 
         public async Task<List<resPolicyDTO>> GetPoliciesByPolicyTypeAsync(int policyTypeId)

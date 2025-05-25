@@ -10,5 +10,11 @@ namespace API.Service.Interface
         Task<string> CreatePost(ReqPostDTO reqPostDTO);
         Task<List<PostLikeDTO>> GetPostLikeByPostId(int postId);
         Task<string> CreatePostComment(reqPostCommentDTO reqPostCommentDTO);
+        Task<bool> LikePostAsync(LikeRequestDTO dto);
+        Task<bool> UnlikePostAsync(LikeRequestDTO dto);
+        Task<int> GetPostLikeCountAsync(int postId);
+        Task<bool> IsPostLikedAsync(LikeRequestDTO dto);
+        Task<int> GetPostCommentCountAsync(int postId);
+
     }
 }
