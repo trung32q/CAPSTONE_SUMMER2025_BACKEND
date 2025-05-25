@@ -24,12 +24,14 @@ namespace API.Controllers
     {
         private readonly IAuthSevice _authSevice;
         private readonly IAccountRepository _accountRepository;
+        private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
         private readonly JwtService _jwtService;
         private readonly GoogleService _googleService;
         private IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IAuthSevice authSevice, IMapper mapper , JwtService jwtService, IConfiguration configuration, GoogleService googleService, IAccountRepository accountRepository)
+        public AuthController(IAuthSevice authSevice, IMapper mapper , JwtService jwtService, IConfiguration configuration, GoogleService googleService, IAccountRepository accountRepository,IEmailService email, IAccountService accountService)
         {
             _authSevice = authSevice;
             _mapper = mapper;
@@ -37,6 +39,8 @@ namespace API.Controllers
             _configuration = configuration;
             _googleService = googleService;
             _accountRepository = accountRepository;
+            _emailService = email;
+            _accountService = accountService;
         }
 
         [HttpPost("Register")]
@@ -128,6 +132,55 @@ namespace API.Controllers
             Response.Cookies.Append("refresh_token", refresh_token, resCookie);
 
             return Ok(res.AccessToken);
+        }
+        [HttpPost("SendOTP")]
+        public async Task<ActionResult<UserOtp>> SendOTP([FromBody] ReqSendOTPDTO dto)
+        {
+            var Account = await _accountRepository.GetAccountByEmailAsync(dto.Email);
+
+            if (Account == null)
+            {
+                return NotFound();
+            }
+
+            var otp = _emailService.SendOTP(dto);      
+            return Ok(dto);
+        }
+        [HttpPost("VerifyOtp-Forgetpassword")]
+        public async Task<IActionResult> VerifyOtpchangepass([FromBody] ReqOtpDTO req)
+        {
+            try
+            {
+                var Account = await _accountRepository.GetAccountByEmailAsync(req.Email);
+                if (Account == null)
+                {
+                    return NotFound(new { message = "Account not found" });
+                }
+                var OTP = await _authSevice.GetActiveUserOtpAsync(Account.AccountId);
+                bool isOtpValid = BCrypt.Net.BCrypt.Verify(req.Otp, OTP.OtpCode);
+
+                if (!isOtpValid)
+                {
+                    return BadRequest(new ResVerifyOtpDTO { Success = false, Message = "Mã OTP không chính xác." });
+                }
+                return Ok(new ResVerifyOtpDTO
+                {
+                    Success = true,
+                    Message = "Xác thực OTP thành công."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPut("forget-password")]
+        public async Task<ActionResult> ChangePassword( [FromBody] ReqForgetPassword dto)
+        {
+            var success = await _accountService.ForgetpassAsync(dto);
+            if (!success)
+                return BadRequest("Invalid email, confirm password does not match!");
+            return Ok("Password changed successfully");
         }
 
         [HttpPost("VerifyOtp")]
