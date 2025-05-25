@@ -59,15 +59,16 @@ namespace API.Controllers
         }
 
         [HttpPut("update-profile/{accountId}")]
-        public async Task<ActionResult<ResAccountInfoDTO>> UpdateProfile(int accountId, [FromBody] ReqUpdateProfileDTO updateProfileDTO)
+        public async Task<IActionResult> UpdateProfile(int accountId, [FromForm] ReqUpdateProfileDTO updateProfileDTO)
         {
             if (updateProfileDTO == null)
-                return BadRequest("Profile data is required");
+                return BadRequest("Profile data is required.");
 
-            var updatedAccount = await _accountService.UpdateProfileAsync(accountId, updateProfileDTO);
-            if (updatedAccount == null)
-                return NotFound($"Account with ID {accountId} not found");
-            return Ok(updatedAccount);
+            var result = await _accountService.UpdateProfileAsync(accountId, updateProfileDTO);
+
+            return result == null
+                ? NotFound($"Account with ID {accountId} not found.")
+                : Ok(result);
         }
 
         [HttpPut("update-bio/{accountId}")]

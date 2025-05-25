@@ -1,6 +1,8 @@
 ﻿using API.DTO.AccountDTO;
+using API.DTO.AuthDTO;
 using API.DTO.BioDTO;
 using API.DTO.ProfileDTO;
+using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
 using AutoMapper;
@@ -12,12 +14,14 @@ namespace API.Service
     public class AccountService : IAccountService
     {
         private readonly IAccountRepository _accountRepository;
+        private readonly IFilebaseHandler _filebaseHandler;
         private readonly IMapper _mapper;
 
-        public AccountService(IMapper mapper, IAccountRepository accountRepository)
+        public AccountService(IMapper mapper, IAccountRepository accountRepository, IFilebaseHandler filebaseHandler)
         {
             _mapper = mapper;
             _accountRepository = accountRepository;
+            _filebaseHandler = filebaseHandler;
         }
         public async Task<List<ResAccountDTO>> GetAllAccountAsync()
         {
@@ -47,23 +51,29 @@ namespace API.Service
         public async Task<ResAccountInfoDTO> UpdateProfileAsync(int accountId, ReqUpdateProfileDTO updateProfileDTO)
         {
             var account = await _accountRepository.GetAccountWithProfileByIdAsync(accountId);
-            if (account == null || account.AccountProfile == null)
+            if (account?.AccountProfile == null)
                 return null;
 
             var profile = account.AccountProfile;
 
-            if (!string.IsNullOrWhiteSpace(updateProfileDTO.FirstName)) profile.FirstName = updateProfileDTO.FirstName;
-            if (!string.IsNullOrWhiteSpace(updateProfileDTO.LastName)) profile.LastName = updateProfileDTO.LastName;
-            if (!string.IsNullOrWhiteSpace(updateProfileDTO.Gender)) profile.Gender = updateProfileDTO.Gender;
-            if (updateProfileDTO.Dob.HasValue) profile.Dob = updateProfileDTO.Dob.Value;
-            if (!string.IsNullOrWhiteSpace(updateProfileDTO.Address)) profile.Address = updateProfileDTO.Address;
-            if (!string.IsNullOrWhiteSpace(updateProfileDTO.PhoneNumber)) profile.PhoneNumber = updateProfileDTO.PhoneNumber;
-            if (!string.IsNullOrWhiteSpace(updateProfileDTO.AvatarUrl)) profile.AvatarUrl = updateProfileDTO.AvatarUrl;
+            profile.FirstName = string.IsNullOrWhiteSpace(updateProfileDTO.FirstName) ? profile.FirstName : updateProfileDTO.FirstName;
+            profile.LastName = string.IsNullOrWhiteSpace(updateProfileDTO.LastName) ? profile.LastName : updateProfileDTO.LastName;
+            profile.Gender = string.IsNullOrWhiteSpace(updateProfileDTO.Gender) ? profile.Gender : updateProfileDTO.Gender;
+            profile.Dob = updateProfileDTO.Dob ?? profile.Dob;
+            profile.Address = string.IsNullOrWhiteSpace(updateProfileDTO.Address) ? profile.Address : updateProfileDTO.Address;
+            profile.PhoneNumber = string.IsNullOrWhiteSpace(updateProfileDTO.PhoneNumber) ? profile.PhoneNumber : updateProfileDTO.PhoneNumber;
+
+            if (updateProfileDTO.AvatarUrl != null)
+            {
+                var fileUrl = await _filebaseHandler.UploadMediaFile(updateProfileDTO.AvatarUrl);
+                if (!string.IsNullOrWhiteSpace(fileUrl))
+                    profile.AvatarUrl = fileUrl;
+            }
 
             await _accountRepository.SaveChangesAsync();
-
             return _mapper.Map<ResAccountInfoDTO>(account);
         }
+
 
         public async Task<ResAccountInfoDTO> UpdateBioAsync(int accountId, ReqUpdateBioDTO updateBioDTO)
         {
@@ -102,6 +112,16 @@ namespace API.Service
             await _accountRepository.SaveChangesAsync();
 
             return true;
-        }       
+        }
+
+        public async Task<bool> ForgetpassAsync(ReqForgetPassword reqForgetPassword)
+        {
+            var account = await _accountRepository.GetAccountByEmailAsync(reqForgetPassword.Email);
+            if (account == null)
+                return false;
+            account.Password = BCrypt.Net.BCrypt.HashPassword(reqForgetPassword.NewPassword);
+            await _accountRepository.SaveChangesAsync();
+            return true;
+        }
     }
 }

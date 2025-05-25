@@ -1,4 +1,5 @@
 ﻿using API.DTO.AccountDTO;
+using API.DTO.AuthDTO;
 using API.DTO.BioDTO;
 using API.DTO.ProfileDTO;
 using Infrastructure.Models;
@@ -14,5 +15,6 @@ namespace API.Service.Interface
         Task<ResAccountInfoDTO> UpdateProfileAsync(int accountId, ReqUpdateProfileDTO updateProfileDTO);
         Task<ResAccountInfoDTO> UpdateBioAsync(int accountId, ReqUpdateBioDTO updateBioDTO);
         Task<bool> ChangePasswordAsync(int accountId, ChangePasswordDTO changePasswordDTO);
+        Task<bool> ForgetpassAsync( ReqForgetPassword reqForgetPassword);
     }
 }

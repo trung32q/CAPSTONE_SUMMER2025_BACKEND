@@ -17,13 +17,13 @@ namespace API.Repositories
         private readonly IMapper _mapper;
         private readonly CAPSTONE_SUMMER2025Context _context;
         private IConfiguration _configuration;
-        private readonly IEmailService _email;
-        public AuthRepository(IMapper mapper, CAPSTONE_SUMMER2025Context context, IConfiguration configuration, IEmailService email)
+      
+        public AuthRepository(IMapper mapper, CAPSTONE_SUMMER2025Context context, IConfiguration configuration)
         {
             _mapper = mapper;
             _context = context;
             _configuration = configuration;
-            _email = email;
+          
         }
 
         public async Task<bool> CheckEmailExistsAsync(string email)
@@ -66,6 +66,6 @@ namespace API.Repositories
                                              o.ExpiresAt > DateTime.UtcNow)
                                  .OrderByDescending(o => o.UserOtpId)
                                  .FirstOrDefaultAsync();
-        }
+        }    
     }
 }
