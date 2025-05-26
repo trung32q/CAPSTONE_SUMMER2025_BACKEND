@@ -1,11 +1,12 @@
-﻿using API.DTO.PostDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.PostDTO;
 using Infrastructure.Models;
 
 namespace API.Service.Interface
 {
     public interface IPostService
     {
-        Task<List<resPostDTO>> GetPostsByAccountId(int accountId);
+        Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize);
         Task<List<PostCommentDTO>> GetPostCommentByPostId(int postId);
         Task<string> CreatePost(ReqPostDTO reqPostDTO);
         Task<List<PostLikeDTO>> GetPostLikeByPostId(int postId);

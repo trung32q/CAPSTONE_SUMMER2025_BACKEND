@@ -1,4 +1,6 @@
-﻿using API.DTO.PostDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.PostDTO;
+using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
 using AutoMapper;
@@ -10,27 +12,41 @@ namespace API.Service
     {
 
         private readonly IPostRepository _repository;
+        private readonly IFilebaseHandler _filebase;
         private readonly IMapper _mapper;
         private readonly IChatGPTService _chatGPTService;
         private readonly IPolicyService _policyService;
 
-        public PostService(IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService)
+        public PostService(IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService, IFilebaseHandler filebase)
         {
             _repository = repository;
             _mapper = mapper;
             _chatGPTService = chatGPTService;
             _policyService = policyService;
+            _filebase = filebase;
         }
-        public async Task<List<resPostDTO>> GetPostsByAccountId(int accountId)
+        public async Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize)
         {
-            var posts = await _repository.GetPostsByAccountId(accountId);
+            var pagedPosts = await _repository.GetPostsByAccountId(accountId, pageNumber, pageSize);
 
-            if (posts == null)
+            if (pagedPosts == null)
                 return null;
 
-            var postDTOs = _mapper.Map<List<resPostDTO>>(posts);
-
-            return postDTOs;
+            var postDTOs = _mapper.Map<List<resPostDTO>>(pagedPosts.Items);
+            foreach (var dto in postDTOs)
+            {
+                foreach(var media in dto.PostMedia)
+                {
+                    media.MediaUrl = _filebase.GeneratePreSignedUrl(media.MediaUrl);
+                }
+                
+            }
+            return new PagedResult<resPostDTO>(
+                postDTOs,
+                pagedPosts.TotalCount,
+                pagedPosts.PageNumber,
+                pagedPosts.PageSize
+            );
         }
 
         public async Task<List<PostCommentDTO>> GetPostCommentByPostId(int postId)

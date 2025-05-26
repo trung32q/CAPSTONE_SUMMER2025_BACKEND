@@ -12,8 +12,8 @@ namespace API.Mapping
 {
     public class MappingPost : Profile
     {
-        private readonly FilebaseHandler filebaseHandler;
-        public MappingPost() {
+        public MappingPost()
+        {
             CreateMap<Post, resPostDTO>();
             CreateMap<resPostDTO, Post>();
 
@@ -22,10 +22,9 @@ namespace API.Mapping
 
             CreateMap<PostLike, PostLikeDTO>();
             CreateMap<PostLikeDTO, PostLike>();
-            CreateMap<PostMedium, PostMediaDTO>();
-                     
-            CreateMap<PostMediaDTO, PostMedium>().ForMember(dest => dest.MediaUrl,
-                                  opt => opt.MapFrom(src => filebaseHandler.GeneratePreSignedUrl(src.MediaUrl))); 
+
+            CreateMap<PostMedium, PostMediaDTO>();        
+            CreateMap<PostMediaDTO, PostMedium>();
         }
     }
 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using API.DTO.AccountDTO;
 
 namespace API.Repositories
 {
@@ -166,20 +167,28 @@ namespace API.Repositories
         }
 
         //hàm lấy ra các bài post theo accountid
-        public async Task<List<Post>> GetPostsByAccountId(int accountId)
+        public async Task<PagedResult<Post>> GetPostsByAccountId(int accountId, int pageNumber, int pageSize)
         {
             var accountExists = await _context.Accounts
-        .AnyAsync(acc => acc.AccountId == accountId);
+                .AnyAsync(acc => acc.AccountId == accountId);
 
             if (!accountExists)
                 return null;
 
-            var posts = await _context.Posts
+            var query = _context.Posts
                 .Where(p => p.AccountId == accountId)
                 .Include(p => p.PostMedia)
+                .OrderByDescending(p => p.CreateAt);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return posts;
-        }    
+            return new PagedResult<Post>(items, totalCount, pageNumber, pageSize);
+        }
+
     }
 }

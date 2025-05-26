@@ -20,20 +20,21 @@ namespace API.Controllers
             _postService = postService;
         }
 
-
-        //get posts by accountId
+      
+        // GET: api/Post/GetPostsByAccountId?accountId=1&pageNumber=1&pageSize=10
         [HttpGet("GetPostsByAccountId")]
-        public async Task<IActionResult> GetPostsByAccountId(int accountId)
+        public async Task<IActionResult> GetPostsByAccountId(int accountId, int pageNumber = 1, int pageSize = 10)
         {
-            var result = await _postService.GetPostsByAccountId(accountId);
+            var result = await _postService.GetPostsByAccountIdAsync(accountId, pageNumber, pageSize);
 
-            if (result == null)
+            if (result == null || result.Items.Count == 0)
             {
-                return NotFound(new { error = "Account not found" });
+                return NotFound(new { error = "No posts found or account does not exist" });
             }
 
             return Ok(result);
         }
+
 
         //get post comments by post id
         [HttpGet("GetPostCommentsByPostId")]
