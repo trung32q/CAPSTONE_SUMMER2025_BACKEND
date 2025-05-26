@@ -11,5 +11,6 @@ namespace API.Service.Interface
         Task UpdateStatusAccountAsync(ReqOtpDTO reqOtp);
         Task UpdateAccountRefreshTokenAsync(int userId, string newRefreshToken, DateTime refreshTokenExpiryTime);
         Task<UserOtp> GetActiveUserOtpAsync(int accountId);
+        Task<UserOtp> SendOTP(ReqSendOTPDTO dto);
     }
 }

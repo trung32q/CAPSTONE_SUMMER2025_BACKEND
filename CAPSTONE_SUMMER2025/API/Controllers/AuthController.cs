@@ -143,7 +143,7 @@ namespace API.Controllers
                 return NotFound();
             }
 
-            var otp = _emailService.SendOTP(dto);      
+            var otp = await _authSevice.SendOTP(dto);      
             return Ok(dto);
         }
         [HttpPost("VerifyOtp-Forgetpassword")]

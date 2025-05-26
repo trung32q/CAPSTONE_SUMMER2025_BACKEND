@@ -1,10 +1,12 @@
 ﻿using API.DTO.AccountDTO;
 using API.DTO.AuthDTO;
+using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
 using API.Utils.Constants;
 using AutoMapper;
 using Infrastructure.Models;
+using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Service
@@ -12,16 +14,18 @@ namespace API.Service
     public class AuthService : IAuthSevice
     {
         private readonly IAuthRepository _authRepo;
+        private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _email;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
 
-        public AuthService(IAuthRepository authRepo, IEmailService email, IMapper mapper, IConfiguration config)
+        public AuthService(IAuthRepository authRepo, IEmailService email, IMapper mapper, IConfiguration config, IAccountRepository accountRepository)
         {
             _authRepo = authRepo;
             _email = email;
             _mapper = mapper;
             _config = config;
+            _accountRepository = accountRepository;
         }
 
         public async Task<Account> RegisterAsync(ReqAccountDTO req)
@@ -86,6 +90,36 @@ namespace API.Service
 
             return account;
         }
+        public async Task<UserOtp> SendOTP(ReqSendOTPDTO dto)
+        {
+            var Account = await _accountRepository.GetAccountByEmailAsync(dto.Email);
+
+            var plainOtp = GenerateOtp();
+            var hashedOtp = BCrypt.Net.BCrypt.HashPassword(plainOtp);
+
+            var otp = new UserOtp
+            {
+                AccountId = Account.AccountId,
+                OtpCode = hashedOtp,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+                IsUsed = false
+            };
+            await _authRepo.SaveOtpAsync(otp);
+            // Gửi OTP qua email
+            var subject = _config["EmailTemplates:VerificationSubject"];
+            var htmlTemplate = _config["EmailTemplates:VerificationHtmlBody"];
+
+            if (!string.IsNullOrEmpty(subject) && !string.IsNullOrEmpty(htmlTemplate))
+            {
+                var htmlContent = htmlTemplate
+                    .Replace("{FirstName}", Account.AccountProfile.FirstName ?? "bạn")
+                    .Replace("{OTP}", plainOtp);
+
+                await _email.SendEmailAsync(Account.Email, subject, htmlContent);
+            }
+            return otp;
+        }
+       
 
         public async Task<Account> LoginAsync(LoginDTO loginDto)
         {
