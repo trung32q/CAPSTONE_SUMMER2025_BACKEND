@@ -6,11 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using API.DTO.PostDTO;
+using API.Repositories;
 
 namespace API.Mapping
 {
     public class MappingPost : Profile
     {
+        private readonly FilebaseHandler filebaseHandler;
         public MappingPost() {
             CreateMap<Post, resPostDTO>();
             CreateMap<resPostDTO, Post>();
@@ -20,9 +22,10 @@ namespace API.Mapping
 
             CreateMap<PostLike, PostLikeDTO>();
             CreateMap<PostLikeDTO, PostLike>();
-
-            CreateMap<PostMedia, PostMediaDTO>();
-            CreateMap<PostMediaDTO, PostMedia>();
+            CreateMap<PostMedium, PostMediaDTO>();
+                     
+            CreateMap<PostMediaDTO, PostMedium>().ForMember(dest => dest.MediaUrl,
+                                  opt => opt.MapFrom(src => filebaseHandler.GeneratePreSignedUrl(src.MediaUrl))); 
         }
     }
 }

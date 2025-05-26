@@ -5,6 +5,7 @@ using API.Repositories.Interfaces;
 using AutoMapper;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
+using Amazon.S3.Model;
 
 namespace API.Repositories
 {
@@ -27,9 +28,42 @@ namespace API.Repositories
             
         }
 
-        //hàm xử lí upload media file rồi trả về đường dẫn
         public async Task<string> UploadMediaFile(IFormFile file)
         {
+            var config = new AmazonS3Config
+            {
+                RegionEndpoint = Amazon.RegionEndpoint.USEast1,
+                ServiceURL = "https://s3.filebase.com",
+                ForcePathStyle = true
+            };
+
+            using var client = new AmazonS3Client(_accessKey, _secretKey, config);
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            stream.Position = 0; // ⚠️ Bắt buộc
+
+            var extension = Path.GetExtension(file.FileName); // giữ đúng loại file
+            var fileName = $"{Guid.NewGuid()}{extension}";
+
+            var uploadRequest = new TransferUtilityUploadRequest
+            {
+                InputStream = stream,
+                Key = fileName,
+                BucketName = _bucketName,
+                ContentType = file.ContentType // ⚠️ Bắt buộc
+            };
+
+            var transferUtility = new TransferUtility(client);
+            await transferUtility.UploadAsync(uploadRequest);
+
+            return fileName;
+        }
+
+
+
+        public string GeneratePreSignedUrl(string fileName)
+        {
+            var credentials = new Amazon.Runtime.BasicAWSCredentials(_accessKey, _secretKey);
             var config = new AmazonS3Config
             {
                 RegionEndpoint = _region,
@@ -37,24 +71,16 @@ namespace API.Repositories
                 ForcePathStyle = true
             };
 
-            using var client = new AmazonS3Client(_accessKey, _secretKey, config);
-            using var newMemoryStream = new MemoryStream();
-            await file.CopyToAsync(newMemoryStream);
+            using var client = new AmazonS3Client(credentials, config);
 
-            var uploadRequest = new TransferUtilityUploadRequest
+            var request = new GetPreSignedUrlRequest
             {
-                InputStream = newMemoryStream,
-                Key = file.FileName,
-                BucketName = _bucketName,
-                ContentType = file.ContentType
+                BucketName = "media-file",
+                Key = fileName,
+                Expires = DateTime.UtcNow.AddMinutes(15)
             };
 
-            var fileTransferUtility = new TransferUtility(client);
-            await fileTransferUtility.UploadAsync(uploadRequest);
-
-            var fileUrl = $"https://{_bucketName}.s3.filebase.com/{file.FileName}";
-            return fileUrl;
+            return client.GetPreSignedURL(request);
         }
-
     }
 }

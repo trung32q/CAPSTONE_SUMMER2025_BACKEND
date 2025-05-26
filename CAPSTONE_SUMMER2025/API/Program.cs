@@ -117,7 +117,12 @@ builder.Services.AddScoped<IPolicyRepository, PolicyRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IFilebaseHandler, FilebaseHandler>();
 builder.Services.AddScoped<IChatGPTRepository, ChatGPTRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IFptAIRepository, FptAIRepository>();
 
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<ICCCDService, CCCDService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IChatGPTService, ChatGPTService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IPolicyService, PolicyService>();

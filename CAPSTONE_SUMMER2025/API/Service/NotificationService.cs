@@ -1,10 +1,11 @@
 ﻿using API.DTO.NotificationDTO;
 using API.Repositories.Interfaces;
+using API.Service.Interface;
 using AutoMapper;
 
 namespace API.Service
 {
-    public class NotificationService
+    public class NotificationService : INotificationService
     {
         private readonly INotificationRepository _repository;
         private readonly IMapper _mapper;

@@ -13,6 +13,7 @@ using API.DTO.AccountDTO;
 using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
 using API.Service.Interface;
+using API.Service;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -20,9 +21,11 @@ namespace API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
-        public AccountController(IAccountService accountService)
+        private readonly ICCCDService _cccdService;
+        public AccountController(IAccountService accountService, ICCCDService cccdService)
         {
             _accountService = accountService;
+            _cccdService = cccdService;
         }
         [HttpGet("GetAllAccount")]
         public async Task<ActionResult<IEnumerable<ResAccountDTO>>> GetAccounts()
@@ -97,6 +100,17 @@ namespace API.Controllers
                 return BadRequest("Invalid old password, confirm password does not match, or account not found");
 
             return Ok("Password changed successfully");
+        }
+
+        [HttpPost("verify-cccd")]
+        public async Task<IActionResult> Verify([FromForm] CccdVerificationRequestDTO request)
+        {
+            if (request.Cccd == null || request.Selfie == null)
+                return BadRequest("Thiếu ảnh CCCD hoặc ảnh selfie");
+
+            var result = await _cccdService.VerifyCccdAsync(request.Cccd, request.Selfie);
+
+            return Ok(result);
         }
     }
 }
