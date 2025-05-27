@@ -9,8 +9,10 @@ namespace API.Mapping
     {
         public MappingNotification()
         {
-            CreateMap<Notification, reqNotificationDTO>();
+           
             CreateMap<reqNotificationDTO, Notification>();
+            CreateMap<Notification, resNotificationDTO>()
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.SendAt));
         }
     }
 }

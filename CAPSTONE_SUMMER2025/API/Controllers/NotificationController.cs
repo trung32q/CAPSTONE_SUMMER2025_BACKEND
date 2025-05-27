@@ -20,7 +20,7 @@ namespace API.Controllers
         [HttpPost("CreateNotification")]
         public async Task<IActionResult> CreateNotification([FromBody] reqNotificationDTO dto)
         {
-            var result = await _service.CreateNotificationAsync(dto);
+            var result = await _service.CreateAndSendAsync(dto);
 
             if (result == null)
             {

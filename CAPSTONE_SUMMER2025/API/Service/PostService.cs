@@ -35,12 +35,24 @@ namespace API.Service
             var postDTOs = _mapper.Map<List<resPostDTO>>(pagedPosts.Items);
             foreach (var dto in postDTOs)
             {
-                foreach(var media in dto.PostMedia)
+                foreach (var media in dto.PostMedia)
                 {
-                    media.MediaUrl = _filebase.GeneratePreSignedUrl(media.MediaUrl);
+                    if (!string.IsNullOrEmpty(media.MediaUrl))
+                    {
+                        // Nếu MediaUrl không chứa resourceType (không có dấu "/"), thêm tiền tố mặc định "image/"
+                        var publicIdWithType = media.MediaUrl.Contains("/")
+                            ? media.MediaUrl
+                            : $"image/{media.MediaUrl}";
+
+                        // Ghi log để debug
+                        Console.WriteLine($"Generating URL for publicIdWithType: {publicIdWithType}");
+
+                        // Tạo URL bằng GeneratePreSignedUrl
+                        media.MediaUrl = _filebase.GeneratePreSignedUrl(publicIdWithType);
+                    }
                 }
-                
             }
+
             return new PagedResult<resPostDTO>(
                 postDTOs,
                 pagedPosts.TotalCount,

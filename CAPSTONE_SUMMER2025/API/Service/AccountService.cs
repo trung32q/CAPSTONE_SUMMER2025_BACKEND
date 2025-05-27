@@ -32,7 +32,21 @@ namespace API.Service
         {
             var account = await _accountRepository.GetAccountByAccountIDAsync(accountId);
             if (account == null) return null;
-            return _mapper.Map<ResAccountInfoDTO>(account);
+
+            var accountDTO = _mapper.Map<ResAccountInfoDTO>(account);
+
+            // Xử lý URL của avatar nếu có
+            if (!string.IsNullOrEmpty(accountDTO.AvatarUrl))
+            {
+                // Nếu Avatar không phải là URL đầy đủ, gọi GeneratePreSignedUrl để tạo URL
+                if (!accountDTO.AvatarUrl.StartsWith("https://"))
+                {
+                    Console.WriteLine($"Converting Avatar to full URL: {accountDTO.AvatarUrl}");
+                    accountDTO.AvatarUrl = _filebaseHandler.GeneratePreSignedUrl(accountDTO.AvatarUrl);
+                }
+            }
+
+            return accountDTO;
         }
 
         public async Task<List<ResAccountInfoDTO>> GetFollowingAsync(int accountId)

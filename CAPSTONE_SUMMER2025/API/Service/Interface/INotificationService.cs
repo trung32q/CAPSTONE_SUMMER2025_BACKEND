@@ -4,6 +4,6 @@ namespace API.Service.Interface
 {
     public interface INotificationService
     {
-        Task<resNotificationDTO> CreateNotificationAsync(reqNotificationDTO dto);
+        Task<resNotificationDTO> CreateAndSendAsync(reqNotificationDTO dto);
     }
 }

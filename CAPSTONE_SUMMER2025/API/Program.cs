@@ -13,6 +13,7 @@ using API.Mapping;
 using API.Repositories;
 using API.Service;
 using API.Service.Interface;
+using API.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,6 +85,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+builder.Services.AddSignalR();
 //Config CORS
 builder.Services.AddCors(options =>
 {
@@ -143,7 +145,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
+app.MapHub<NotificationHub>("/hubs/notification").RequireCors("AllowAll");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

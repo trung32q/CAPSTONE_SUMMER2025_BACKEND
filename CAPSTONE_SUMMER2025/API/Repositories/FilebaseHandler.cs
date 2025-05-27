@@ -1,86 +1,162 @@
-﻿using Amazon;
-using Amazon.S3.Transfer;
-using Amazon.S3;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 using API.Repositories.Interfaces;
-using AutoMapper;
-using Infrastructure.Models;
-using Microsoft.EntityFrameworkCore;
-using Amazon.S3.Model;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace API.Repositories
 {
     public class FilebaseHandler : IFilebaseHandler
     {
-        private readonly string _accessKey;
-        private readonly string _secretKey;
-        private readonly string _bucketName;
-        private readonly RegionEndpoint _region;
-        private readonly string _serviceUrl;
+        private readonly Cloudinary _cloudinary;
 
         public FilebaseHandler(IConfiguration configuration)
         {
             // Load values from appsettings.json
-            _accessKey = configuration["AWS:AccessKey"];
-            _secretKey = configuration["AWS:SecretKey"];
-            _bucketName = configuration["AWS:BucketName"];
-            _region = RegionEndpoint.GetBySystemName(configuration["AWS:Region"]);
-            _serviceUrl = configuration["AWS:ServiceURL"];
-            
+            var cloudName = configuration["CloudinarySettings:CloudName"];
+            var apiKey = configuration["CloudinarySettings:ApiKey"];
+            var apiSecret = configuration["CloudinarySettings:ApiSecret"];
+
+            // Validate configuration
+            if (string.IsNullOrEmpty(cloudName) || string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiSecret))
+                throw new Exception("Cloudinary configuration is missing or invalid");
+
+            // Initialize Cloudinary with fully qualified CloudinaryDotNet.Account
+            var account = new CloudinaryDotNet.Account(cloudName, apiKey, apiSecret);
+            _cloudinary = new Cloudinary(account);
         }
 
         public async Task<string> UploadMediaFile(IFormFile file)
         {
-            var config = new AmazonS3Config
+            // Check if file is null or empty
+            if (file == null || file.Length == 0)
+                throw new Exception("File rỗng hoặc không tồn tại");
+
+            // Generate unique file name
+            var fileName = file.FileName ?? "unnamed_file";
+            var extension = Path.GetExtension(fileName)?.ToLower() ?? "";
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+            // Log the file details for debugging
+            Console.WriteLine($"File Name: {fileName}");
+            Console.WriteLine($"File ContentType: {file.ContentType}");
+            Console.WriteLine($"File Extension: {extension}");
+
+            // Determine resource type (image, video, or raw)
+            var resourceType = file.ContentType switch
             {
-                RegionEndpoint = Amazon.RegionEndpoint.USEast1,
-                ServiceURL = "https://s3.filebase.com",
-                ForcePathStyle = true
+                var type when type.StartsWith("image/") => "image",
+                var type when type.StartsWith("video/") => "video",
+                var type when type == "application/pdf" => "raw",
+                _ => extension switch // Fallback to extension-based detection
+                {
+                    ".png" or ".jpg" or ".jpeg" or ".gif" or ".webp" => "image",
+                    ".mp4" or ".mov" or ".avi" or ".webm" => "video",
+                    ".pdf" => "raw",
+                    _ => "raw" // Default for other file types
+                }
             };
 
-            using var client = new AmazonS3Client(_accessKey, _secretKey, config);
-            using var stream = new MemoryStream();
-            await file.CopyToAsync(stream);
-            stream.Position = 0; // ⚠️ Bắt buộc
+            // Log the determined resourceType for debugging
+            Console.WriteLine($"Determined resourceType: {resourceType}");
 
-            var extension = Path.GetExtension(file.FileName); // giữ đúng loại file
-            var fileName = $"{Guid.NewGuid()}{extension}";
-
-            var uploadRequest = new TransferUtilityUploadRequest
+            // Upload parameters based on resource type
+            UploadResult uploadResult;
+            switch (resourceType)
             {
-                InputStream = stream,
-                Key = fileName,
-                BucketName = _bucketName,
-                ContentType = file.ContentType // ⚠️ Bắt buộc
-            };
+                case "image":
+                    var imageParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(uniqueFileName, file.OpenReadStream()),
+                        Folder = "media" // Organize files in the "media" folder
+                    };
+                    uploadResult = await _cloudinary.UploadAsync(imageParams);
+                    break;
 
-            var transferUtility = new TransferUtility(client);
-            await transferUtility.UploadAsync(uploadRequest);
+                case "video":
+                    var videoParams = new VideoUploadParams
+                    {
+                        File = new FileDescription(uniqueFileName, file.OpenReadStream()),
+                        Folder = "media"
+                    };
+                    uploadResult = await _cloudinary.UploadAsync(videoParams);
+                    break;
 
-            return fileName;
+                case "raw":
+                default:
+                    var rawParams = new RawUploadParams
+                    {
+                        File = new FileDescription(uniqueFileName, file.OpenReadStream()),
+                        Folder = "media"
+                    };
+                    uploadResult = await _cloudinary.UploadAsync(rawParams);
+                    break;
+            }
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception($"Upload failed: {uploadResult.Error?.Message}");
+
+            // Log the upload result
+            Console.WriteLine($"Upload successful. PublicId: {uploadResult.PublicId}");
+            Console.WriteLine($"Generated URL: {uploadResult.SecureUrl}");
+
+            // Return the secure URL of the uploaded file
+            return uploadResult.SecureUrl.ToString();
         }
 
-
-
-        public string GeneratePreSignedUrl(string fileName)
+        public string GeneratePreSignedUrl(string publicIdWithType)
         {
-            var credentials = new Amazon.Runtime.BasicAWSCredentials(_accessKey, _secretKey);
-            var config = new AmazonS3Config
+            // Log the input for debugging
+            Console.WriteLine($"GeneratePreSignedUrl input: {publicIdWithType}");
+
+            // Handle null or empty input
+            if (string.IsNullOrEmpty(publicIdWithType))
+                throw new Exception("publicIdWithType cannot be null or empty");
+
+            // If publicIdWithType already looks like a full URL, return it as-is
+            if (publicIdWithType.StartsWith("https://"))
             {
-                RegionEndpoint = _region,
-                ServiceURL = _serviceUrl,
-                ForcePathStyle = true
-            };
+                Console.WriteLine("Input is already a full URL. Returning as-is.");
+                return publicIdWithType;
+            }
 
-            using var client = new AmazonS3Client(credentials, config);
+            // Split the publicIdWithType to extract resource type and publicId
+            var parts = publicIdWithType.Split('/');
+            string resourceType;
+            string publicId;
 
-            var request = new GetPreSignedUrlRequest
+            if (parts.Length == 2)
             {
-                BucketName = "media-file",
-                Key = fileName,
-                Expires = DateTime.UtcNow.AddMinutes(15)
-            };
+                resourceType = parts[0]; // e.g., "image", "video", "raw"
+                publicId = parts[1];     // e.g., "media/076e9632-3036-431b-a149-78a15495ab3d"
+            }
+            else
+            {
+                // Fallback: Assume resourceType is "image" and treat the input as publicId
+                Console.WriteLine($"Invalid publicIdWithType format: {publicIdWithType}. Assuming resourceType='image'.");
+                resourceType = "image";
+                publicId = publicIdWithType;
+            }
 
-            return client.GetPreSignedURL(request);
+            // Validate resourceType
+            if (!new[] { "image", "video", "raw", "auto" }.Contains(resourceType))
+            {
+                Console.WriteLine($"Invalid resourceType: {resourceType}. Defaulting to 'image'.");
+                resourceType = "image";
+            }
+
+            // Generate secure URL for the file
+            var url = _cloudinary.Api.Url
+                .Secure(true)
+                .ResourceType(resourceType) // Use the determined resource type
+                .BuildUrl(publicId);
+
+            // Log the generated URL
+            Console.WriteLine($"Generated URL: {url}");
+            return url;
         }
     }
 }

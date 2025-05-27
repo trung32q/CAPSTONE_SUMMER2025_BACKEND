@@ -130,6 +130,7 @@ namespace API.Repositories
             {
                 foreach (var file in reqPostDTO.MediaFiles)
                 {
+                    //Console.WriteLine($"[DEBUG] File: {file.FileName}, ContentType: {file.ContentType}, Length: {file.Length}");
                     var fileUrl = await _filebaseHandler.UploadMediaFile(file);
 
                     postMedias.Add(new PostMedium
