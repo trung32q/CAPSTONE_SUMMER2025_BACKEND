@@ -112,5 +112,51 @@ namespace API.Controllers
 
             return Ok(result);
         }
+        
+        [HttpPost("follow")]
+        public async Task<IActionResult> Follow([FromBody] FollowRequestDTO request)
+        {
+            if (request == null || request.FollowerAccountId <= 0 || request.FollowingAccountId <= 0)
+            {
+                return BadRequest("Invalid follower or following account ID.");
+            }
+
+            try
+            {
+                var success = await _accountService.FollowAsync(request.FollowerAccountId, request.FollowingAccountId);
+                if (!success)
+                {
+                    return BadRequest("Follow action failed. Accounts may not exist or already followed.");
+                }
+                return Ok(new { message = "Followed successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        [HttpPost("unfollow")]
+        public async Task<IActionResult> Unfollow([FromBody] FollowRequestDTO request)
+        {
+            if (request == null || request.FollowerAccountId <= 0 || request.FollowingAccountId <= 0)
+            {
+                return BadRequest("Invalid follower or following account ID.");
+            }
+
+            try
+            {
+                var success = await _accountService.UnfollowAsync(request.FollowerAccountId, request.FollowingAccountId);
+                if (!success)
+                {
+                    return BadRequest("Unfollow action failed. You may not be following this account.");
+                }
+                return Ok(new { message = "Unfollowed successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

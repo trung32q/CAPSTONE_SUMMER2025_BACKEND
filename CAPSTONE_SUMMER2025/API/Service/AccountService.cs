@@ -1,6 +1,7 @@
 ﻿using API.DTO.AccountDTO;
 using API.DTO.AuthDTO;
 using API.DTO.BioDTO;
+using API.DTO.NotificationDTO;
 using API.DTO.ProfileDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
@@ -14,14 +15,16 @@ namespace API.Service
     public class AccountService : IAccountService
     {
         private readonly IAccountRepository _accountRepository;
+        private readonly INotificationService _notificationService;
         private readonly IFilebaseHandler _filebaseHandler;
         private readonly IMapper _mapper;
 
-        public AccountService(IMapper mapper, IAccountRepository accountRepository, IFilebaseHandler filebaseHandler)
+        public AccountService(IMapper mapper, IAccountRepository accountRepository, IFilebaseHandler filebaseHandler, INotificationService notificationService)
         {
             _mapper = mapper;
             _accountRepository = accountRepository;
             _filebaseHandler = filebaseHandler;
+            _notificationService = notificationService;
         }
         public async Task<List<ResAccountDTO>> GetAllAccountAsync()
         {
@@ -136,6 +139,43 @@ namespace API.Service
             account.Password = BCrypt.Net.BCrypt.HashPassword(reqForgetPassword.NewPassword);
             await _accountRepository.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> FollowAsync(int followerAccountId, int followingAccountId)
+        {
+            if (followerAccountId == followingAccountId)
+            {
+                throw new ArgumentException("Cannot follow yourself.");
+            }
+
+            var success = await _accountRepository.FollowAsync(followerAccountId, followingAccountId);
+            if (success)
+            {
+                // Gửi thông báo tới người được follow
+                var follower = await _accountRepository.GetAccountByIdAsync(followerAccountId);
+                if (follower != null)
+                {
+                    var message = $"{follower.AccountProfile?.FirstName} has followed you.";
+                    await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                    {
+                        UserId = followingAccountId,
+                        Message = message,
+                        CreatedAt = DateTime.UtcNow,
+                        IsRead = false
+                    });
+                }
+            }
+            return success;
+        }
+
+        public async Task<bool> UnfollowAsync(int followerAccountId, int followingAccountId)
+        {
+            if (followerAccountId == followingAccountId)
+            {
+                throw new ArgumentException("Cannot unfollow yourself.");
+            }
+
+            return await _accountRepository.UnfollowAsync(followerAccountId, followingAccountId);
         }
     }
 }

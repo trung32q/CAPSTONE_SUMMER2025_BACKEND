@@ -21,7 +21,10 @@ namespace API.Repositories.Interfaces
         Task<Account> GetAccountWithBioByIdAsync(int accountId);
         Task<Account> GetAccountByIdAsync(int accountId);
         Task<bool> IsBlockedAsync(int blockerAccountId, int blockedAccountId);
-        Task SaveChangesAsync();        
-      
+        Task SaveChangesAsync();
+        Task<bool> FollowAsync(int followerAccountId, int followingAccountId);
+        Task<bool> UnfollowAsync(int followerAccountId, int followingAccountId);
+        Task<bool> IsFollowingAsync(int followerAccountId, int followingAccountId);
+
     }
 }

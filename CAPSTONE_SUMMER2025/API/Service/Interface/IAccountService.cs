@@ -16,5 +16,7 @@ namespace API.Service.Interface
         Task<ResAccountInfoDTO> UpdateBioAsync(int accountId, ReqUpdateBioDTO updateBioDTO);
         Task<bool> ChangePasswordAsync(int accountId, ChangePasswordDTO changePasswordDTO);
         Task<bool> ForgetpassAsync( ReqForgetPassword reqForgetPassword);
+        Task<bool> FollowAsync(int followerAccountId, int followingAccountId);
+        Task<bool> UnfollowAsync(int followerAccountId, int followingAccountId);
     }
 }

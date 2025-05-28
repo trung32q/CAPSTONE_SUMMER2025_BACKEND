@@ -168,5 +168,56 @@ namespace Infrastructure.Repository
                 .AnyAsync(b => b.BlockerAccountId == blockerAccountId &&
                              b.BlockedAccountId == blockedAccountId);
         }
+        public async Task<bool> FollowAsync(int followerAccountId, int followingAccountId)
+        {
+            // Kiểm tra tài khoản tồn tại
+            var follower = await _context.Accounts.FindAsync(followerAccountId);
+            var following = await _context.Accounts.FindAsync(followingAccountId);
+            if (follower == null || following == null)
+            {
+                return false;
+            }
+
+            // Kiểm tra đã follow chưa
+            var existingFollow = await _context.Follows
+                .FirstOrDefaultAsync(f => f.FollowerAccountId == followerAccountId && f.FollowingAccountId == followingAccountId);
+            if (existingFollow != null)
+            {
+                return true; // Đã follow, không cần thêm
+            }
+
+            // Thêm bản ghi follow
+            var follow = new Follow
+            {
+                FollowerAccountId = followerAccountId,
+                FollowingAccountId = followingAccountId,
+                FollowDate = DateTime.UtcNow
+            };
+
+            _context.Follows.Add(follow);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UnfollowAsync(int followerAccountId, int followingAccountId)
+        {
+            // Tìm bản ghi follow
+            var follow = await _context.Follows
+                .FirstOrDefaultAsync(f => f.FollowerAccountId == followerAccountId && f.FollowingAccountId == followingAccountId);
+            if (follow == null)
+            {
+                return false; // Chưa follow, không thể unfollow
+            }
+
+            _context.Follows.Remove(follow);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> IsFollowingAsync(int followerAccountId, int followingAccountId)
+        {
+            return await _context.Follows
+                .AnyAsync(f => f.FollowerAccountId == followerAccountId && f.FollowingAccountId == followingAccountId);
+        }
     }
 }
