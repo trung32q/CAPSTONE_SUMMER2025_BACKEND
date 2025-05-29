@@ -1,10 +1,13 @@
 ﻿using API.DTO.AccountDTO;
+using API.DTO.NotificationDTO;
 using API.DTO.PostDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
 using AutoMapper;
+using Google.Cloud.AIPlatform.V1;
 using Infrastructure.Models;
+using Infrastructure.Repository;
 
 namespace API.Service
 {
@@ -16,14 +19,18 @@ namespace API.Service
         private readonly IMapper _mapper;
         private readonly IChatGPTService _chatGPTService;
         private readonly IPolicyService _policyService;
+        private readonly IAccountRepository _accountRepository;
+        private readonly INotificationService _notificationService;
 
-        public PostService(IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService, IFilebaseHandler filebase)
+        public PostService(IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService, IFilebaseHandler filebase, IAccountRepository accountRepository, INotificationService notificationService)
         {
             _repository = repository;
             _mapper = mapper;
             _chatGPTService = chatGPTService;
             _policyService = policyService;
             _filebase = filebase;
+            _accountRepository = accountRepository;
+            _notificationService = notificationService;
         }
         public async Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize)
         {
@@ -83,7 +90,25 @@ namespace API.Service
         //hàm like bài viết
         public async Task<bool> LikePostAsync(LikeRequestDTO dto)
         {
-            return await _repository.LikePostAsync(dto.PostId, dto.AccountId);
+            var success = await _repository.LikePostAsync(dto.PostId, dto.AccountId);
+            if (success)
+            {
+                // Gửi thông báo tới người được follow
+                var likerer = await _accountRepository.GetAccountByIdAsync(dto.AccountId);
+                if (likerer != null)
+                {
+                    var message = $"{likerer.AccountProfile?.FirstName} has liked your post.";
+                    await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                    {
+                        UserId = dto.AccountId,
+                        Message = message,
+                        CreatedAt = DateTime.UtcNow,
+                        IsRead = false
+                    });
+                }
+            }
+
+            return success;
         }
 
         //hàm hủy like bài viết
