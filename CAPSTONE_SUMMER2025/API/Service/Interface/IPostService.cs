@@ -7,7 +7,7 @@ namespace API.Service.Interface
     public interface IPostService
     {
         Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize);
-        Task<List<PostCommentDTO>> GetPostCommentByPostId(int postId);
+        Task<PagedResult<PostCommentDTO>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize);
         Task<string> CreatePost(ReqPostDTO reqPostDTO);
         Task<List<PostLikeDTO>> GetPostLikeByPostId(int postId);
         Task<string> CreatePostComment(reqPostCommentDTO reqPostCommentDTO);
@@ -16,6 +16,7 @@ namespace API.Service.Interface
         Task<int> GetPostLikeCountAsync(int postId);
         Task<bool> IsPostLikedAsync(LikeRequestDTO dto);
         Task<int> GetPostCommentCountAsync(int postId);
+        Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId);
 
     }
 }

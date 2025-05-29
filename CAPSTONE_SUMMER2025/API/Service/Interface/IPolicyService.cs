@@ -20,5 +20,10 @@ namespace API.Service.Interface
         Task<(bool Success, string Message)> UpdatePolicyAsync(int id, reqPolicyDTO dto);
         Task<(bool Success, string Message)> DeletePolicyAsync(int id);
         Task<List<resPolicyDTO>> GetPoliciesByPolicyTypeAsync(int policyTypeId);
+
+        Task<(bool Success, string Message)> UpdatePolicyStatus(int id, bool isActive);
+        Task<List<resPolicyDTO>> GetAllActivePoliciesAsync();
+
+
     }
 }

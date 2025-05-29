@@ -63,6 +63,12 @@ namespace API.Service
             return _mapper.Map<List<resPolicyDTO>>(entities);
         }
 
+        public async Task<List<resPolicyDTO>> GetAllActivePoliciesAsync()
+        {
+            var entities = await _repository.GetAllActivePolicyAsync();
+            return _mapper.Map<List<resPolicyDTO>>(entities);
+        }
+
         public async Task<resPolicyDTO?> GetPolicyByIdAsync(int id)
         {
             var entity = await _repository.GetPolicyByIdAsync(id);
@@ -99,6 +105,15 @@ namespace API.Service
         {
             var entities = await _repository.GetAllPoliciesByPolicyTypeAsync(policyTypeId);
             return _mapper.Map<List<resPolicyDTO>>(entities);
+        }
+        public async Task<(bool Success, string Message)> UpdatePolicyStatus(int id, bool isActive)
+        {
+            var existing = await _repository.GetPolicyByIdAsync(id);
+            if (existing == null) return (false, "Policy not found");
+
+            existing.IsActive = isActive;
+            await _repository.UpdatePolicyAsync(existing);
+            return (true, "Policy updated successfully");
         }
     }
 }

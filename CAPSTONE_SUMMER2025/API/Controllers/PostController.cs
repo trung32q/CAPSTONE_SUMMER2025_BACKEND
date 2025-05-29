@@ -38,12 +38,25 @@ namespace API.Controllers
 
         //get post comments by post id
         [HttpGet("GetPostCommentsByPostId")]
-        public async Task<IActionResult> GetPostCommentsByPostId(int postId)
+        public async Task<IActionResult> GetPostCommentsByPostId(int postId, int pageNumber = 1,int pageSize = 10)
         {
-            var result = await _postService.GetPostCommentByPostId(postId);
+            var result = await _postService.GetPostCommentByPostId(postId, pageNumber, pageSize);
             if (result == null)
             {
                 return NotFound(new {error = "Post not found"});
+            }
+
+            return Ok(result);
+        }
+
+        //get post comments by post id
+        [HttpGet("GetPostChidComments")]
+        public async Task<IActionResult> GetPostCommentChildByPostIdAndParentCommentId(int parrentCommentId, int pageNumber = 1, int pageSize = 10)
+        {
+            var result = await _postService.GetPostCommentChildByPostIdAndParentCommentId(pageNumber, pageSize, parrentCommentId);
+            if (result == null)
+            {
+                return NotFound(new { error = "parrent comment not found" });
             }
 
             return Ok(result);

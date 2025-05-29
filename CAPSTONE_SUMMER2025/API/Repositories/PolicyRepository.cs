@@ -54,6 +54,11 @@ namespace API.Repositories
             return await _context.Policies.ToListAsync();
         }
 
+        public async Task<List<Policy>> GetAllActivePolicyAsync()
+        {
+            return await _context.Policies.Where(p => p.IsActive == true).ToListAsync();
+        }
+
         public async Task<Policy> GetPolicyByIdAsync(int id)
         {
             return await _context.Policies.FirstOrDefaultAsync(p => p.PolicyId == id);

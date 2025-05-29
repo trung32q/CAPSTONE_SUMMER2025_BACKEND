@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using API.DTO.AccountDTO;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Org.BouncyCastle.Utilities;
 
 namespace API.Repositories
 {
@@ -44,6 +46,7 @@ namespace API.Repositories
                 AccountId = reqPostCommentDTO.AccountId,
                 PostId = reqPostCommentDTO.PostId,
                 Content = reqPostCommentDTO.Content,
+                ParentCommentId = reqPostCommentDTO.ParentCommentId,
             });
 
             await _context.SaveChangesAsync();
@@ -152,7 +155,7 @@ namespace API.Repositories
 
 
         // hàm lấy ra danh sách các comment theo postid
-        public async Task<List<PostComment>> GetPostCommentByPostId(int postId)
+        public async Task<PagedResult<PostComment>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
         {
             var postExists = await _context.Posts
         .AnyAsync(p => p.PostId == postId);
@@ -160,12 +163,36 @@ namespace API.Repositories
             if (!postExists)
                 return null;
 
-            var postComments = await _context.PostComments
-                .Where(pc => pc.PostId == postId)
+            var query = _context.PostComments
+                .Where(pc => pc.PostId == postId && pc.ParentCommentId == null);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return postComments;
+            return new PagedResult<PostComment>(items, totalCount, pageNumber, pageSize);
         }
+
+        public async Task<PagedResult<PostComment>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId)
+        {
+          
+
+            var query = _context.PostComments
+                .Where(pc => pc.ParentCommentId == parrentCommentId);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<PostComment>(items, totalCount, pageNumber, pageSize);
+        }
+
 
         //hàm lấy ra các bài post theo accountid
         public async Task<PagedResult<Post>> GetPostsByAccountId(int accountId, int pageNumber, int pageSize)
@@ -191,5 +218,14 @@ namespace API.Repositories
             return new PagedResult<Post>(items, totalCount, pageNumber, pageSize);
         }
 
+        public async Task<int> CountChildCommentByPostCommentId(int? id)
+        {
+            if (id == null)
+            {
+                return 0;
+            }
+            return await _context.PostComments.Where(p => p.ParentCommentId == id).CountAsync() ;
+            
+        }
     }
 }

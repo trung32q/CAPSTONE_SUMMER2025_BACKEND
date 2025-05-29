@@ -68,18 +68,59 @@ namespace API.Service
             );
         }
 
-        public async Task<List<PostCommentDTO>> GetPostCommentByPostId(int postId)
+        public async Task<PagedResult<PostCommentDTO>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
         {
             try
             {
-                var postComments = await _repository.GetPostCommentByPostId(postId);
+                var pagedPostComments = await _repository.GetPostCommentByPostId(postId, pageNumber, pageSize);
 
-                if (postComments == null)
+                if (pagedPostComments == null)
                     return null;
 
-                var postCommentDTOs = _mapper.Map<List<PostCommentDTO>>(postComments);
+                var postCommentDTOs = _mapper.Map<List<PostCommentDTO>>(pagedPostComments.Items);
 
-                return postCommentDTOs;
+                foreach (var dto in postCommentDTOs)
+                {
+                    dto.numChildComment = await _repository.CountChildCommentByPostCommentId(dto.PostcommentId);
+                }
+
+                return new PagedResult<PostCommentDTO>(
+                        postCommentDTOs,
+                        pagedPostComments.TotalCount,
+                        pagedPostComments.PageNumber,
+                        pagedPostComments.PageSize
+
+                    );
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error: {ex.Message}");
+            }
+        }
+
+        public async Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId)
+        {
+            try
+            {
+                var pagedPostComments = await _repository.GetPostCommentChildByPostIdAndParentCommentId(pageNumber, pageSize, parrentCommentId);
+
+                if (pagedPostComments == null)
+                    return null;
+
+                var postCommentDTOs = _mapper.Map<List<PostCommentDTO>>(pagedPostComments.Items);
+
+                foreach (var dto in postCommentDTOs)
+                {
+                    dto.numChildComment = await _repository.CountChildCommentByPostCommentId(dto.PostcommentId);
+                }
+
+                return new PagedResult<PostCommentDTO>(
+                        postCommentDTOs,
+                        pagedPostComments.TotalCount,
+                        pagedPostComments.PageNumber,
+                        pagedPostComments.PageSize
+
+                    );
             }
             catch (Exception ex)
             {
@@ -158,7 +199,7 @@ namespace API.Service
             try
             {
                 // Danh sách chính sách kiểm duyệt
-                var policies = await _policyService.GetAllPoliciesAsync();
+                var policies = await _policyService.GetAllActivePoliciesAsync();
 
                 // Kiểm duyệt nội dung
                 var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);

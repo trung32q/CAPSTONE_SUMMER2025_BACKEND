@@ -121,7 +121,9 @@ builder.Services.AddScoped<IFilebaseHandler, FilebaseHandler>();
 builder.Services.AddScoped<IChatGPTRepository, ChatGPTRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IFptAIRepository, FptAIRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICCCDService, CCCDService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IChatGPTService, ChatGPTService>();
@@ -132,6 +134,8 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<GoogleService>();
+
+
 builder.Services.AddHttpClient<IChatGPTRepository, ChatGPTRepository>();
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program),

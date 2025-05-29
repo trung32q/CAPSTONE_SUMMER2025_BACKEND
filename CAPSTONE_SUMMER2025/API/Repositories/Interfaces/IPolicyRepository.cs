@@ -15,5 +15,6 @@ namespace API.Repositories.Interfaces
         Task UpdatePolicyAsync(Policy policy);
         Task DeletePolicyAsync(int id);
         Task<List<Policy>> GetAllPoliciesByPolicyTypeAsync(int policyTypeId);
+        Task<List<Policy>> GetAllActivePolicyAsync();
     }
 }

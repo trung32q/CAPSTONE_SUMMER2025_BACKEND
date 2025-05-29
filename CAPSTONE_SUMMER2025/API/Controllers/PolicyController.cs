@@ -113,5 +113,15 @@ namespace API.Controllers
             var result = await _service.GetPoliciesByPolicyTypeAsync(policyTypeId);
             return Ok(result);
         }
+
+        [HttpPut("update-policy-status/{id}")]
+        public async Task<IActionResult> UpdatePolicyStatus(int id, bool isActive)
+        {
+            var result = await _service.UpdatePolicyStatus(id, isActive);
+            if (!result.Success)
+                return NotFound(new { error = result.Message });
+
+            return Ok(new { message = result.Message });
+        }
     }
 }
