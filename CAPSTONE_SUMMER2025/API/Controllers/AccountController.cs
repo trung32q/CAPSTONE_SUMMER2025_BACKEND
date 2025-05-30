@@ -102,17 +102,46 @@ namespace API.Controllers
             return Ok("Password changed successfully");
         }
 
-        [HttpPost("verify-cccd")]
-        public async Task<IActionResult> Verify([FromForm] CccdVerificationRequestDTO request)
+        //[HttpPost("verify-cccd")]
+        //public async Task<IActionResult> Verify([FromForm] CccdVerificationRequestDTO request)
+        //{
+        //    if (request.CccdFront == null || request.Selfie == null)
+        //        return BadRequest("Thiếu ảnh CCCD hoặc ảnh selfie");
+
+        //    var result = await _cccdService.VerifyCccdAsync(request.CccdFront, request.Selfie);
+
+        //    return Ok(result);
+        //}
+        [HttpPost("verify-cccd-full")]
+        public async Task<IActionResult> VerifyFull([FromForm] CccdVerificationRequestDTO request)
         {
-            if (request.Cccd == null || request.Selfie == null)
+            if (request.CccdFront == null || request.CccdBack == null || request.Selfie == null)
                 return BadRequest("Thiếu ảnh CCCD hoặc ảnh selfie");
 
-            var result = await _cccdService.VerifyCccdAsync(request.Cccd, request.Selfie);
+            var extracted = await _cccdService.ExtractCccdInfoAsync(request.CccdFront, request.CccdBack);
 
-            return Ok(result);
+            if (extracted == null)
+            {
+                return BadRequest(new
+                {
+                    Error = "Ảnh CCCD quá mờ, không thể trích xuất thông tin. Vui lòng tải lại ảnh rõ nét hơn."
+                });
+            }
+
+            // So sánh thông tin...
+            var mismatches = _cccdService.CompareWithUserInput(extracted,request);
+            var faceMatchResult = await _cccdService.VerifyCccdAsync(request.CccdFront, request.Selfie);
+
+            return Ok(new
+            {
+                IsFaceMatched = faceMatchResult.IsMatch,
+                InfoMatched = mismatches.Count == 0,
+                MismatchedFields = mismatches,
+                Extracted = extracted
+            });
         }
-        
+
+
         [HttpPost("follow")]
         public async Task<IActionResult> Follow([FromBody] FollowRequestDTO request)
         {
