@@ -214,7 +214,7 @@ namespace API.Service
 
                 // Kiểm duyệt nội dung(comment lại để tránh tốn token)
                 //var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);
-                //if (result.Contains("Vi phạm"))
+                //if (result.Contains("Violation"))
                 //{
                 //    return result;
                 //}

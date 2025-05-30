@@ -29,18 +29,18 @@ namespace API.Service
                 if (contentType.StartsWith("image/"))
                 {
                     var result = await _chatGPTRepository.CheckPostPolicyWithUploadedImageAsync(reqPostDTO.Content, file, policies);
-                    if (result.Contains("Vi phạm"))
+                    if (result.Contains("Violation"))
                         return result;
                 }
                 else if (contentType.StartsWith("video/"))
                 {
                     var result = await _chatGPTRepository.CheckPostPolicyWithVideoAsync(reqPostDTO.Content, file, policies);
-                    if (result.Contains("Vi phạm"))
+                    if (result.Contains("Violation"))
                         return result;
                 }
                 else
                 {
-                    return "Vi phạm: Định dạng media không được hỗ trợ";
+                    return "Violation: file not supported";
                 }
             }
 

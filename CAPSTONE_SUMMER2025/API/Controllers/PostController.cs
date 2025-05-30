@@ -115,7 +115,7 @@ namespace API.Controllers
                 return StatusCode(500, new { error = result });
             }
 
-            if (result.StartsWith("Vi phạm"))
+            if (result.StartsWith("Violation"))
             {
                 // Tách lỗi nếu có file vi phạm
                 var parts = result.Split(" (File:");
