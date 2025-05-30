@@ -9,7 +9,7 @@ namespace API.Service.Interface
         Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize);
         Task<PagedResult<PostCommentDTO>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize);
         Task<string> CreatePost(ReqPostDTO reqPostDTO);
-        Task<List<PostLikeDTO>> GetPostLikeByPostId(int postId);
+        Task<PagedResult<PostLikeDTO>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize);
         Task<string> CreatePostComment(reqPostCommentDTO reqPostCommentDTO);
         Task<bool> LikePostAsync(LikeRequestDTO dto);
         Task<bool> UnlikePostAsync(LikeRequestDTO dto);
@@ -17,6 +17,9 @@ namespace API.Service.Interface
         Task<bool> IsPostLikedAsync(LikeRequestDTO dto);
         Task<int> GetPostCommentCountAsync(int postId);
         Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId);
-
+        Task<bool> UpdateCommentAsync(UpdateCommentDTO dto);
+        Task<bool> DeleteCommentAsync(int commentId);
+        Task<bool> UpdatePostAsync(int postId, reqUpdatePostDTO dto);
+        Task<bool> DeletePostAsync(int postId);
     }
 }

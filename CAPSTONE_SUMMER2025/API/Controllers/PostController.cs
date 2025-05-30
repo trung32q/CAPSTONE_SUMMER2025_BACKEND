@@ -64,9 +64,9 @@ namespace API.Controllers
 
         //get post likes by postid
         [HttpGet("GetPostLikeByPostId")]
-        public async Task<IActionResult> GetPostLikeByPostId(int postId)
+        public async Task<IActionResult> GetPostLikeByPostId(int postId, int pageNumber = 1, int pageSize = 10)
         {
-            var result = await _postService.GetPostLikeByPostId(postId);
+            var result = await _postService.GetPostLikeByPostId(postId, pageNumber, pageSize);
             if (result == null)
             {
                 return NotFound(new { error = "Post not found" });
@@ -171,6 +171,50 @@ namespace API.Controllers
         {
             var success = await _postService.IsPostLikedAsync(dto);
             return Ok(success);
+        }
+
+        // cập nhật post comment
+        [HttpPut("update-post-comment")]
+        public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentDTO dto)
+        {
+            var result = await _postService.UpdateCommentAsync(dto);
+            if (!result)
+                return NotFound(new { message = "Comment not found." });
+
+            return Ok(new { message = "Comment updated successfully." });
+        }
+
+        // xóa post comment
+        [HttpDelete("{commentId}")]
+        public async Task<IActionResult> DeleteComment(int commentId)
+        {
+            var result = await _postService.DeleteCommentAsync(commentId);
+            if (!result)
+                return NotFound(new { message = "Comment not found." });
+
+            return Ok(new { message = "Comment deleted successfully." });
+        }
+
+        // cập nhật bài post
+        [HttpPut("update-post/{postId}")]
+        public async Task<IActionResult> UpdatePost(int postId, [FromBody] reqUpdatePostDTO dto)
+        {
+            var success = await _postService.UpdatePostAsync(postId, dto);
+            if (!success)
+                return NotFound(new { message = "Post not found" });
+
+            return Ok(new { message = "Post updated successfully" });
+        }
+
+        // xóa post
+        [HttpDelete("delete-post{postId}")]
+        public async Task<IActionResult> DeletePost(int postId)
+        {
+            var result = await _postService.DeletePostAsync(postId);
+            if (!result)
+                return NotFound(new { message = "Post không tồn tại hoặc đã bị xóa." });
+
+            return Ok(new { message = "Xóa bài viết thành công." });
         }
     }
 }

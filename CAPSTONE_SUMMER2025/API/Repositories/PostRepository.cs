@@ -19,26 +19,23 @@ namespace API.Repositories
 {
     public class PostRepository : IPostRepository
     {
-        
         private readonly CAPSTONE_SUMMER2025Context _context;
         private readonly IFilebaseHandler _filebaseHandler;
 
-        public PostRepository(IFilebaseHandler filebaseHandler ,CAPSTONE_SUMMER2025Context context)
+        public PostRepository(IFilebaseHandler filebaseHandler, CAPSTONE_SUMMER2025Context context)
         {
             _context = context;
             _filebaseHandler = filebaseHandler;
         }
 
+        // --- HÀM TÁI SỬ DỤNG ---
+        private async Task<bool> IsPostExistsAsync(int postId) => await _context.Posts.AnyAsync(p => p.PostId == postId);
+        private async Task<bool> IsAccountExistsAsync(int accountId) => await _context.Accounts.AnyAsync(a => a.AccountId == accountId);
+
         //hàm tạo comment
         public async Task<bool> CreatePostComment(reqPostCommentDTO reqPostCommentDTO)
         {
-            var accountExists = await _context.Accounts
-       .AnyAsync(acc => acc.AccountId == reqPostCommentDTO.AccountId);
-
-            var postExists = await _context.Posts
-                .AnyAsync(post => post.PostId == reqPostCommentDTO.PostId);
-
-            if (!accountExists || !postExists)
+            if (!await IsAccountExistsAsync(reqPostCommentDTO.AccountId) || !await IsPostExistsAsync(reqPostCommentDTO.PostId))
                 return false;
 
             await _context.PostComments.AddAsync(new PostComment
@@ -49,6 +46,47 @@ namespace API.Repositories
                 ParentCommentId = reqPostCommentDTO.ParentCommentId,
             });
 
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        //hàm cập nhật post
+        public async Task<bool> UpdatePostAsync(int postId, string title, string content)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+            if (post == null) return false;
+
+            post.Title = title;
+            post.Content = content;
+
+            _context.Posts.Update(post);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        //hàm xóa comment và comment con
+        public async Task<bool> DeleteCommentAsync(int commentId)
+        {
+            var comment = await _context.PostComments.FindAsync(commentId);
+            if (comment == null) return false;
+
+            var childComments = await _context.PostComments.Where(c => c.ParentCommentId == commentId).ToListAsync();
+
+            _context.PostComments.RemoveRange(childComments);
+            _context.PostComments.Remove(comment);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        //hàm sửa comment
+        public async Task<bool> UpdateCommentAsync(int commentId, string newContent)
+        {
+            var comment = await _context.PostComments.FindAsync(commentId);
+            if (comment == null) return false;
+
+            comment.Content = newContent;
+            _context.PostComments.Update(comment);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -82,6 +120,7 @@ namespace API.Repositories
             return await _context.PostLikes.CountAsync(pl => pl.PostId == postId);
         }
 
+        // hàm tính số lượng comment
         public async Task<int> GetPostCommentCountAsync(int postId)
         {
             return await _context.PostComments.CountAsync(pl => pl.PostId == postId);
@@ -94,31 +133,78 @@ namespace API.Repositories
         }
 
         // hàm lấy ra danh sách thông tin của người like bài post
-        public async Task<List<PostLike>> GetPostLikeByPostId(int postId)
+        public async Task<PagedResult<PostLike>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize)
         {
-            var postExists = await _context.Posts.AnyAsync(p => p.PostId == postId);
-            if (!postExists)
+            if (!await IsPostExistsAsync(postId))
                 return null;
 
-            var postLikes = await _context.PostLikes
-                .Where(pl => pl.PostId == postId)
-                .ToListAsync();
+            var querry = _context.PostLikes.Where(pl => pl.PostId == postId);
 
-            return postLikes;
+            var totalCount = await querry.CountAsync();
+            var items = await querry.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return new PagedResult<PostLike>(items, totalCount, pageNumber, pageSize);
+        }
+
+        // hàm lấy ra danh sách các comment theo postid
+        public async Task<PagedResult<PostComment>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
+        {
+            if (!await IsPostExistsAsync(postId))
+                return null;
+
+            var querry = _context.PostComments
+                .Where(pc => pc.PostId == postId && pc.ParentCommentId == null);
+
+            var totalCount = await querry.CountAsync();
+            var items = await querry.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return new PagedResult<PostComment>(items, totalCount, pageNumber, pageSize);
+        }
+
+        // hàm lấy ra comments theo parrentCommentId
+        public async Task<PagedResult<PostComment>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId)
+        {
+            var query = _context.PostComments.Where(pc => pc.ParentCommentId == parrentCommentId);
+
+            var totalCount = await query.CountAsync();
+            var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return new PagedResult<PostComment>(items, totalCount, pageNumber, pageSize);
+        }
+
+        //hàm lấy ra các bài post theo accountid
+        public async Task<PagedResult<Post>> GetPostsByAccountId(int accountId, int pageNumber, int pageSize)
+        {
+            if (!await IsAccountExistsAsync(accountId))
+                return null;
+
+            var query = _context.Posts
+                .Where(p => p.AccountId == accountId)
+                .Include(p => p.PostMedia)
+                .OrderByDescending(p => p.CreateAt);
+
+            var totalCount = await query.CountAsync();
+            var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return new PagedResult<Post>(items, totalCount, pageNumber, pageSize);
+        }
+
+        //hàm tính số comment reply 1 comment
+        public async Task<int> CountChildCommentByPostCommentId(int? id)
+        {
+            if (id == null) return 0;
+            return await _context.PostComments.Where(p => p.ParentCommentId == id).CountAsync();
         }
 
         // Upload post
         public async Task<bool> CreatePost(ReqPostDTO reqPostDTO)
         {
-            var accountExists = await _context.Accounts
-        .AnyAsync(acc => acc.AccountId == reqPostDTO.AccountId);
-
-            if (!accountExists)
+            if (!await IsAccountExistsAsync(reqPostDTO.AccountId.Value))
                 return false;
 
             var post = new Post
             {
-                AccountId = reqPostDTO.AccountId,
+                AccountId = reqPostDTO.AccountId.Value,
                 Content = reqPostDTO.Content,
                 Title = reqPostDTO.Title,
             };
@@ -129,11 +215,10 @@ namespace API.Repositories
             var postMedias = new List<PostMedium>();
             int displayOrder = 0;
 
-            if (!(reqPostDTO.MediaFiles == null || !reqPostDTO.MediaFiles.Any()))
+            if (reqPostDTO.MediaFiles != null && reqPostDTO.MediaFiles.Any())
             {
                 foreach (var file in reqPostDTO.MediaFiles)
                 {
-                    //Console.WriteLine($"[DEBUG] File: {file.FileName}, ContentType: {file.ContentType}, Length: {file.Length}");
                     var fileUrl = await _filebaseHandler.UploadMediaFile(file);
 
                     postMedias.Add(new PostMedium
@@ -145,87 +230,46 @@ namespace API.Repositories
                 }
             }
 
-
             await _context.PostMedia.AddRangeAsync(postMedias);
             await _context.SaveChangesAsync();
 
             return true;
-
         }
 
-
-        // hàm lấy ra danh sách các comment theo postid
-        public async Task<PagedResult<PostComment>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
+        // xóa bài post
+        public async Task<bool> DeletePostAsync(int postId)
         {
-            var postExists = await _context.Posts
-        .AnyAsync(p => p.PostId == postId);
-
-            if (!postExists)
-                return null;
-
-            var query = _context.PostComments
-                .Where(pc => pc.PostId == postId && pc.ParentCommentId == null);
-
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<PostComment>(items, totalCount, pageNumber, pageSize);
-        }
-
-        public async Task<PagedResult<PostComment>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId)
-        {
-          
-
-            var query = _context.PostComments
-                .Where(pc => pc.ParentCommentId == parrentCommentId);
-
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<PostComment>(items, totalCount, pageNumber, pageSize);
-        }
-
-
-        //hàm lấy ra các bài post theo accountid
-        public async Task<PagedResult<Post>> GetPostsByAccountId(int accountId, int pageNumber, int pageSize)
-        {
-            var accountExists = await _context.Accounts
-                .AnyAsync(acc => acc.AccountId == accountId);
-
-            if (!accountExists)
-                return null;
-
-            var query = _context.Posts
-                .Where(p => p.AccountId == accountId)
+            var post = await _context.Posts
                 .Include(p => p.PostMedia)
-                .OrderByDescending(p => p.CreateAt);
+                .Include(p => p.PostComments)
+                .Include(p => p.PostLikes)
+                .FirstOrDefaultAsync(p => p.PostId == postId);
 
-            var totalCount = await query.CountAsync();
+            if (post == null) return false;
 
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            // B1: Xóa tất cả likes
+            var likes = await _context.PostLikes.Where(l => l.PostId == postId).ToListAsync();
+            _context.PostLikes.RemoveRange(likes);
 
-            return new PagedResult<Post>(items, totalCount, pageNumber, pageSize);
-        }
+            // B2: Xóa tất cả comments (bao gồm comment cha và con)
+            var comments = await _context.PostComments.Where(c => c.PostId == postId).ToListAsync();
+            _context.PostComments.RemoveRange(comments);
 
-        public async Task<int> CountChildCommentByPostCommentId(int? id)
-        {
-            if (id == null)
+            // B3: Xóa tất cả media trên cloud và trong DB
+            foreach (var media in post.PostMedia)
             {
-                return 0;
+                // Gọi xóa file từ Cloudinary
+                await _filebaseHandler.DeleteFileByUrlAsync(media.MediaUrl);
             }
-            return await _context.PostComments.Where(p => p.ParentCommentId == id).CountAsync() ;
-            
+
+            _context.PostMedia.RemoveRange(post.PostMedia);
+
+            // B4: Xóa bài post
+            _context.Posts.Remove(post);
+
+            await _context.SaveChangesAsync();
+            return true;
         }
+
     }
 }

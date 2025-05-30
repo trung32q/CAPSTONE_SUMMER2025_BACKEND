@@ -68,6 +68,7 @@ namespace API.Service
             );
         }
 
+        // hàm lấy ra comment theo postid
         public async Task<PagedResult<PostCommentDTO>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
         {
             try
@@ -98,35 +99,7 @@ namespace API.Service
             }
         }
 
-        public async Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId)
-        {
-            try
-            {
-                var pagedPostComments = await _repository.GetPostCommentChildByPostIdAndParentCommentId(pageNumber, pageSize, parrentCommentId);
-
-                if (pagedPostComments == null)
-                    return null;
-
-                var postCommentDTOs = _mapper.Map<List<PostCommentDTO>>(pagedPostComments.Items);
-
-                foreach (var dto in postCommentDTOs)
-                {
-                    dto.numChildComment = await _repository.CountChildCommentByPostCommentId(dto.PostcommentId);
-                }
-
-                return new PagedResult<PostCommentDTO>(
-                        postCommentDTOs,
-                        pagedPostComments.TotalCount,
-                        pagedPostComments.PageNumber,
-                        pagedPostComments.PageSize
-
-                    );
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error: {ex.Message}");
-            }
-        }
+        
 
         //hàm like bài viết
         public async Task<bool> LikePostAsync(LikeRequestDTO dto)
@@ -176,17 +149,23 @@ namespace API.Service
             return await _repository.IsPostLikedAsync(dto.PostId, dto.AccountId);
         }
 
-        public async Task<List<PostLikeDTO>> GetPostLikeByPostId(int postId)
+        // hàm lấy ra danh sách người like bài post
+        public async Task<PagedResult<PostLikeDTO>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize)
         {
             try
             {
-                var postLikes = await _repository.GetPostLikeByPostId(postId);
+                var pagedPostLikes = await _repository.GetPostLikeByPostId(postId, pageNumber, pageSize);
 
-                if (postLikes == null)
+                if (pagedPostLikes == null)
                     return null;
 
-                var postLikeDTOs = _mapper.Map<List<PostLikeDTO>>(postLikes);
-                return postLikeDTOs;
+                var postLikeDTOs = _mapper.Map<List<PostLikeDTO>>(pagedPostLikes.Items);
+                return new PagedResult<PostLikeDTO>(
+                            postLikeDTOs,
+                            pagedPostLikes.TotalCount,
+                            pagedPostLikes.PageNumber,
+                            pagedPostLikes.PageSize
+                    );
             }
             catch (Exception ex)
             {
@@ -194,6 +173,38 @@ namespace API.Service
             }
         }
 
+        //hàm lấy ra comment con theo parrentPostCommentId
+       public async Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId)
+        {
+            try
+            {
+                var pagedPostComments = await _repository.GetPostCommentChildByPostIdAndParentCommentId(pageNumber, pageSize, parrentCommentId);
+
+                if (pagedPostComments == null)
+                    return null;
+
+                var postCommentDTOs = _mapper.Map<List<PostCommentDTO>>(pagedPostComments.Items);
+
+                foreach (var dto in postCommentDTOs)
+                {
+                    dto.numChildComment = await _repository.CountChildCommentByPostCommentId(dto.PostcommentId);
+                }
+
+                return new PagedResult<PostCommentDTO>(
+                        postCommentDTOs,
+                        pagedPostComments.TotalCount,
+                        pagedPostComments.PageNumber,
+                        pagedPostComments.PageSize
+
+                    );
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error: {ex.Message}");
+            }
+        }
+
+        // hàm tạo bài post
         public async Task<string> CreatePost(ReqPostDTO reqPostDTO)
         {
             try
@@ -201,12 +212,12 @@ namespace API.Service
                 // Danh sách chính sách kiểm duyệt
                 var policies = await _policyService.GetAllActivePoliciesAsync();
 
-                // Kiểm duyệt nội dung
-                var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);
-                if (result.Contains("Vi phạm"))
-                {
-                    return result;
-                }
+                // Kiểm duyệt nội dung(comment lại để tránh tốn token)
+                //var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);
+                //if (result.Contains("Vi phạm"))
+                //{
+                //    return result;
+                //}
 
                 // Tạo bài viết
                 var success = await _repository.CreatePost(reqPostDTO);
@@ -222,7 +233,7 @@ namespace API.Service
             }
         }
 
-
+        // hàm tạo post comment
         public async Task<string> CreatePostComment(reqPostCommentDTO reqPostCommentDTO)
         {
             try
@@ -240,6 +251,29 @@ namespace API.Service
             }
         }
 
-        
+        // hàm cập nhật comment
+        public async Task<bool> UpdateCommentAsync(UpdateCommentDTO dto)
+        {
+            return await _repository.UpdateCommentAsync(dto.PostcommentId, dto.Content);
+        }
+        // hàm xóa comment
+        public async Task<bool> DeleteCommentAsync(int commentId)
+        {
+            return await _repository.DeleteCommentAsync(commentId);
+        }
+
+        // hàm cập nhật post
+        public async Task<bool> UpdatePostAsync(int postId, reqUpdatePostDTO dto)
+        {
+            return await _repository.UpdatePostAsync(postId, dto.Title, dto.Content);
+        }
+
+        //hàm xóa post
+        public async Task<bool> DeletePostAsync(int postId)
+        {
+            return await _repository.DeletePostAsync(postId);
+        }
+
+
     }
 }

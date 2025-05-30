@@ -107,6 +107,58 @@ namespace API.Repositories
             return uploadResult.SecureUrl.ToString();
         }
 
+        public async Task<bool> DeleteFileByUrlAsync(string fileUrl)
+        {
+            if (string.IsNullOrEmpty(fileUrl))
+                throw new ArgumentException("URL không hợp lệ.");
+
+            try
+            {
+                var uri = new Uri(fileUrl);
+                var segments = uri.AbsolutePath.Split('/');
+                var uploadIndex = Array.IndexOf(segments, "upload");
+                if (uploadIndex < 0 || uploadIndex >= segments.Length - 1)
+                    throw new Exception("Không tìm thấy publicId trong URL.");
+
+                var publicIdParts = segments.Skip(uploadIndex + 1).ToList();
+
+                // Bỏ "v123..." nếu có
+                if (publicIdParts[0].StartsWith("v") && long.TryParse(publicIdParts[0].Substring(1), out _))
+                {
+                    publicIdParts.RemoveAt(0);
+                }
+
+                // Bỏ phần mở rộng
+                var lastPart = publicIdParts.Last();
+                var lastPartWithoutExt = Path.GetFileNameWithoutExtension(lastPart);
+                publicIdParts[publicIdParts.Count - 1] = lastPartWithoutExt;
+
+                var publicId = string.Join("/", publicIdParts);
+
+                Console.WriteLine($"[DEBUG] publicId: {publicId}");
+
+                var deletionParams = new DeletionParams(publicId)
+                {
+                    ResourceType = ResourceType.Auto,
+                    Invalidate = true 
+
+                };
+
+                var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
+
+                Console.WriteLine($"[DEBUG] Deletion result: {deletionResult.Result}");
+
+                return deletionResult.Result == "ok";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] DeleteFileByUrlAsync: {ex.Message}");
+                return false;
+            }
+        }
+
+
+
         public string GeneratePreSignedUrl(string publicIdWithType)
         {
             // Log the input for debugging
