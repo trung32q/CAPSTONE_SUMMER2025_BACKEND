@@ -64,6 +64,8 @@ namespace API.Mapping
                 .ForMember(dest => dest.PostCount, opt => opt.MapFrom(src => src.Posts.Count()))
                 .ForMember(dest => dest.FollowingCount, opt => opt.MapFrom(src => src.FollowFollowerAccounts.Count))
                 .ForMember(dest => dest.FollowerCount, opt => opt.MapFrom(src => src.FollowFollowingAccounts.Count));
+
+
         }
     }
 }

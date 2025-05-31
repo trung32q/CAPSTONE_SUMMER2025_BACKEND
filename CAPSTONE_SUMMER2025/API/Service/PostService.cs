@@ -1,4 +1,6 @@
-﻿using API.DTO.AccountDTO;
+﻿using System.Globalization;
+using System.Text;
+using API.DTO.AccountDTO;
 using API.DTO.NotificationDTO;
 using API.DTO.PostDTO;
 using API.Repositories;
@@ -274,6 +276,36 @@ namespace API.Service
             return await _repository.DeletePostAsync(postId);
         }
 
+
+        // tìm kiếm bài post
+        public async Task<PagedResult<resPostDTO>> SearchPostsAsync(string searchText, int pageNumber, int pageSize)
+        {
+            var query = _repository.GetSearchPosts(searchText)
+                .OrderByDescending(p => p.LikeCount); // 🔥 Ưu tiên bài nhiều like
+
+            var totalCount = query.Count();
+
+            var pagedItems = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList(); // hoặc ToListAsync nếu IQueryable EF vẫn dùng
+
+            return new PagedResult<resPostDTO>(pagedItems, totalCount, pageNumber, pageSize);
+        }
+
+        private string RemoveDiacritics(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                    builder.Append(c);
+            }
+            return builder.ToString().Normalize(NormalizationForm.FormC);
+        }
 
     }
 }

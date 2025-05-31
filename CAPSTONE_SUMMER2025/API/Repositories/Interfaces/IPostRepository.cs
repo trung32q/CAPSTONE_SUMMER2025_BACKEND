@@ -20,7 +20,8 @@ namespace API.Repositories.Interfaces
         Task<PagedResult<PostComment>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId);
         Task<bool> UpdateCommentAsync(int commentId, string newContent);
         Task<bool> DeleteCommentAsync(int commentId);
-        Task<bool>  UpdatePostAsync(int postId, string title, string content);
+        Task<bool> UpdatePostAsync(int postId, string title, string content);
         Task<bool> DeletePostAsync(int postId);
+        IQueryable<resPostDTO> GetSearchPosts(string keyword);
     }
 }

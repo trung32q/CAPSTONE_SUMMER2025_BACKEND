@@ -21,5 +21,6 @@ namespace API.Service.Interface
         Task<bool> DeleteCommentAsync(int commentId);
         Task<bool> UpdatePostAsync(int postId, reqUpdatePostDTO dto);
         Task<bool> DeletePostAsync(int postId);
+        Task<PagedResult<resPostDTO>> SearchPostsAsync(string searchText, int pageNumber, int pageSize);
     }
 }

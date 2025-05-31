@@ -1,4 +1,6 @@
-﻿using API.DTO.AccountDTO;
+﻿using System.Globalization;
+using System.Text;
+using API.DTO.AccountDTO;
 using API.DTO.AuthDTO;
 using API.DTO.BioDTO;
 using API.DTO.NotificationDTO;
@@ -177,5 +179,38 @@ namespace API.Service
 
             return await _accountRepository.UnfollowAsync(followerAccountId, followingAccountId);
         }
+
+        // tìm kiếm account
+        public async Task<PagedResult<AccountSearchResultDTO>> SearchAccountsAsync(string searchText, int pageNumber, int pageSize)
+        {
+            var query = _accountRepository.GetSearchAccounts(searchText);
+
+            var totalCount = query.Count();
+
+            var pagedItems = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<AccountSearchResultDTO>(pagedItems, totalCount, pageNumber, pageSize);
+        }
+
+        // hàm bỏ dấu
+        private string RemoveDiacritics(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    builder.Append(c);
+                }
+            }
+            return builder.ToString().Normalize(NormalizationForm.FormC);
+        }
     }
 }
+

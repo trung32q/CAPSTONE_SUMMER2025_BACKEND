@@ -158,5 +158,16 @@ namespace API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        // tìm kiếm account
+        [HttpGet("search-account")]
+        public async Task<IActionResult> SearchAccounts(string searchText, int pageNumber = 1, int pageSize = 10)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+                return BadRequest(new { message = "searchText is required." });
+
+            var result = await _accountService.SearchAccountsAsync(searchText, pageNumber, pageSize);
+            return Ok(result);
+        }
     }
 }

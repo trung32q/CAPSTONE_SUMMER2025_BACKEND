@@ -167,7 +167,7 @@ namespace API.Controllers
 
         //hàm kiểm tra xem bài viết được like chưa
         [HttpGet("{postId}/liked")]
-        public async Task<IActionResult> IsPostLikedAsync([FromBody] LikeRequestDTO dto)
+        public async Task<IActionResult> IsPostLikedAsync([FromQuery] LikeRequestDTO dto)
         {
             var success = await _postService.IsPostLikedAsync(dto);
             return Ok(success);
@@ -216,5 +216,17 @@ namespace API.Controllers
 
             return Ok(new { message = "Xóa bài viết thành công." });
         }
+
+        //serch post
+        [HttpGet("search-posts")]
+        public async Task<IActionResult> SearchPosts(string searchText, int pageNumber = 1, int pageSize = 10)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+                return BadRequest(new { message = "searchText is required." });
+
+            var result = await _postService.SearchPostsAsync(searchText, pageNumber, pageSize);
+            return Ok(result);
+        }
+
     }
 }

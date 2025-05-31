@@ -18,5 +18,6 @@ namespace API.Service.Interface
         Task<bool> ForgetpassAsync( ReqForgetPassword reqForgetPassword);
         Task<bool> FollowAsync(int followerAccountId, int followingAccountId);
         Task<bool> UnfollowAsync(int followerAccountId, int followingAccountId);
+        Task<PagedResult<AccountSearchResultDTO>> SearchAccountsAsync(string searchText, int pageNumber, int pageSize);
     }
 }

@@ -14,6 +14,8 @@ using AutoMapper.QueryableExtensions;
 using API.DTO.AccountDTO;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Org.BouncyCastle.Utilities;
+using System.Globalization;
+using System.Text;
 
 namespace API.Repositories
 {
@@ -269,6 +271,49 @@ namespace API.Repositories
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        // tìm kiếm post
+        public IQueryable<resPostDTO> GetSearchPosts(string keyword)
+        {
+            keyword = RemoveDiacritics(keyword).ToLower();
+
+            return _context.Posts
+                .Include(p => p.PostMedia)
+                .Select(p => new resPostDTO
+                {
+                    PostId = p.PostId,
+                    AccountId = p.AccountId,
+                    Title = p.Title,
+                    Content = p.Content,
+                    CreateAt = p.CreateAt,
+                    LikeCount = _context.PostLikes.Count(l => l.PostId == p.PostId),
+                    PostMedia = p.PostMedia.Select(m => new PostMediaDTO
+                    {
+                        MediaUrl = m.MediaUrl,
+                        DisplayOrder = m.DisplayOrder
+                    }).ToList()
+                })
+                .AsEnumerable() // chuyển sang client-side
+                .Where(p =>
+                    (!string.IsNullOrEmpty(p.Content) && RemoveDiacritics(p.Content).ToLower().Contains(keyword)) ||
+                    (!string.IsNullOrEmpty(p.Title) && RemoveDiacritics(p.Title).ToLower().Contains(keyword))
+                )
+                .AsQueryable();
+        }
+
+        private string RemoveDiacritics(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                    builder.Append(c);
+            }
+            return builder.ToString().Normalize(NormalizationForm.FormC);
         }
 
     }
