@@ -11,6 +11,7 @@ using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
+using System.Globalization;
 namespace Infrastructure.Repository
 {
     public class AccountRepository : IAccountRepository
@@ -219,5 +220,52 @@ namespace Infrastructure.Repository
             return await _context.Follows
                 .AnyAsync(f => f.FollowerAccountId == followerAccountId && f.FollowingAccountId == followingAccountId);
         }
+
+        // hàm tìm kiếm account để ở querry vì ko convert được
+        public IQueryable<AccountSearchResultDTO> GetSearchAccounts(string keyword)
+        {
+            keyword = RemoveDiacritics(keyword).ToLower();
+
+            // Chuẩn bị truy vấn base
+            var query = _context.Accounts
+                .Include(a => a.AccountProfile)
+                .Include(a => a.Bio)
+                .Select(a => new AccountSearchResultDTO
+                {
+                    AccountId = a.AccountId,
+                    FullName = a.AccountProfile.FirstName + " " + a.AccountProfile.LastName,
+                    AvatarUrl = a.AccountProfile.AvatarUrl,
+                    Position = a.Bio != null ? a.Bio.Position : null,
+                    Workplace = a.Bio != null ? a.Bio.Workplace : null,
+                    FollowerCount = _context.Follows.Count(f => f.FollowingAccountId == a.AccountId)
+                })
+                .AsEnumerable() // xử lý RemoveDiacritics ở client
+                .Where(dto =>
+                    RemoveDiacritics(dto.FullName).ToLower().Contains(keyword) ||
+                    RemoveDiacritics(dto.Position ?? "").ToLower().Contains(keyword) ||
+                    RemoveDiacritics(dto.Workplace ?? "").ToLower().Contains(keyword)
+                )
+                .OrderByDescending(dto => dto.FollowerCount) // ưu tiên người có follower nhiều
+                .AsQueryable();
+
+            return query;
+        }
+
+        private string RemoveDiacritics(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                    builder.Append(c);
+            }
+            return builder.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+
+
     }
 }

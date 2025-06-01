@@ -8,5 +8,6 @@
         public List<PostMediaDTO> PostMedia { get; set; }
         public string? Title { get; set; }
         public DateTime? CreateAt { get; set; }
+        public int LikeCount { get; set; }
     }
 }
