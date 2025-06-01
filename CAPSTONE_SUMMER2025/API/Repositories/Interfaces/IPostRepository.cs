@@ -23,5 +23,6 @@ namespace API.Repositories.Interfaces
         Task<bool> UpdatePostAsync(int postId, string title, string content);
         Task<bool> DeletePostAsync(int postId);
         IQueryable<resPostDTO> GetSearchPosts(string keyword);
+        Task<int?> GetAccountIdByPostIDAsync(int postId)
     }
 }

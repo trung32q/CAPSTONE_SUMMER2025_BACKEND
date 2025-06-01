@@ -107,10 +107,10 @@ namespace API.Service
         public async Task<bool> LikePostAsync(LikeRequestDTO dto)
         {
             var success = await _repository.LikePostAsync(dto.PostId, dto.AccountId);
+            var accountID = await _repository.GetAccountIdByPostIDAsync(dto.PostId);
             if (success)
             {
-                // Gửi thông báo tới người được follow
-                var likerer = await _accountRepository.GetAccountByIdAsync(dto.AccountId);
+                var likerer = await _accountRepository.GetAccountByIdAsync(accountID.Value);
                 if (likerer != null)
                 {
                     var message = $"{likerer.AccountProfile?.FirstName} has liked your post.";
