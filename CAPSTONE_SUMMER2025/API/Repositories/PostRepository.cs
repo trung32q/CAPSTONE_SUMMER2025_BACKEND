@@ -316,5 +316,21 @@ namespace API.Repositories
             return builder.ToString().Normalize(NormalizationForm.FormC);
         }
 
+        public async Task<int?> GetAccountIdByPostIDAsync(int postId)
+        {
+            try
+            {
+                var accountId = await _context.Posts
+                    .Where(p => p.PostId == postId)
+                    .Select(p => (int?)p.AccountId) 
+                    .FirstOrDefaultAsync();
+                return accountId;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Lỗi khi lấy AccountId của bài viết có ID {postId}", ex);
+            }
+        }
+
     }
 }
