@@ -116,7 +116,7 @@ namespace API.Service
                     var message = $"{likerer.AccountProfile?.FirstName} has liked your post.";
                     await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                     {
-                        UserId = dto.AccountId,
+                        UserId = accountID.Value,
                         Message = message,
                         CreatedAt = DateTime.UtcNow,
                         IsRead = false
