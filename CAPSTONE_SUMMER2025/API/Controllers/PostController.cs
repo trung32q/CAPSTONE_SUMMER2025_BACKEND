@@ -227,6 +227,12 @@ namespace API.Controllers
             var result = await _postService.SearchPostsAsync(searchText, pageNumber, pageSize);
             return Ok(result);
         }
+        [HttpGet("NewFeed")]
+        public async Task<IActionResult> GetNewFeed(int userId, int page = 1, int pageSize = 10)
+        {
+            var feed = await _postService.GetNewFeedAsync(userId, page, pageSize);
+            return Ok(feed);
+        }
 
     }
 }

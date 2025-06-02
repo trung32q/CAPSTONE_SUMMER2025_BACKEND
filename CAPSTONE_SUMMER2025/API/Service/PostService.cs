@@ -344,6 +344,9 @@ namespace API.Service
             }
             return builder.ToString().Normalize(NormalizationForm.FormC);
         }
-
+        public async Task<List<FeedItemDTO>> GetNewFeedAsync(int userId, int page, int pageSize)
+        {
+            return await _repository.GetRecommendedFeedAsync(userId, page, pageSize);
+        }
     }
 }

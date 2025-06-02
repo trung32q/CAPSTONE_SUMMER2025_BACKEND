@@ -348,7 +348,91 @@ namespace API.Repositories
             }
         }
 
+        public async Task<List<FeedItemDTO>> GetRecommendedFeedAsync(int userId, int page, int pageSize)
+        {
+            // Lấy danh sách ID của các tài khoản mà người dùng đang theo dõi
+            var followingIds = await _context.Follows
+                .Where(f => f.FollowerAccountId == userId)
+                .Select(f => f.FollowingAccountId)
+                .ToListAsync();
 
+            // Lấy danh sách ID của các tài khoản đã bị người dùng chặn HOẶC đã chặn người dùng
+            var blockedIds = await _context.AccountBlocks
+                .Where(b => b.BlockerAccountId == userId || b.BlockedAccountId == userId)
+                .Select(b => b.BlockerAccountId == userId ? b.BlockedAccountId : b.BlockerAccountId)
+                .ToListAsync();
 
+            // Lấy danh sách ID của các startup mà người dùng đã theo dõi (đăng ký)
+            var followedStartupIds = await _context.Subcribes
+                .Where(s => s.FollowerAccountId == userId)
+                .Select(s => s.FollowingStartUpId)
+                .ToListAsync();
+
+            // Lấy các bài đăng dựa trên các tiêu chí đã định nghĩa
+            var posts = await _context.Posts
+                .Where(p =>
+             
+                    (followingIds.Contains(p.AccountId) || followedStartupIds.Contains(p.StartupId) || p.AccountId == userId) &&
+                    // Loại trừ bài đăng từ bất kỳ tài khoản bị chặn nào (cả người dùng đã chặn và người dùng bị chặn)
+                    !blockedIds.Contains(p.AccountId))
+                .Select(p => new FeedItemDTO
+                {
+                    PostId = p.PostId,
+                    Type = "Post",
+                    Title = p.Title,
+                    Content = p.Content,
+                    CreatedAt = (DateTime)p.CreateAt,
+                    StartupId = p.StartupId,
+                    PostMedia = p.PostMedia != null
+                ? p.PostMedia.Select(pm => new PostMediaDTO
+                {
+                    MediaUrl = pm.MediaUrl,
+                    DisplayOrder = pm.DisplayOrder 
+                }).ToList()
+                : new List<PostMediaDTO>()
+                })
+                .ToListAsync();
+
+            // Xử lý PostMedia để tạo URL được ký trước (pre-signed URLs)
+            foreach (var dto in posts)
+            {
+                foreach (var media in dto.PostMedia)
+                {
+                    if (!string.IsNullOrEmpty(media.MediaUrl))
+                    {
+                       
+                        var publicIdWithType = media.MediaUrl.Contains("/")
+                            ? media.MediaUrl
+                            : $"image/{media.MediaUrl}";
+
+                        Console.WriteLine($"Generating URL for publicIdWithType: {publicIdWithType}");
+
+                        media.MediaUrl = _filebaseHandler.GeneratePreSignedUrl(publicIdWithType);
+                    }
+                }
+            }
+
+            // Lấy các bài đăng tuyển thực tập có trạng thái "Open"
+            var internships = await _context.InternshipPosts
+                .Where(i => i.Status == "Open")
+                .Select(i => new FeedItemDTO
+                {
+                    PostId = i.InternshipId,
+                    Type = "Internship",
+                    Title = "Internship",
+                    Content = i.Position.Title + i.Description + i.Requirement + i.Benefits,
+                    CreatedAt = (DateTime)i.CreateAt,
+                })
+                .ToListAsync();
+
+            // Kết hợp các bài đăng và thông báo thực tập, sắp xếp theo ngày tạo giảm dần và áp dụng phân trang
+            var combined = posts.Concat(internships)
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return combined;
+        }
     }
 }

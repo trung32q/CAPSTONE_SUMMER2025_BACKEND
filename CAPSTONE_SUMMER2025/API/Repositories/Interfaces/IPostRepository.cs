@@ -25,5 +25,7 @@ namespace API.Repositories.Interfaces
         IQueryable<resPostDTO> GetSearchPosts(string keyword);
         Task<int?> GetAccountIdByPostIDAsync(int postId);
         Task<int?> GetAccountIdByCommentId(int commentId);
+        Task<List<FeedItemDTO>> GetRecommendedFeedAsync(int userId, int page, int pageSize);
+
     }
 }
