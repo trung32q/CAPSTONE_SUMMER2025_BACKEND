@@ -50,8 +50,6 @@ namespace API.Mapping
                 .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.Dob : (DateTime?)null))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.Address : null))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.PhoneNumber : null))
-                .ForMember(dest => dest.IdentityCardFront, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.IdentityCardFront : null))
-                .ForMember(dest => dest.IdentityCardBack, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.IdentityCardBack : null))
                 .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.AvatarUrl : null))
                 .ForMember(dest => dest.IntroTitle, opt => opt.MapFrom(src => src.AccountProfile != null ? src.Bio.IntroTitle : null))
                 .ForMember(dest => dest.Position, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.Position : null))

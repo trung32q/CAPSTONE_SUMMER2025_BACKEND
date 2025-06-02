@@ -13,9 +13,8 @@ namespace Infrastructure.Models
         public DateTime? Dob { get; set; }
         public string? Address { get; set; }
         public string? PhoneNumber { get; set; }
-        public string? IdentityCardFront { get; set; }
-        public string? IdentityCardBack { get; set; }
         public string? AvatarUrl { get; set; }
+        public string? BackgroundUrl { get; set; }
 
         public virtual Account? Account { get; set; }
     }

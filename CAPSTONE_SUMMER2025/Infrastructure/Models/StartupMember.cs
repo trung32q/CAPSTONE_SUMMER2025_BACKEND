@@ -5,6 +5,11 @@ namespace Infrastructure.Models
 {
     public partial class StartupMember
     {
+        public StartupMember()
+        {
+            MilestoneAssignments = new HashSet<MilestoneAssignment>();
+        }
+
         public int StartupMemberId { get; set; }
         public int? StartupId { get; set; }
         public int? AccountId { get; set; }
@@ -14,5 +19,6 @@ namespace Infrastructure.Models
         public virtual Account? Account { get; set; }
         public virtual RoleInStartup? Role { get; set; }
         public virtual Startup? Startup { get; set; }
+        public virtual ICollection<MilestoneAssignment> MilestoneAssignments { get; set; }
     }
 }

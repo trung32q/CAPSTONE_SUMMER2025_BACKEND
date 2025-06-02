@@ -8,16 +8,15 @@ namespace Infrastructure.Models
         public Startup()
         {
             ChatRooms = new HashSet<ChatRoom>();
-            FinancePlans = new HashSet<FinancePlan>();
+            InternshipPosts = new HashSet<InternshipPost>();
             InvestmentEvents = new HashSet<InvestmentEvent>();
-            InvestorComments = new HashSet<InvestorComment>();
             Invites = new HashSet<Invite>();
+            Milestones = new HashSet<Milestone>();
+            Posts = new HashSet<Post>();
             RoleInStartups = new HashSet<RoleInStartup>();
             StartupCategories = new HashSet<StartupCategory>();
-            StartupImages = new HashSet<StartupImage>();
             StartupLicenses = new HashSet<StartupLicense>();
             StartupMembers = new HashSet<StartupMember>();
-            StartupTasks = new HashSet<StartupTask>();
         }
 
         public int StartupId { get; set; }
@@ -27,6 +26,7 @@ namespace Infrastructure.Models
         public string? Vision { get; set; }
         public string? Mission { get; set; }
         public string? Logo { get; set; }
+        public string? BackgroundUrl { get; set; }
         public string? WebsiteUrl { get; set; }
         public string? Email { get; set; }
         public string? Status { get; set; }
@@ -36,15 +36,14 @@ namespace Infrastructure.Models
         public virtual StartupStage? Stage { get; set; }
         public virtual BusinessModelCanva? BusinessModelCanva { get; set; }
         public virtual ICollection<ChatRoom> ChatRooms { get; set; }
-        public virtual ICollection<FinancePlan> FinancePlans { get; set; }
+        public virtual ICollection<InternshipPost> InternshipPosts { get; set; }
         public virtual ICollection<InvestmentEvent> InvestmentEvents { get; set; }
-        public virtual ICollection<InvestorComment> InvestorComments { get; set; }
         public virtual ICollection<Invite> Invites { get; set; }
+        public virtual ICollection<Milestone> Milestones { get; set; }
+        public virtual ICollection<Post> Posts { get; set; }
         public virtual ICollection<RoleInStartup> RoleInStartups { get; set; }
         public virtual ICollection<StartupCategory> StartupCategories { get; set; }
-        public virtual ICollection<StartupImage> StartupImages { get; set; }
         public virtual ICollection<StartupLicense> StartupLicenses { get; set; }
         public virtual ICollection<StartupMember> StartupMembers { get; set; }
-        public virtual ICollection<StartupTask> StartupTasks { get; set; }
     }
 }

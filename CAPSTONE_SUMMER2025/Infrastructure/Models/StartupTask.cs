@@ -7,22 +7,26 @@ namespace Infrastructure.Models
     {
         public StartupTask()
         {
+            CommentTasks = new HashSet<CommentTask>();
             TaskAssignments = new HashSet<TaskAssignment>();
+            Labels = new HashSet<Label>();
         }
 
         public int TaskId { get; set; }
-        public int? StartupId { get; set; }
+        public int? MilestoneId { get; set; }
         public string? Title { get; set; }
         public string? Priority { get; set; }
         public string? Description { get; set; }
-        public DateTime? StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public DateTime? Duedate { get; set; }
         public int? Progress { get; set; }
-        public string? Tags { get; set; }
-        public string? Status { get; set; }
-        public DateTime? UpdateAt { get; set; }
+        public int? ColumnnStatusId { get; set; }
+        public string? Note { get; set; }
 
-        public virtual Startup? Startup { get; set; }
+        public virtual ColumnnStatus? ColumnnStatus { get; set; }
+        public virtual Milestone? Milestone { get; set; }
+        public virtual ICollection<CommentTask> CommentTasks { get; set; }
         public virtual ICollection<TaskAssignment> TaskAssignments { get; set; }
+
+        public virtual ICollection<Label> Labels { get; set; }
     }
 }

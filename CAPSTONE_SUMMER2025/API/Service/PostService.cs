@@ -241,6 +241,44 @@ namespace API.Service
             try
             {
                 var success = await _repository.CreatePostComment(reqPostCommentDTO);
+                if(reqPostCommentDTO.ParentCommentId == null)
+                {
+                    var accountID = await _repository.GetAccountIdByPostIDAsync(reqPostCommentDTO.PostId);
+                    if (success)
+                    {
+                        var commenter = await _accountRepository.GetAccountByIdAsync(accountID.Value);
+                        if (commenter != null)
+                        {
+                            var message = $"{commenter.AccountProfile?.FirstName} has comment on your post.";
+                            await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                            {
+                                UserId = accountID.Value,
+                                Message = message,
+                                CreatedAt = DateTime.UtcNow,
+                                IsRead = false
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    var accountID = await _repository.GetAccountIdByCommentId((int)reqPostCommentDTO.ParentCommentId);
+                    if (success)
+                    {
+                        var commenter = await _accountRepository.GetAccountByIdAsync(accountID.Value);
+                        if (commenter != null)
+                        {
+                            var message = $"{commenter.AccountProfile?.FirstName} has comment on your comment.";
+                            await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                            {
+                                UserId = accountID.Value,
+                                Message = message,
+                                CreatedAt = DateTime.UtcNow,
+                                IsRead = false
+                            });
+                        }
+                    }
+                }
 
                 if (!success)
                     return "Account hoặc Post không tồn tại";

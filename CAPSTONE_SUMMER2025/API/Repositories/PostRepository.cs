@@ -332,5 +332,23 @@ namespace API.Repositories
             }
         }
 
+        public async Task<int?> GetAccountIdByCommentId(int commentId)
+        {
+            try
+            {
+                var accountId = await _context.PostComments
+                    .Where(p => p.PostcommentId == commentId)
+                    .Select(p => (int?)p.AccountId)
+                    .FirstOrDefaultAsync();
+                return accountId;
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException($"Lỗi khi lấy AccountId của comment có ID {commentId}", ex);
+            }
+        }
+
+
+
     }
 }
