@@ -57,14 +57,15 @@ namespace Infrastructure.Models
         public virtual DbSet<StartupMember> StartupMembers { get; set; } = null!;
         public virtual DbSet<StartupStage> StartupStages { get; set; } = null!;
         public virtual DbSet<StartupTask> StartupTasks { get; set; } = null!;
+        public virtual DbSet<Subcribe> Subcribes { get; set; } = null!;
         public virtual DbSet<TaskAssignment> TaskAssignments { get; set; } = null!;
         public virtual DbSet<UserOtp> UserOtps { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                              .SetBasePath(Directory.GetCurrentDirectory())
-                              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                                .SetBasePath(Directory.GetCurrentDirectory())
+                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -1128,6 +1129,34 @@ namespace Infrastructure.Models
 
                             j.IndexerProperty<int>("LabelId").HasColumnName("Label_ID");
                         });
+            });
+
+            modelBuilder.Entity<Subcribe>(entity =>
+            {
+                entity.ToTable("Subcribe");
+
+                entity.HasIndex(e => new { e.FollowerAccountId, e.FollowingStartUpId }, "UC_Subcribe")
+                    .IsUnique();
+
+                entity.Property(e => e.SubcribeId).HasColumnName("Subcribe_ID");
+
+                entity.Property(e => e.FollowDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.FollowerAccountId).HasColumnName("Follower_Account_ID");
+
+                entity.Property(e => e.FollowingStartUpId).HasColumnName("Following_StartUp_ID");
+
+                entity.HasOne(d => d.FollowerAccount)
+                    .WithMany(p => p.Subcribes)
+                    .HasForeignKey(d => d.FollowerAccountId)
+                    .HasConstraintName("FK__Subcribe__Follow__6BE40491");
+
+                entity.HasOne(d => d.FollowingStartUp)
+                    .WithMany(p => p.Subcribes)
+                    .HasForeignKey(d => d.FollowingStartUpId)
+                    .HasConstraintName("FK__Subcribe__Follow__6AEFE058");
             });
 
             modelBuilder.Entity<TaskAssignment>(entity =>
