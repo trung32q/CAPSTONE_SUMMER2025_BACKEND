@@ -222,34 +222,56 @@ namespace Infrastructure.Repository
         }
 
         // hàm tìm kiếm account để ở querry vì ko convert được
-        public IQueryable<AccountSearchResultDTO> GetSearchAccounts(string keyword)
+        public IQueryable<AccountSearchResultDTO> GetSearchAccounts(string keyword, int currentUserId)
         {
-            keyword = RemoveDiacritics(keyword).ToLower();
+                keyword = RemoveDiacritics(keyword).ToLower();
 
-            // Chuẩn bị truy vấn base
-            var query = _context.Accounts
+                // Lấy danh sách account bị chặn bởi current user
+                var blockedIds = _context.AccountBlocks
+                .Where(b => b.BlockerAccountId == currentUserId)
+                .Select(b => b.BlockedAccountId)
+                .ToList();
+
+                // Bước 1: Lọc sơ bộ (có thông tin và không bị chặn)
+                var candidates = _context.Accounts
                 .Include(a => a.AccountProfile)
                 .Include(a => a.Bio)
+                .Where(a =>
+                    a.AccountProfile != null &&
+                    !blockedIds.Contains(a.AccountId) &&
+                    (!string.IsNullOrEmpty(a.AccountProfile.FirstName) || !string.IsNullOrEmpty(a.AccountProfile.LastName)))
+                    .ToList(); // load về để xử lý RemoveDiacritics
+
+                // Bước 2: Lọc không dấu
+                var filtered = candidates
+                .Where(a =>
+                {
+                    var fullName = $"{a.AccountProfile.FirstName} {a.AccountProfile.LastName}";
+                    var position = a.Bio?.Position ?? "";
+                    var workplace = a.Bio?.Workplace ?? "";
+
+                    return RemoveDiacritics(fullName).ToLower().Contains(keyword)
+                        || RemoveDiacritics(position).ToLower().Contains(keyword)
+                        || RemoveDiacritics(workplace).ToLower().Contains(keyword);
+                });
+
+                // Bước 3: Map sang DTO
+                var result = filtered
                 .Select(a => new AccountSearchResultDTO
                 {
                     AccountId = a.AccountId,
                     FullName = a.AccountProfile.FirstName + " " + a.AccountProfile.LastName,
                     AvatarUrl = a.AccountProfile.AvatarUrl,
-                    Position = a.Bio != null ? a.Bio.Position : null,
-                    Workplace = a.Bio != null ? a.Bio.Workplace : null,
+                    Position = a.Bio?.Position,
+                    Workplace = a.Bio?.Workplace,
                     FollowerCount = _context.Follows.Count(f => f.FollowingAccountId == a.AccountId)
                 })
-                .AsEnumerable() // xử lý RemoveDiacritics ở client
-                .Where(dto =>
-                    RemoveDiacritics(dto.FullName).ToLower().Contains(keyword) ||
-                    RemoveDiacritics(dto.Position ?? "").ToLower().Contains(keyword) ||
-                    RemoveDiacritics(dto.Workplace ?? "").ToLower().Contains(keyword)
-                )
-                .OrderByDescending(dto => dto.FollowerCount) // ưu tiên người có follower nhiều
+                .OrderByDescending(a => a.FollowerCount)
                 .AsQueryable();
 
-            return query;
+            return result;
         }
+
 
         private string RemoveDiacritics(string text)
         {
@@ -265,7 +287,84 @@ namespace Infrastructure.Repository
             return builder.ToString().Normalize(NormalizationForm.FormC);
         }
 
+        // hàm đề xuất tài khoản có thể người dùng muốn follow
+        public async Task<PagedResult<AccountRecommendDTO>> RecommendAccountsAsync(int currentAccountId, int pageNumber, int pageSize)
+        {
+            var followedIds = await _context.Follows
+                .Where(f => f.FollowerAccountId == currentAccountId)
+                .Select(f => f.FollowingAccountId)
+                .ToListAsync();
 
+            var blockedIds = await _context.AccountBlocks
+                .Where(b => b.BlockerAccountId == currentAccountId)
+                .Select(b => b.BlockedAccountId)
+                .ToListAsync();
 
+            // 1. Lấy các post mà user hiện tại đã tương tác
+            var interactedPostIds = await _context.PostLikes
+                .Where(pl => pl.AccountId == currentAccountId)
+                .Select(pl => pl.PostId)
+                .Union(
+                    _context.PostComments
+                        .Where(pc => pc.AccountId == currentAccountId)
+                        .Select(pc => pc.PostId)
+                ).Distinct().ToListAsync();
+
+            // 2. Lấy các account khác cũng tương tác với những post đó
+            var relatedAccountIds = await _context.PostLikes
+                .Where(pl => interactedPostIds.Contains(pl.PostId) && pl.AccountId != currentAccountId)
+                .Select(pl => pl.AccountId)
+                .Union(
+                    _context.PostComments
+                        .Where(pc => interactedPostIds.Contains(pc.PostId) && pc.AccountId != currentAccountId)
+                        .Select(pc => pc.AccountId)
+                ).Distinct().ToListAsync();
+
+            // 3. Tài khoản liên quan theo tương tác bài post
+            var fromInteractions = _context.Accounts
+                .Where(acc => relatedAccountIds.Contains(acc.AccountId)
+                              && !followedIds.Contains(acc.AccountId)
+                              && !blockedIds.Contains(acc.AccountId)
+                              && acc.Status == "verified"
+                              && acc.Role != "admin")
+                .Select(acc => new AccountRecommendDTO
+                {
+                    AccountId = acc.AccountId,
+                    FullName = acc.AccountProfile.FirstName + " " + acc.AccountProfile.LastName,
+                    AvatarUrl = acc.AccountProfile.AvatarUrl,
+                    TotalFollowers = _context.Follows.Count(f => f.FollowingAccountId == acc.AccountId)
+                });
+
+            // 4. Tài khoản phổ biến (fallback)
+            var popularAccounts = _context.Accounts
+                .Where(acc => acc.AccountId != currentAccountId
+                              && !followedIds.Contains(acc.AccountId)
+                              && !blockedIds.Contains(acc.AccountId)
+                              && acc.Status == "verified"
+                              && acc.Role != "admin")
+                .Select(acc => new AccountRecommendDTO
+                {
+                    AccountId = acc.AccountId,
+                    FullName = acc.AccountProfile.FirstName + " " + acc.AccountProfile.LastName,
+                    AvatarUrl = acc.AccountProfile.AvatarUrl,
+                    TotalFollowers = _context.Follows.Count(f => f.FollowingAccountId == acc.AccountId)
+                });
+
+            // 5. Gộp hai nguồn gợi ý và phân trang
+            var finalQuery = fromInteractions
+                .Union(popularAccounts)
+                .Distinct()
+                .OrderByDescending(x => x.TotalFollowers);
+
+            var totalCount = await finalQuery.CountAsync();
+            var items = await finalQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<AccountRecommendDTO>(items, totalCount, pageNumber, pageSize);
+        }
+
+      
     }
 }

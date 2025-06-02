@@ -14,6 +14,7 @@ using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
 using API.Service.Interface;
 using API.Service;
+using MailKit.Search;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -162,13 +163,44 @@ namespace API.Controllers
 
         // tìm kiếm account
         [HttpGet("search-account")]
-        public async Task<IActionResult> SearchAccounts(string searchText, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> SearchAccounts(string searchText, int currentAccountId, int pageNumber = 1, int pageSize = 10)
         {
             if (string.IsNullOrWhiteSpace(searchText))
                 return BadRequest(new { message = "searchText is required." });
 
-            var result = await _accountService.SearchAccountsAsync(searchText, pageNumber, pageSize);
-            return Ok(result);
+            try
+            {
+                var result = await _accountService.SearchAccountsAsync(searchText, currentAccountId, pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
         }
+
+
+        [HttpGet("recommend")]
+        public async Task<IActionResult> RecommendAccounts(int accountId, int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var result = await _accountService.RecommendAccountsAsync(accountId, pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
+
     }
 }

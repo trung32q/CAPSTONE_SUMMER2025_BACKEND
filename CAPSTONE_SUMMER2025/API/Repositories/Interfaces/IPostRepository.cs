@@ -22,7 +22,7 @@ namespace API.Repositories.Interfaces
         Task<bool> DeleteCommentAsync(int commentId);
         Task<bool> UpdatePostAsync(int postId, string title, string content);
         Task<bool> DeletePostAsync(int postId);
-        IQueryable<resPostDTO> GetSearchPosts(string keyword);
+        IQueryable<resPostDTO> GetSearchPosts(string keyword, int currentUserId);
         Task<int?> GetAccountIdByPostIDAsync(int postId);
         Task<int?> GetAccountIdByCommentId(int commentId);
         Task<List<FeedItemDTO>> GetRecommendedFeedAsync(int userId, int page, int pageSize);

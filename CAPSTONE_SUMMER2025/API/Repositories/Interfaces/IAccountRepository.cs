@@ -25,7 +25,8 @@ namespace API.Repositories.Interfaces
         Task<bool> FollowAsync(int followerAccountId, int followingAccountId);
         Task<bool> UnfollowAsync(int followerAccountId, int followingAccountId);
         Task<bool> IsFollowingAsync(int followerAccountId, int followingAccountId);
-        IQueryable<AccountSearchResultDTO> GetSearchAccounts(string keyword);
+        IQueryable<AccountSearchResultDTO> GetSearchAccounts(string keyword, int currentUserId);
+        Task<PagedResult<AccountRecommendDTO>> RecommendAccountsAsync(int currentAccountId, int pageNumber, int pageSize);
 
     }
 }

@@ -316,9 +316,15 @@ namespace API.Service
 
 
         // tìm kiếm bài post
-        public async Task<PagedResult<resPostDTO>> SearchPostsAsync(string searchText, int pageNumber, int pageSize)
+        public async Task<PagedResult<resPostDTO>> SearchPostsAsync(string searchText, int pageNumber, int pageSize, int currentAccountId)
         {
-            var query = _repository.GetSearchPosts(searchText)
+
+            // ✅ Check user tồn tại và còn hoạt động
+            var account = await _accountRepository.GetAccountByIdAsync(currentAccountId);
+            if (account == null || account.Status == "banned" || account.Status == "deactive")
+                throw new UnauthorizedAccessException("Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa.");
+
+            var query = _repository.GetSearchPosts(searchText, currentAccountId)
                 .OrderByDescending(p => p.LikeCount); // 🔥 Ưu tiên bài nhiều like
 
             var totalCount = query.Count();
