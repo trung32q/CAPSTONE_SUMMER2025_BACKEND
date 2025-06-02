@@ -274,12 +274,31 @@ namespace API.Repositories
         }
 
         // tìm kiếm post
-        public IQueryable<resPostDTO> GetSearchPosts(string keyword)
+        public IQueryable<resPostDTO> GetSearchPosts(string keyword, int currentUserId)
         {
             keyword = RemoveDiacritics(keyword).ToLower();
 
-            return _context.Posts
+            // Danh sách ID post bị ẩn bởi người dùng hiện tại
+            var hiddenPostIds = _context.PostHides
+                .Where(h => h.AccountId == currentUserId)
+                .Select(h => h.PostId)
+                .ToList();
+
+            // Bước 1: Lọc post có nội dung, KHÔNG bị ẩn
+            var filteredPosts = _context.Posts
                 .Include(p => p.PostMedia)
+                .Where(p =>
+                    (!string.IsNullOrEmpty(p.Title) || !string.IsNullOrEmpty(p.Content)) &&
+                    !hiddenPostIds.Contains(p.PostId) // loại post bị ẩn
+                )
+                .ToList()
+                .Where(p =>
+                    (!string.IsNullOrEmpty(p.Title) && RemoveDiacritics(p.Title).ToLower().Contains(keyword)) ||
+                    (!string.IsNullOrEmpty(p.Content) && RemoveDiacritics(p.Content).ToLower().Contains(keyword))
+                );
+
+            // Bước 2: Mapping sang DTO
+            var result = filteredPosts
                 .Select(p => new resPostDTO
                 {
                     PostId = p.PostId,
@@ -293,14 +312,11 @@ namespace API.Repositories
                         MediaUrl = m.MediaUrl,
                         DisplayOrder = m.DisplayOrder
                     }).ToList()
-                })
-                .AsEnumerable() // chuyển sang client-side
-                .Where(p =>
-                    (!string.IsNullOrEmpty(p.Content) && RemoveDiacritics(p.Content).ToLower().Contains(keyword)) ||
-                    (!string.IsNullOrEmpty(p.Title) && RemoveDiacritics(p.Title).ToLower().Contains(keyword))
-                )
-                .AsQueryable();
+                }).AsQueryable();
+
+            return result;
         }
+
 
         private string RemoveDiacritics(string text)
         {

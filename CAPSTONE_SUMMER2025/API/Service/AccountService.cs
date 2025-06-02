@@ -181,12 +181,17 @@ namespace API.Service
         }
 
         // tìm kiếm account
-        public async Task<PagedResult<AccountSearchResultDTO>> SearchAccountsAsync(string searchText, int pageNumber, int pageSize)
+        public async Task<PagedResult<AccountSearchResultDTO>> SearchAccountsAsync(string searchText, int currentUserId, int pageNumber, int pageSize)
         {
-            var query = _accountRepository.GetSearchAccounts(searchText);
+            // ✅ Kiểm tra tài khoản tồn tại và không bị vô hiệu hóa
+            var account = await _accountRepository.GetAccountByIdAsync(currentUserId);
+            if (account == null || account.Status == "banned" || account.Status == "deactive")
+                throw new UnauthorizedAccessException("Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa.");
+
+            // ✅ Gọi repository lấy danh sách kết quả
+            var query = _accountRepository.GetSearchAccounts(searchText, currentUserId);
 
             var totalCount = query.Count();
-
             var pagedItems = query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -194,6 +199,18 @@ namespace API.Service
 
             return new PagedResult<AccountSearchResultDTO>(pagedItems, totalCount, pageNumber, pageSize);
         }
+
+
+        public async Task<PagedResult<AccountRecommendDTO>> RecommendAccountsAsync(int currentAccountId, int pageNumber, int pageSize)
+        {
+            // ✅ Kiểm tra tài khoản tồn tại và không bị vô hiệu hóa
+            var account = await _accountRepository.GetAccountByIdAsync(currentAccountId);
+            if (account == null || account.Status == "banned" || account.Status == "deactive")
+                throw new UnauthorizedAccessException("Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa.");
+
+            return await _accountRepository.RecommendAccountsAsync(currentAccountId, pageNumber, pageSize);
+        }
+
 
         // hàm bỏ dấu
         private string RemoveDiacritics(string text)

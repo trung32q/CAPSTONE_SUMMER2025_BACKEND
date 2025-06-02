@@ -219,13 +219,20 @@ namespace API.Controllers
 
         //serch post
         [HttpGet("search-posts")]
-        public async Task<IActionResult> SearchPosts(string searchText, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> SearchPosts(string searchText, int currentAccountId, int pageNumber = 1, int pageSize = 10)
         {
             if (string.IsNullOrWhiteSpace(searchText))
                 return BadRequest(new { message = "searchText is required." });
 
-            var result = await _postService.SearchPostsAsync(searchText, pageNumber, pageSize);
-            return Ok(result);
+            try
+            {
+                var result = await _postService.SearchPostsAsync(searchText, pageNumber, pageSize, currentAccountId);
+                return Ok(result);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
         }
 
     }
