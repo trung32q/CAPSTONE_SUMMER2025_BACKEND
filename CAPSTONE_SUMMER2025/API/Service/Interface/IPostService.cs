@@ -22,5 +22,6 @@ namespace API.Service.Interface
         Task<bool> UpdatePostAsync(int postId, reqUpdatePostDTO dto);
         Task<bool> DeletePostAsync(int postId);
         Task<PagedResult<resPostDTO>> SearchPostsAsync(string searchText, int pageNumber, int pageSize, int currentAccountId);
+        Task<List<FeedItemDTO>> GetNewFeedAsync(int userId, int page, int pageSize);
     }
 }
