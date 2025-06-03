@@ -200,7 +200,7 @@ namespace API.Controllers
                 {
                     return BadRequest(new ResVerifyOtpDTO { Success = false, Message = "Mã OTP không chính xác." });
                 }
-                await _authSevice.UpdateStatusAccountAsync(req);
+                await _authSevice.UpdateStatusAccountAsync(req,AccountStatusConst.UNVERIFIED);
                 return Ok(new ResVerifyOtpDTO
                 {
                     Success = true,
@@ -279,6 +279,30 @@ namespace API.Controllers
             };
             Response.Cookies.Append("refresh_token", newRefreshToken, cookieOptions);
             return Ok(new { AccessToken = newAccessToken });
+        }
+        [HttpPost("SetStatusVerified")]
+        public async Task<IActionResult> SetStatusVerified([FromQuery] int accountId)
+        {
+            try
+            {
+                var account = await _accountRepository.GetAccountByIdAsync(accountId);
+                if (account == null)
+                {
+                    return NotFound(new { message = "Account not found" });
+                }
+
+                await _authSevice.UpdateStatusVerifyAccountAsync(accountId, AccountStatusConst.VERIFIED);
+
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Tài khoản đã được chuyển sang trạng thái xác thực thành công."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
     }
