@@ -241,5 +241,72 @@ namespace API.Controllers
             return Ok(feed);
         }
 
+        // ẩn bài post
+        [HttpPost("hide")]
+        public async Task<IActionResult> HidePost([FromBody] HidePostRequestDTO dto)
+        {
+            var result = await _postService.HidePostAsync(dto);
+            if (result)
+                return Ok(new { message = "Post hidden successfully" });
+
+            return BadRequest(new { message = "Post already hidden or invalid" });
+        }
+
+        //lấy ra tất cả các report reason
+        [HttpGet("report-reasons")]
+        public async Task<IActionResult> GetAllReportReason()
+        {
+            var reasons = await _postService.GetAllReportReasonAsync();
+            return Ok(reasons);
+        }
+
+        //lấy ra report reason theo id
+        [HttpGet("report-reasons/{id}")]
+        public async Task<IActionResult> GetReportReasonById(int id)
+        {
+            var reason = await _postService.GetReportReasonByIdAsync(id);
+            if (reason == null) return NotFound();
+            return Ok(reason);
+        }
+
+        // tạo mới report reason
+        [HttpPost("report-reasons")]
+        public async Task<IActionResult> CreateReportReason([FromBody] CreateReportReasonDTO dto)
+        {
+            var created = await _postService.CreateReportReasonAsync(dto);
+            return Ok(created); 
+        }
+
+        //cập nhật report reason
+        [HttpPut("report-reasons/{id}")]
+        public async Task<IActionResult> UpdateReportReason(int id, [FromBody] CreateReportReasonDTO dto)
+        {
+            var result = await _postService.UpdateReportReasonAsync(id, dto);
+            return result ? NoContent() : NotFound();
+        }
+
+        //xóa reaport reason
+        [HttpDelete("report-reasons/{id}")]
+        public async Task<IActionResult> DeleteReportReason(int id)
+        {
+            var result = await _postService.DeleteReportReasonAsync(id);
+            return result ? NoContent() : NotFound();
+        }
+
+        //report post
+        [HttpPost("post-reports")]
+        public async Task<IActionResult> ReportPost([FromBody] CreatePostReportDTO dto)
+        {
+            try
+            {
+                var result = await _postService.CreateReportAsync(dto);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

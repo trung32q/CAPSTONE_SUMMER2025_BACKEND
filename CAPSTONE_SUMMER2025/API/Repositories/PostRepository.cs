@@ -66,6 +66,14 @@ namespace API.Repositories
             return true;
         }
 
+        //hàm tìm bài post theo id
+        public async Task<Post> GetPostByPostIdAsync(int id)
+        {
+            return await _context.Posts.FirstOrDefaultAsync(x => x.PostId == id);
+        }
+
+
+
         //hàm xóa comment và comment con
         public async Task<bool> DeleteCommentAsync(int commentId)
         {
@@ -348,6 +356,7 @@ namespace API.Repositories
             }
         }
 
+        
         public async Task<int?> GetAccountIdByCommentId(int commentId)
         {
             try
@@ -450,5 +459,97 @@ namespace API.Repositories
 
             return combined;
         }
+
+        // hàm ẩn bài post
+        public async Task<bool> HidePostAsync(int accountId, int postId)
+        {
+            var alreadyHidden = await IsPostHiddenAsync(accountId, postId);
+
+            if (alreadyHidden)
+                return false;
+
+            var entity = new PostHide
+            {
+                AccountId = accountId,
+                PostId = postId,
+                HideAt = DateTime.UtcNow
+            };
+
+            _context.PostHides.Add(entity);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // hàm check xem bài post có bị ẩn đi không
+        public async Task<bool> IsPostHiddenAsync(int accountId, int postId)
+        {
+            return await _context.PostHides
+                .AnyAsync(ph => ph.AccountId == accountId && ph.PostId == postId);
+        }
+
+
+        // hàm lấy ra tất cả ReportReason
+        public async Task<List<ReportReason>> GetAllReportReasonAsync()
+        {
+            return await _context.ReportReasons.ToListAsync();
+        }
+
+        // hàm lấy ra RepostReason theo id
+        public async Task<ReportReason?> GetReportReasonByIdAsync(int id)
+        {
+            return await _context.ReportReasons.FindAsync(id);
+        }
+
+        // hàm tạo mới  ReportReason
+        public async Task<ReportReason> CreateReportReasonAsync(ReportReason reason)
+        {
+            _context.ReportReasons.Add(reason);
+            await _context.SaveChangesAsync();
+            return reason;
+        }
+
+
+        // hàm cập nhật ReportReason
+        public async Task<bool> UpdateReportReasonAsync(ReportReason reason)
+        {
+            var existing = await _context.ReportReasons.FindAsync(reason.ReasonId);
+            if (existing == null) return false;
+
+            existing.Reason = reason.Reason;
+            existing.Description = reason.Description;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        //hàm xóa ReportReason
+        public async Task<bool> DeleteReportReasonAsync(int id)
+        {
+            var reason = await _context.ReportReasons.FindAsync(id);
+            if (reason == null) return false;
+
+            _context.ReportReasons.Remove(reason);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // hàm tạo post report
+        public async Task<PostReport> CreatePostReportAsync(PostReport report)
+        {
+            _context.PostReports.Add(report);
+            await _context.SaveChangesAsync();
+            return report;
+        }
+
+        // hàm lấy postreport theo id
+        public async Task<PostReport?> GetPostReportByIdAsync(int reportId)
+        {
+            return await _context.PostReports
+          .Include(r => r.Account)
+          .Include(r => r.Post)
+          .Include(r => r.Reason)
+          .FirstOrDefaultAsync(r => r.ReportId == reportId);
+        }
+
+        
     }
 }

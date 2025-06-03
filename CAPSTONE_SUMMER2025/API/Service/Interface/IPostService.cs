@@ -1,4 +1,5 @@
-﻿using API.DTO.AccountDTO;
+﻿using System.Threading.Tasks;
+using API.DTO.AccountDTO;
 using API.DTO.PostDTO;
 using Infrastructure.Models;
 
@@ -23,5 +24,12 @@ namespace API.Service.Interface
         Task<bool> DeletePostAsync(int postId);
         Task<PagedResult<resPostDTO>> SearchPostsAsync(string searchText, int pageNumber, int pageSize, int currentAccountId);
         Task<List<FeedItemDTO>> GetNewFeedAsync(int userId, int page, int pageSize);
+        Task<bool> HidePostAsync(HidePostRequestDTO dto);
+        Task<List<ReportReasonDTO>> GetAllReportReasonAsync();
+        Task<ReportReasonDTO?> GetReportReasonByIdAsync(int id);
+        Task<ReportReasonDTO> CreateReportReasonAsync(CreateReportReasonDTO dto);
+        Task<bool> UpdateReportReasonAsync(int id, CreateReportReasonDTO dto);
+        Task<bool> DeleteReportReasonAsync(int id);
+        Task<PostReportDTO> CreateReportAsync(CreatePostReportDTO dto);
     }
 }
