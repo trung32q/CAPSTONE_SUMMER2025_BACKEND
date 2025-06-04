@@ -25,6 +25,7 @@ namespace API.Mapping
 
             CreateMap<PostMedium, PostMediaDTO>();        
             CreateMap<PostMediaDTO, PostMedium>();
+
         }
     }
 }

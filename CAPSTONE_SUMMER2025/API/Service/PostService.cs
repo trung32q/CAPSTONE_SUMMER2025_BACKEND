@@ -362,5 +362,100 @@ namespace API.Service
         {
             return await _repository.GetRecommendedFeedAsync(userId, page, pageSize);
         }
+
+        // hàm ẩn bài post
+        public async Task<bool> HidePostAsync(HidePostRequestDTO dto)
+        {
+            return await _repository.HidePostAsync(dto.AccountId, dto.PostId);
+        }
+
+        // hàm ra tất cả ReportReason
+        public async Task<List<ReportReasonDTO>> GetAllReportReasonAsync()
+        {
+            var list = await _repository.GetAllReportReasonAsync();
+            return list.Select(r => new ReportReasonDTO
+            {
+                ReasonId = r.ReasonId,
+                Reason = r.Reason,
+                Description = r.Description
+            }).ToList();
+        }
+
+        // hàm lấy ra ReportReason theo id
+        public async Task<ReportReasonDTO?> GetReportReasonByIdAsync(int id)
+        {
+            var r = await _repository.GetReportReasonByIdAsync(id);
+            if (r == null) return null;
+
+            return new ReportReasonDTO
+            {
+                ReasonId = r.ReasonId,
+                Reason = r.Reason,
+                Description = r.Description
+            };
+        }
+
+        // hàm tạo ReportReason
+        public async Task<ReportReasonDTO> CreateReportReasonAsync(CreateReportReasonDTO dto)
+        {
+            var r = new ReportReason
+            {
+                Reason = dto.Reason,
+                Description = dto.Description
+            };
+            var created = await _repository.CreateReportReasonAsync(r);
+            return new ReportReasonDTO
+            {
+                ReasonId = created.ReasonId,
+                Reason = created.Reason,
+                Description = created.Description
+            };
+        }
+
+        //hàm cập nhật ReportReason
+        public async Task<bool> UpdateReportReasonAsync(int id, CreateReportReasonDTO dto)
+        {
+            return await _repository.UpdateReportReasonAsync(new ReportReason
+            {
+                ReasonId = id,
+                Reason = dto.Reason,
+                Description = dto.Description
+            });
+        }
+
+        //hàm xóa ReportReason
+        public async Task<bool> DeleteReportReasonAsync(int id)
+        {
+            return await _repository.DeleteReportReasonAsync(id);
+        }
+
+        // hàm tạo post report
+        public async Task<PostReportDTO> CreateReportAsync(CreatePostReportDTO dto)
+        {
+
+            var account = await _accountRepository.GetAccountByAccountIDAsync(dto.AccountId);
+            if (account == null)
+                throw new ArgumentException("Account does not exist.");
+
+            var post = await _repository.GetPostByPostIdAsync(dto.PostId);
+            if (post == null)
+                throw new ArgumentException("Post does not exist.");
+
+            var reason = await _repository.GetReportReasonByIdAsync(dto.ReasonId);
+            if (reason == null)
+                throw new ArgumentException("Reason does not exist.");
+
+            var entity = new PostReport
+            {
+                AccountId = dto.AccountId,
+                PostId = dto.PostId,
+                ReasonId = dto.ReasonId,
+                Status = "Pending Review",
+            };
+
+            var created = await _repository.CreatePostReportAsync(entity);
+            return _mapper.Map<PostReportDTO>(created);
+        }
+
     }
 }

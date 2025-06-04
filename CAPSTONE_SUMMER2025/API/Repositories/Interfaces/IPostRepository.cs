@@ -26,6 +26,15 @@ namespace API.Repositories.Interfaces
         Task<int?> GetAccountIdByPostIDAsync(int postId);
         Task<int?> GetAccountIdByCommentId(int commentId);
         Task<List<FeedItemDTO>> GetRecommendedFeedAsync(int userId, int page, int pageSize);
+        Task<bool> HidePostAsync(int accountId, int postId);
+        Task<List<ReportReason>> GetAllReportReasonAsync();
+        Task<ReportReason?> GetReportReasonByIdAsync(int id);
+        Task<ReportReason> CreateReportReasonAsync(ReportReason reason);
+        Task<bool> UpdateReportReasonAsync(ReportReason reason);
+        Task<bool> DeleteReportReasonAsync(int id);
+        Task<PostReport> CreatePostReportAsync(PostReport report);
+        Task<PostReport?> GetPostReportByIdAsync(int reportId);
+        Task<Post> GetPostByPostIdAsync(int id);
 
     }
 }
