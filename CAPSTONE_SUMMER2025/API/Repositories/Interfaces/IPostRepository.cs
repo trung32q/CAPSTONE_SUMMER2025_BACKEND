@@ -7,7 +7,7 @@ namespace API.Repositories.Interfaces
     public interface IPostRepository
     {
         Task<bool> CreatePost(ReqPostDTO reqPostDTO);
-        Task<PagedResult<Post>> GetPostsByAccountId(int accountId, int pageNumber, int pageSize);
+        Task<PagedResult<Post>> GetPostsByAccountId(int accountId, int pageNumber, int pageSize, int currentAccountId);
         Task<PagedResult<PostComment>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize);
         Task<bool> CreatePostComment(reqPostCommentDTO reqPostCommentDTO);
         Task<PagedResult<PostLike>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize);

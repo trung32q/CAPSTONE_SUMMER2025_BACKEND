@@ -23,9 +23,9 @@ namespace API.Controllers
       
         // GET: api/Post/GetPostsByAccountId?accountId=1&pageNumber=1&pageSize=10
         [HttpGet("GetPostsByAccountId")]
-        public async Task<IActionResult> GetPostsByAccountId(int accountId, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetPostsByAccountId(int accountId, int currentAccountId, int pageNumber = 1, int pageSize = 10)
         {
-            var result = await _postService.GetPostsByAccountIdAsync(accountId, pageNumber, pageSize);
+            var result = await _postService.GetPostsByAccountIdAsync(accountId, pageNumber, pageSize, currentAccountId);
 
             if (result == null || result.Items.Count == 0)
             {

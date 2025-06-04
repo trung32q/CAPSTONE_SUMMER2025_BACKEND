@@ -34,9 +34,9 @@ namespace API.Service
             _accountRepository = accountRepository;
             _notificationService = notificationService;
         }
-        public async Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize)
+        public async Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize, int currentAccountId)
         {
-            var pagedPosts = await _repository.GetPostsByAccountId(accountId, pageNumber, pageSize);
+            var pagedPosts = await _repository.GetPostsByAccountId(accountId, pageNumber, pageSize, currentAccountId);
 
             if (pagedPosts == null)
                 return null;
@@ -329,7 +329,7 @@ namespace API.Service
 
             // ✅ Check user tồn tại và còn hoạt động
             var account = await _accountRepository.GetAccountByIdAsync(currentAccountId);
-            if (account == null || account.Status == "banned" || account.Status == "deactive")
+            if (account == null )
                 throw new UnauthorizedAccessException("Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa.");
 
             var query = _repository.GetSearchPosts(searchText, currentAccountId)
