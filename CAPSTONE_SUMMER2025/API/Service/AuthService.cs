@@ -130,15 +130,22 @@ namespace API.Service
             return isMatch ? account : null;
         }
 
-        public async Task UpdateStatusAccountAsync(ReqOtpDTO reqOtp)
+        public async Task UpdateStatusAccountAsync(ReqOtpDTO reqOtp,string status)
         {
             var account = await _authRepo.GetAccountByEmailAsync(reqOtp.Email);
             if (account == null) throw new Exception("Tài khoản không tồn tại.");
 
-            account.Status = AccountStatusConst.UNVERIFIED;
+            account.Status = status;
             await _authRepo.SaveChangesAsync();
         }
+        public async Task UpdateStatusVerifyAccountAsync(int id, string status)
+        {
+            var account = await _authRepo.GetAccountByIdAsync(id);
+            if (account == null) throw new Exception("Tài khoản không tồn tại.");
 
+            account.Status = status;
+            await _authRepo.SaveChangesAsync();
+        }
         private string GenerateOtp()
         {
             return new Random().Next(100000, 1000000).ToString();
