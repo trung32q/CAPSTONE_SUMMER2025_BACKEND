@@ -15,7 +15,6 @@ using API.DTO.BioDTO;
 using API.Service.Interface;
 using API.Service;
 using MailKit.Search;
-using Infrastructure.Repository;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -200,30 +199,6 @@ namespace API.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(new { message = ex.Message });
-            }
-        }
-        [HttpPost("SetStatusVerified")]
-        public async Task<IActionResult> SetStatusVerified([FromQuery] int accountId)
-        {
-            try
-            {
-                var account = await _accountRepository.GetAccountByIdAsync(accountId);
-                if (account == null)
-                {
-                    return NotFound(new { message = "Account not found" });
-                }
-
-                await _authSevice.UpdateStatusAccountAsync(accountId, AccountStatusConst.VERIFIED);
-
-                return Ok(new
-                {
-                    Success = true,
-                    Message = "Tài khoản đã được chuyển sang trạng thái xác thực thành công."
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
             }
         }
 
