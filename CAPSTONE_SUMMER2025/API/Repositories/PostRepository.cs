@@ -183,13 +183,20 @@ namespace API.Repositories
         }
 
         //hàm lấy ra các bài post theo accountid
-        public async Task<PagedResult<Post>> GetPostsByAccountId(int accountId, int pageNumber, int pageSize)
+        public async Task<PagedResult<Post>> GetPostsByAccountId(int accountId,int pageNumber, int pageSize, int currentAccountId)
         {
             if (!await IsAccountExistsAsync(accountId))
                 return null;
 
+            // Lấy danh sách PostId bị ẩn bởi currentAccountId
+            var hiddenPostIds = await _context.PostHides
+                .Where(h => h.AccountId == currentAccountId)
+                .Select(h => h.PostId)
+                .ToListAsync();
+
+            // Lấy các bài post của accountId, loại các bài đã bị ẩn với currentAccountId
             var query = _context.Posts
-                .Where(p => p.AccountId == accountId)
+                .Where(p => p.AccountId == accountId && !hiddenPostIds.Contains(p.PostId))
                 .Include(p => p.PostMedia)
                 .OrderByDescending(p => p.CreateAt);
 
@@ -198,6 +205,7 @@ namespace API.Repositories
 
             return new PagedResult<Post>(items, totalCount, pageNumber, pageSize);
         }
+
 
         //hàm tính số comment reply 1 comment
         public async Task<int> CountChildCommentByPostCommentId(int? id)
