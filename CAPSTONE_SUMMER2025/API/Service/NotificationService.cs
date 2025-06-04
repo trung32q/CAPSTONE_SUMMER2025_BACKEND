@@ -35,53 +35,39 @@ namespace API.Service
                 SendAt = DateTime.UtcNow
             };
 
-            var notificationEntity = await _repository.CreateNotificationAsync(dto.UserId, dto.Message);
-
-            // B2: Gửi realtime qua SignalR
-            await _hub.Clients.Group(dto.UserId.ToString()).SendAsync("ReceiveNotification", new
-            {
-                id = noti.NotificationId,
-                message = noti.Content,
-                IsRead = noti.IsRead,
-                SendAt = noti.SendAt
-            });
+            var notificationEntity = await _repository.CreateNotificationAsync(dto.UserId, dto.Message);        
             return _mapper.Map<resNotificationDTO>(notificationEntity);
         }
 
 
         public async Task<PagedResult<resNotificationDTO>> GetPagedNotificationsAsync(int accountId, int pageNumber, int pageSize)
         {
-            try
+            if (pageNumber < 1 || pageSize < 1)
+                throw new ArgumentException("pageNumber and pageSize must be greater than 0");
+
+            // 1. Lấy dữ liệu từ repository
+            var (notifications, totalCount) = await _repository.GetPagedNotificationsAsync(accountId, pageNumber, pageSize);
+            // 2. Map sang DTO
+            var mapped = _mapper.Map<List<resNotificationDTO>>(notifications);
+
+           foreach (var item in mapped)
             {
-                if (pageNumber < 1 || pageSize < 1)
-                {
-                    throw new ArgumentException("pageNumber and pageSize must be greater than 0");
-                }
-
-                var (notifications, totalCount) = await _repository.GetPagedNotificationsAsync(accountId, pageNumber, pageSize);
-                var mapped = _mapper.Map<List<resNotificationDTO>>(notifications);
-
-                await _hub.Clients.Group(accountId.ToString()).SendAsync("ReceivePagedNotifications", new
-                {
-                    notifications = mapped.Select(n => new
-                    {
-                        id = n.AccountId,
-                        message = n.Content,
-                        isRead = n.IsRead,
-                        sendAt = n.CreatedAt
-                    }),
-                    totalCount,
-                    pageNumber,
-                    pageSize
-                });
-
-                return new PagedResult<resNotificationDTO>(mapped, totalCount, pageNumber, pageSize);
+                item.AccountId = accountId;
             }
-            catch (Exception ex)
+
+
+            // 3. Gửi dữ liệu qua SignalR
+            await _hub.Clients.Group(accountId.ToString()).SendAsync("ReceivePagedNotifications", new
             {
-                throw new Exception("Failed to retrieve notifications", ex);
-            }
+                notifications = mapped, // ← gửi nguyên danh sách DTO
+                totalCount,
+                pageNumber,
+                pageSize
+            });
+
+            return new PagedResult<resNotificationDTO>(mapped, totalCount, pageNumber, pageSize);
         }
+
         public async Task<int> GetUnreadNotificationCountAsync(int accountId)
         {
             try

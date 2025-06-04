@@ -101,31 +101,39 @@ namespace API.Service
             }
         }
 
-        
 
-        //hàm like bài viết
+
         public async Task<bool> LikePostAsync(LikeRequestDTO dto)
         {
+            // 1. Gọi repo thực hiện like
             var success = await _repository.LikePostAsync(dto.PostId, dto.AccountId);
-            var accountID = await _repository.GetAccountIdByPostIDAsync(dto.PostId);
+
             if (success)
             {
-                var likerer = await _accountRepository.GetAccountByIdAsync(accountID.Value);
-                if (likerer != null)
+                // 2. Lấy chủ sở hữu bài post để gửi thông báo
+                var postOwnerId = await _repository.GetAccountIdByPostIDAsync(dto.PostId);
+
+                if (postOwnerId != null && postOwnerId != dto.AccountId) // Không tự gửi noti cho chính mình
                 {
-                    var message = $"{likerer.AccountProfile?.FirstName} has liked your post.";
-                    await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                    var liker = await _accountRepository.GetAccountByIdAsync(dto.AccountId);
+                    if (liker != null)
                     {
-                        UserId = accountID.Value,
-                        Message = message,
-                        CreatedAt = DateTime.UtcNow,
-                        IsRead = false
-                    });
+                        var message = $"{liker.AccountProfile?.FirstName} has liked your post.";
+                        await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                        {
+                            UserId = liker.AccountId,
+                            AvartarURL = liker.AccountProfile.AvatarUrl,
+                            Message = message,
+                            CreatedAt = DateTime.UtcNow,
+                            IsRead = false
+                        });
+                    }
                 }
             }
 
             return success;
         }
+
 
         //hàm hủy like bài viết
         public async Task<bool> UnlikePostAsync(LikeRequestDTO dto)
@@ -215,11 +223,11 @@ namespace API.Service
                 var policies = await _policyService.GetAllActivePoliciesAsync();
 
                 // Kiểm duyệt nội dung(comment lại để tránh tốn token)
-                //var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);
-                //if (result.Contains("Violation"))
-                //{
-                //    return result;
-                //}
+                var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);
+                if (result.Contains("Violation"))
+                {
+                    return result;
+                }
 
                 // Tạo bài viết
                 var success = await _repository.CreatePost(reqPostDTO);
