@@ -70,7 +70,7 @@ namespace API.Controllers
             {
                 return Unauthorized();
             }
-            if (accountCurrentDB.Status == AccountStatusConst.BANNED)
+            if (accountCurrentDB.Status == AccountStatusConst.BANNED&& accountCurrentDB.Status == AccountStatusConst.DEACTIVE)
             {
                 return Unauthorized("Account not valid");
             }
