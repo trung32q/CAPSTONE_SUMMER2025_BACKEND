@@ -10,6 +10,7 @@ using AutoMapper;
 using Google.Cloud.AIPlatform.V1;
 using Infrastructure.Models;
 using Infrastructure.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Service
 {
@@ -23,8 +24,9 @@ namespace API.Service
         private readonly IPolicyService _policyService;
         private readonly IAccountRepository _accountRepository;
         private readonly INotificationService _notificationService;
+        private readonly CAPSTONE_SUMMER2025Context _context;
 
-        public PostService(IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService, IFilebaseHandler filebase, IAccountRepository accountRepository, INotificationService notificationService)
+        public PostService(IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService, IFilebaseHandler filebase, IAccountRepository accountRepository, INotificationService notificationService, CAPSTONE_SUMMER2025Context context)
         {
             _repository = repository;
             _mapper = mapper;
@@ -33,6 +35,7 @@ namespace API.Service
             _filebase = filebase;
             _accountRepository = accountRepository;
             _notificationService = notificationService;
+            _context = context;
         }
         public async Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize, int currentAccountId)
         {
@@ -80,20 +83,40 @@ namespace API.Service
                 if (pagedPostComments == null)
                     return null;
 
-                var postCommentDTOs = _mapper.Map<List<PostCommentDTO>>(pagedPostComments.Items);
+                var postCommentDTOs = new List<PostCommentDTO>();
 
-                foreach (var dto in postCommentDTOs)
+                foreach (var pc in pagedPostComments.Items)
                 {
-                    dto.numChildComment = await _repository.CountChildCommentByPostCommentId(dto.PostcommentId);
+                    var profile = await _context.AccountProfiles
+                        .Where(ap => ap.AccountId == pc.AccountId)
+                        .Select(ap => new AccountInforDTOcs
+                        {
+                            AccountId = (int) ap.AccountId,
+                            AvatarUrl = ap.AvatarUrl,
+                            FullName = ap.FirstName + " " + ap.LastName
+                        })
+                        .FirstOrDefaultAsync();
+
+                    var dto = new PostCommentDTO
+                    {
+                        PostcommentId = pc.PostcommentId,
+                        PostId = pc.PostId,
+                        Content = pc.Content,
+                        CommentAt = pc.CommentAt,
+                        ParentCommentId = pc.ParentCommentId,
+                        numChildComment = await _repository.CountChildCommentByPostCommentId(pc.ParentCommentId),
+                        AccountInfor = profile
+                    };
+
+                    postCommentDTOs.Add(dto);
                 }
 
                 return new PagedResult<PostCommentDTO>(
-                        postCommentDTOs,
-                        pagedPostComments.TotalCount,
-                        pagedPostComments.PageNumber,
-                        pagedPostComments.PageSize
-
-                    );
+                    postCommentDTOs,
+                    pagedPostComments.TotalCount,
+                    pagedPostComments.PageNumber,
+                    pagedPostComments.PageSize
+                );
             }
             catch (Exception ex)
             {
@@ -101,7 +124,8 @@ namespace API.Service
             }
         }
 
-        
+
+
 
         //hàm like bài viết
         public async Task<bool> LikePostAsync(LikeRequestDTO dto)
@@ -176,35 +200,65 @@ namespace API.Service
         }
 
         //hàm lấy ra comment con theo parrentPostCommentId
-       public async Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(int pageNumber, int pageSize, int parrentCommentId)
+        public async Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(
+       int pageNumber, int pageSize, int parrentCommentId)
         {
             try
             {
-                var pagedPostComments = await _repository.GetPostCommentChildByPostIdAndParentCommentId(pageNumber, pageSize, parrentCommentId);
+                var pagedPostComments = await _repository
+                    .GetPostCommentChildByPostIdAndParentCommentId(pageNumber, pageSize, parrentCommentId);
 
                 if (pagedPostComments == null)
                     return null;
 
-                var postCommentDTOs = _mapper.Map<List<PostCommentDTO>>(pagedPostComments.Items);
+                // Lấy danh sách Account_ID duy nhất
+                var accountIds = pagedPostComments.Items
+                    .Select(p => p.AccountId)
+                    .Distinct()
+                    .ToList();
 
-                foreach (var dto in postCommentDTOs)
+                // Truy vấn thông tin profile từ _context
+                var accountInfoMap = await _context.AccountProfiles
+                    .Where(ap => accountIds.Contains(ap.AccountId))
+                    .Select(ap => new AccountInforDTOcs
+                    {
+                        AccountId = (int) ap.AccountId,
+                        AvatarUrl = ap.AvatarUrl,
+                        FullName = ap.FirstName + " " + ap.LastName
+                    })
+                    .ToDictionaryAsync(ap => ap.AccountId);
+
+                var postCommentDTOs = new List<PostCommentDTO>();
+
+                foreach (var pc in pagedPostComments.Items)
                 {
-                    dto.numChildComment = await _repository.CountChildCommentByPostCommentId(dto.PostcommentId);
+                    accountInfoMap.TryGetValue((int)pc.AccountId, out var accountDto);
+
+                    postCommentDTOs.Add(new PostCommentDTO
+                    {
+                        PostcommentId = pc.PostcommentId,
+                        PostId = pc.PostId,
+                        Content = pc.Content,
+                        CommentAt = pc.CommentAt,
+                        ParentCommentId = pc.ParentCommentId,
+                        numChildComment = await _repository.CountChildCommentByPostCommentId(pc.PostcommentId),
+                        AccountInfor = accountDto
+                    });
                 }
 
                 return new PagedResult<PostCommentDTO>(
-                        postCommentDTOs,
-                        pagedPostComments.TotalCount,
-                        pagedPostComments.PageNumber,
-                        pagedPostComments.PageSize
-
-                    );
+                    postCommentDTOs,
+                    pagedPostComments.TotalCount,
+                    pagedPostComments.PageNumber,
+                    pagedPostComments.PageSize
+                );
             }
             catch (Exception ex)
             {
                 throw new Exception($"Error: {ex.Message}");
             }
         }
+
 
         // hàm tạo bài post
         public async Task<string> CreatePost(ReqPostDTO reqPostDTO)
