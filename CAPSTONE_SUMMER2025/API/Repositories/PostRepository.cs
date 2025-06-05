@@ -404,13 +404,16 @@ namespace API.Repositories
             // Lấy các bài đăng dựa trên các tiêu chí đã định nghĩa
             var posts = await _context.Posts
                 .Where(p =>
-             
+
                     (followingIds.Contains(p.AccountId) || followedStartupIds.Contains(p.StartupId) || p.AccountId == userId) &&
                     // Loại trừ bài đăng từ bất kỳ tài khoản bị chặn nào (cả người dùng đã chặn và người dùng bị chặn)
                     !blockedIds.Contains(p.AccountId))
                 .Select(p => new FeedItemDTO
                 {
                     PostId = p.PostId,
+                    AccountID = p.AccountId,
+                    name = p.Account.AccountProfile.FirstName +" "+ p.Account.AccountProfile.LastName,
+                    AvatarURL = p.Account.AccountProfile.AvatarUrl,
                     Type = "Post",
                     Title = p.Title,
                     Content = p.Content,
@@ -420,7 +423,7 @@ namespace API.Repositories
                 ? p.PostMedia.Select(pm => new PostMediaDTO
                 {
                     MediaUrl = pm.MediaUrl,
-                    DisplayOrder = pm.DisplayOrder 
+                    DisplayOrder = pm.DisplayOrder
                 }).ToList()
                 : new List<PostMediaDTO>()
                 })
@@ -451,6 +454,9 @@ namespace API.Repositories
                 .Select(i => new FeedItemDTO
                 {
                     PostId = i.InternshipId,
+                    StartupId = i.StartupId,
+                    name=i.Startup.StartupName,
+                    AvatarURL =i.Startup.Logo,
                     Type = "Internship",
                     Title = "Internship",
                     Content = i.Position.Title + i.Description + i.Requirement + i.Benefits,

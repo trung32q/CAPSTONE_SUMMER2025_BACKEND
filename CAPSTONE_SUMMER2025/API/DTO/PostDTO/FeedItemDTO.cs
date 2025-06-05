@@ -3,6 +3,9 @@
     public class FeedItemDTO
     {
         public int PostId { get; set; }
+        public int? AccountID { get; set; }
+        public string AvatarURL { get; set; }
+        public string name { get; set; }    
         public string Type { get; set; } // "Post" hoặc "Internship"
         public string Title { get; set; }
         public string Content { get; set; }
