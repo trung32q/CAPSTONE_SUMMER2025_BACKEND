@@ -9,5 +9,6 @@
         public string? PhoneNumber { get; set; }
         public DateTime? Dob { get; set; }
         public IFormFile? AvatarUrl { get; set; }
+        public IFormFile? BackgroundURL { get; set; }
     }
 }

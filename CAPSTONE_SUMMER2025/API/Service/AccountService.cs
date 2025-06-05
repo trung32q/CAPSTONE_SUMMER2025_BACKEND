@@ -88,6 +88,12 @@ namespace API.Service
                 if (!string.IsNullOrWhiteSpace(fileUrl))
                     profile.AvatarUrl = fileUrl;
             }
+            if (updateProfileDTO.BackgroundURL != null)
+            {
+                var fileUrl = await _filebaseHandler.UploadMediaFile(updateProfileDTO.BackgroundURL);
+                if (!string.IsNullOrWhiteSpace(fileUrl))
+                    profile.BackgroundUrl = fileUrl;
+            }
 
             await _accountRepository.SaveChangesAsync();
             return _mapper.Map<ResAccountInfoDTO>(account);
