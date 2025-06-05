@@ -240,8 +240,8 @@ namespace API.Controllers
             }
 
             // Lấy UserId từ claims của refresh token. Sử dụng JwtRegisteredClaimNames.Sub là chuẩn.
-            
-            var userId = principal.Claims.FirstOrDefault(c => c.Type == System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+
+            var userId = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
             {
