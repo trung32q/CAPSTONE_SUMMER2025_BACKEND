@@ -178,26 +178,21 @@ namespace API.Service
         // hàm lấy ra danh sách người like bài post
         public async Task<PagedResult<PostLikeDTO>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize)
         {
-            try
-            {
-                var pagedPostLikes = await _repository.GetPostLikeByPostId(postId, pageNumber, pageSize);
+            var pagedPostLikes = await _repository.GetPostLikeByPostId(postId, pageNumber, pageSize);
 
-                if (pagedPostLikes == null)
-                    return null;
+            if (pagedPostLikes == null)
+                return null;
 
-                var postLikeDTOs = _mapper.Map<List<PostLikeDTO>>(pagedPostLikes.Items);
-                return new PagedResult<PostLikeDTO>(
-                            postLikeDTOs,
-                            pagedPostLikes.TotalCount,
-                            pagedPostLikes.PageNumber,
-                            pagedPostLikes.PageSize
-                    );
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error: {ex.Message}");
-            }
+            var postLikeDTOs = _mapper.Map<List<PostLikeDTO>>(pagedPostLikes.Items);
+
+            return new PagedResult<PostLikeDTO>(
+                postLikeDTOs,
+                pagedPostLikes.TotalCount,
+                pagedPostLikes.PageNumber,
+                pagedPostLikes.PageSize
+            );
         }
+
 
         //hàm lấy ra comment con theo parrentPostCommentId
         public async Task<PagedResult<PostCommentDTO>> GetPostCommentChildByPostIdAndParentCommentId(

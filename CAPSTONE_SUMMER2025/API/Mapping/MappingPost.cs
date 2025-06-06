@@ -20,8 +20,14 @@ namespace API.Mapping
             CreateMap<PostComment, PostCommentDTO>();
             CreateMap<PostCommentDTO, PostComment>();
 
-            CreateMap<PostLike, PostLikeDTO>();
+            CreateMap<PostLike, PostLikeDTO>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src =>
+                    src.Account.AccountProfile.FirstName + " " + src.Account.AccountProfile.LastName))
+                        .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Account.AccountProfile.AvatarUrl));
+
             CreateMap<PostLikeDTO, PostLike>();
+
+
 
             CreateMap<PostMedium, PostMediaDTO>();        
             CreateMap<PostMediaDTO, PostMedium>();

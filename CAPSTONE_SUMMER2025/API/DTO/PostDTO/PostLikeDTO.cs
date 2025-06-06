@@ -6,5 +6,7 @@
         public int? PostId { get; set; }
         public int? AccountId { get; set; }
         public DateTime? LikedAt { get; set; }
+        public string AvatarUrl { get; set; }
+        public string FullName { get; set; }
     }
 }

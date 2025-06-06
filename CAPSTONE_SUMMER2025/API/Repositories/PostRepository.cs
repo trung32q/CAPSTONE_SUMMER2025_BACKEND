@@ -148,10 +148,17 @@ namespace API.Repositories
             if (!await IsPostExistsAsync(postId))
                 return null;
 
-            var querry = _context.PostLikes.Where(pl => pl.PostId == postId);
+            var query = _context.PostLikes
+                .Where(pl => pl.PostId == postId)
+                .Include(pl => pl.Account)
+                    .ThenInclude(a => a.AccountProfile);
 
-            var totalCount = await querry.CountAsync();
-            var items = await querry.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             return new PagedResult<PostLike>(items, totalCount, pageNumber, pageSize);
         }

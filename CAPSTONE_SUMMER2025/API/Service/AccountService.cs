@@ -205,7 +205,7 @@ namespace API.Service
         {
             // ✅ Kiểm tra tài khoản tồn tại và không bị vô hiệu hóa
             var account = await _accountRepository.GetAccountByIdAsync(currentAccountId);
-            if (account == null || account.Status == "banned" || account.Status == "deactive")
+            if (account == null )
                 throw new UnauthorizedAccessException("Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa.");
 
             return await _accountRepository.RecommendAccountsAsync(currentAccountId, pageNumber, pageSize);

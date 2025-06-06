@@ -290,6 +290,12 @@ namespace Infrastructure.Repository
         // hàm đề xuất tài khoản có thể người dùng muốn follow
         public async Task<PagedResult<AccountRecommendDTO>> RecommendAccountsAsync(int currentAccountId, int pageNumber, int pageSize)
         {
+            // 1. Kiểm tra tài khoản hợp lệ
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == currentAccountId);
+            if (account == null)
+                throw new UnauthorizedAccessException("Tài khoản không hợp lệ hoặc đã bị vô hiệu hóa.");
+
+            // 2. Danh sách đã follow hoặc đã block
             var followedIds = await _context.Follows
                 .Where(f => f.FollowerAccountId == currentAccountId)
                 .Select(f => f.FollowingAccountId)
@@ -300,7 +306,7 @@ namespace Infrastructure.Repository
                 .Select(b => b.BlockedAccountId)
                 .ToListAsync();
 
-            // 1. Lấy các post mà user hiện tại đã tương tác
+            // 3. Các post đã tương tác
             var interactedPostIds = await _context.PostLikes
                 .Where(pl => pl.AccountId == currentAccountId)
                 .Select(pl => pl.PostId)
@@ -310,7 +316,7 @@ namespace Infrastructure.Repository
                         .Select(pc => pc.PostId)
                 ).Distinct().ToListAsync();
 
-            // 2. Lấy các account khác cũng tương tác với những post đó
+            // 4. Các account cũng tương tác với post đó (trừ chính mình)
             var relatedAccountIds = await _context.PostLikes
                 .Where(pl => interactedPostIds.Contains(pl.PostId) && pl.AccountId != currentAccountId)
                 .Select(pl => pl.AccountId)
@@ -320,37 +326,41 @@ namespace Infrastructure.Repository
                         .Select(pc => pc.AccountId)
                 ).Distinct().ToListAsync();
 
-            // 3. Tài khoản liên quan theo tương tác bài post
+            // 5. Nguồn gợi ý chính: từ tương tác chung
             var fromInteractions = _context.Accounts
-                .Where(acc => relatedAccountIds.Contains(acc.AccountId)
-                              && !followedIds.Contains(acc.AccountId)
-                              && !blockedIds.Contains(acc.AccountId)
-                              && acc.Status == "verified"
-                              && acc.Role != "admin")
+                .Where(acc =>
+                    relatedAccountIds.Contains(acc.AccountId) &&
+                    !followedIds.Contains(acc.AccountId) &&
+                    !blockedIds.Contains(acc.AccountId) &&
+                    acc.Status == "verified" &&
+                    acc.Role != "admin")
                 .Select(acc => new AccountRecommendDTO
                 {
                     AccountId = acc.AccountId,
                     FullName = acc.AccountProfile.FirstName + " " + acc.AccountProfile.LastName,
                     AvatarUrl = acc.AccountProfile.AvatarUrl,
+                    Position = acc.Bio.Position,
                     TotalFollowers = _context.Follows.Count(f => f.FollowingAccountId == acc.AccountId)
                 });
 
-            // 4. Tài khoản phổ biến (fallback)
+            // 6. Gợi ý bổ sung: các account phổ biến (fallback)
             var popularAccounts = _context.Accounts
-                .Where(acc => acc.AccountId != currentAccountId
-                              && !followedIds.Contains(acc.AccountId)
-                              && !blockedIds.Contains(acc.AccountId)
-                              && acc.Status == "verified"
-                              && acc.Role != "admin")
+                .Where(acc =>
+                    acc.AccountId != currentAccountId &&
+                    !followedIds.Contains(acc.AccountId) &&
+                    !blockedIds.Contains(acc.AccountId) &&
+                    acc.Status == "verified" &&
+                    acc.Role != "admin")
                 .Select(acc => new AccountRecommendDTO
                 {
                     AccountId = acc.AccountId,
                     FullName = acc.AccountProfile.FirstName + " " + acc.AccountProfile.LastName,
                     AvatarUrl = acc.AccountProfile.AvatarUrl,
+                    Position = acc.Bio.Position,
                     TotalFollowers = _context.Follows.Count(f => f.FollowingAccountId == acc.AccountId)
                 });
 
-            // 5. Gộp hai nguồn gợi ý và phân trang
+            // 7. Gộp và phân trang
             var finalQuery = fromInteractions
                 .Union(popularAccounts)
                 .Distinct()
@@ -365,6 +375,7 @@ namespace Infrastructure.Repository
             return new PagedResult<AccountRecommendDTO>(items, totalCount, pageNumber, pageSize);
         }
 
-      
+
+
     }
 }
