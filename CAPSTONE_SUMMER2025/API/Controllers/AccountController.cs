@@ -185,11 +185,11 @@ namespace API.Controllers
 
 
         [HttpGet("recommend")]
-        public async Task<IActionResult> RecommendAccounts(int accountId, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> RecommendAccounts(int currentAccountId, int pageNumber = 1, int pageSize = 10)
         {
             try
             {
-                var result = await _accountService.RecommendAccountsAsync(accountId, pageNumber, pageSize);
+                var result = await _accountService.RecommendAccountsAsync(currentAccountId, pageNumber, pageSize);
                 return Ok(result);
             }
             catch (ArgumentException ex)
