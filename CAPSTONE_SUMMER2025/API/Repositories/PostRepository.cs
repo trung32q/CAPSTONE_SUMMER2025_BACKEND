@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Org.BouncyCastle.Utilities;
 using System.Globalization;
 using System.Text;
+using API.Utils.Constants;
 
 namespace API.Repositories
 {
@@ -450,7 +451,7 @@ namespace API.Repositories
 
             // Lấy các bài đăng tuyển thực tập có trạng thái "Open"
             var internships = await _context.InternshipPosts
-                .Where(i => i.Status == "Open")
+                .Where(i => i.Status == StatusInternshipPost.ACTIVE)
                 .Select(i => new FeedItemDTO
                 {
                     PostId = i.InternshipId,
