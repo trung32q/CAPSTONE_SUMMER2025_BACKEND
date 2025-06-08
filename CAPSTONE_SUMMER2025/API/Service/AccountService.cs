@@ -234,6 +234,10 @@ namespace API.Service
             }
             return builder.ToString().Normalize(NormalizationForm.FormC);
         }
+        public async Task<bool> IsFollowingAsync(int followerAccountId, int followingAccountId)
+        {
+            return await _accountRepository.IsFollowingAsync(followerAccountId, followingAccountId);
+        }
     }
 }
 

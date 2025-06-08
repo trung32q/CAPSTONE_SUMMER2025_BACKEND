@@ -201,7 +201,12 @@ namespace API.Controllers
                 return Unauthorized(new { message = ex.Message });
             }
         }
-
+        [HttpGet("is-following")]
+        public async Task<IActionResult> IsFollowing(int followerAccountId, int followingAccountId)
+        {
+            var isFollowing = await _accountService.IsFollowingAsync(followerAccountId, followingAccountId);
+            return Ok(new { isFollowing });
+        }
 
     }
 }

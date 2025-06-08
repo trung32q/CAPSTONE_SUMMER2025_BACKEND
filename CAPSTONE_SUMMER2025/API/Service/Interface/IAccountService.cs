@@ -20,6 +20,6 @@ namespace API.Service.Interface
         Task<bool> UnfollowAsync(int followerAccountId, int followingAccountId);
         Task<PagedResult<AccountSearchResultDTO>> SearchAccountsAsync(string searchText, int pageNumber, int pageSize, int currentUser);
         Task<PagedResult<AccountRecommendDTO>> RecommendAccountsAsync(int currentAccountId, int pageNumber, int pageSize);
-
+        Task<bool> IsFollowingAsync(int followerAccountId, int followingAccountId);
     }
 }

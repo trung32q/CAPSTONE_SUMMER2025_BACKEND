@@ -184,7 +184,7 @@ namespace Infrastructure.Repository
                 .FirstOrDefaultAsync(f => f.FollowerAccountId == followerAccountId && f.FollowingAccountId == followingAccountId);
             if (existingFollow != null)
             {
-                return true; // Đã follow, không cần thêm
+                return false; // Đã follow, không cần thêm
             }
 
             // Thêm bản ghi follow
