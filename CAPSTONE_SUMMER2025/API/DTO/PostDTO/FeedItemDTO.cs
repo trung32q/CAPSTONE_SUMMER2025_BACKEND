@@ -13,6 +13,8 @@
         public int? StartupId { get; set; }
         public int? LikeCount { get; set; }
         public DateTime CreatedAt { get; set; }
-
+        public int Priority { get; set; }
+        public int InteractionCount { get; set; }
+        
     }
 }

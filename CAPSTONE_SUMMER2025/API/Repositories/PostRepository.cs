@@ -390,13 +390,17 @@ namespace API.Repositories
         }
 
         public async Task<List<FeedItemDTO>> GetRecommendedFeedAsync(int userId, int page, int pageSize)
-        {
+        {          
             // Lấy danh sách ID của các tài khoản mà người dùng đang theo dõi
             var followingIds = await _context.Follows
                 .Where(f => f.FollowerAccountId == userId)
                 .Select(f => f.FollowingAccountId)
                 .ToListAsync();
-
+            // Lấy danh sách PostId bị ẩn bởi currentAccountId
+            var hiddenPostIds = await _context.PostHides
+                .Where(h => h.AccountId == userId)
+                .Select(h => h.PostId)
+                .ToListAsync();
             // Lấy danh sách ID của các tài khoản đã bị người dùng chặn HOẶC đã chặn người dùng
             var blockedIds = await _context.AccountBlocks
                 .Where(b => b.BlockerAccountId == userId || b.BlockedAccountId == userId)
@@ -408,14 +412,19 @@ namespace API.Repositories
                 .Where(s => s.FollowerAccountId == userId)
                 .Select(s => s.FollowingStartUpId)
                 .ToListAsync();
-
+            // thời gian tạo trong vòng 7 ngày
+            var newAccountCutoffDate = DateTime.UtcNow.AddDays(-7);
             // Lấy các bài đăng dựa trên các tiêu chí đã định nghĩa
             var posts = await _context.Posts
                 .Where(p =>
 
-                    (followingIds.Contains(p.AccountId) || followedStartupIds.Contains(p.StartupId) || p.AccountId == userId) &&
+                    (followingIds.Contains(p.AccountId) || followedStartupIds.Contains(p.StartupId) || p.AccountId == userId || p.CreateAt.GetValueOrDefault() >= newAccountCutoffDate)         
+                   &&
                     // Loại trừ bài đăng từ bất kỳ tài khoản bị chặn nào (cả người dùng đã chặn và người dùng bị chặn)
-                    !blockedIds.Contains(p.AccountId))
+                    !blockedIds.Contains(p.AccountId)
+                    &&
+                    // Loại trừ bài đăng bị ẩn bởi user hiện tại
+                     !hiddenPostIds.Contains(p.PostId))
                 .Select(p => new FeedItemDTO
                 {
                     PostId = p.PostId,
@@ -428,12 +437,18 @@ namespace API.Repositories
                     CreatedAt = (DateTime)p.CreateAt,
                     StartupId = p.StartupId,
                     PostMedia = p.PostMedia != null
+
                 ? p.PostMedia.Select(pm => new PostMediaDTO
                 {
                     MediaUrl = pm.MediaUrl,
                     DisplayOrder = pm.DisplayOrder
                 }).ToList()
-                : new List<PostMediaDTO>()
+                : new List<PostMediaDTO>(),
+                    Priority = p.AccountId == userId ? 1
+                  : followingIds.Contains(p.AccountId) ? 2
+                  : (p.StartupId != null && followedStartupIds.Contains(p.StartupId.Value)) ? 3
+                  : 4,
+                    InteractionCount = (p.PostLikes.Count() + p.PostComments.Count())
                 })
                 .ToListAsync();
 
@@ -469,11 +484,14 @@ namespace API.Repositories
                     Title = "Internship",
                     Content = i.Position.Title + i.Description + i.Requirement + i.Benefits,
                     CreatedAt = (DateTime)i.CreateAt,
+                    Priority=3
                 })
                 .ToListAsync();
 
             // Kết hợp các bài đăng và thông báo thực tập, sắp xếp theo ngày tạo giảm dần và áp dụng phân trang
             var combined = posts.Concat(internships)
+                .OrderBy(x => x.Priority) // Bài ưu tiên nhỏ hơn sẽ lên trước
+                .ThenByDescending(x => x.Priority == 4 ? x.InteractionCount : 0) // Chỉ ưu tiên interaction nếu là priority 4
                 .OrderByDescending(x => x.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
