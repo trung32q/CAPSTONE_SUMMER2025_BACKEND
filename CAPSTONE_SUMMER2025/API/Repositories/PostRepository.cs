@@ -416,15 +416,12 @@ namespace API.Repositories
             var newAccountCutoffDate = DateTime.UtcNow.AddDays(-7);
             // Lấy các bài đăng dựa trên các tiêu chí đã định nghĩa
             var posts = await _context.Posts
-                .Where(p =>
-
-                    (followingIds.Contains(p.AccountId) || followedStartupIds.Contains(p.StartupId) || p.AccountId == userId)         
-                   &&
-                    // Loại trừ bài đăng từ bất kỳ tài khoản bị chặn nào (cả người dùng đã chặn và người dùng bị chặn)
-                    !blockedIds.Contains(p.AccountId)
-                    &&
+                .Where(p =>!blockedIds.Contains(p.AccountId)&&
                     // Loại trừ bài đăng bị ẩn bởi user hiện tại
                      !hiddenPostIds.Contains(p.PostId))
+                .Include(p => p.PostLikes)
+                .Include(p => p.PostComments)
+                .Include(p => p.PostMedia)
                 .Select(p => new FeedItemDTO
                 {
                     PostId = p.PostId,
@@ -444,11 +441,12 @@ namespace API.Repositories
                     DisplayOrder = pm.DisplayOrder
                 }).ToList()
                 : new List<PostMediaDTO>(),
+                    InteractionCount = (p.PostLikes.Count() + p.PostComments.Count()),
                     Priority = p.AccountId == userId ? 1
                   : followingIds.Contains(p.AccountId) ? 2
                   : (p.StartupId != null && followedStartupIds.Contains(p.StartupId.Value)) ? 3
                   : 4,
-                    InteractionCount = (p.PostLikes.Count() + p.PostComments.Count())
+                   
                 })
                 .ToListAsync();
 
@@ -491,8 +489,8 @@ namespace API.Repositories
             // Kết hợp các bài đăng và thông báo thực tập, sắp xếp theo ngày tạo giảm dần và áp dụng phân trang
             var combined = posts.Concat(internships)
                 .OrderBy(x => x.Priority) // Bài ưu tiên nhỏ hơn sẽ lên trước
-                .ThenByDescending(x => x.Priority == 4 ? x.InteractionCount : 0) // Chỉ ưu tiên interaction nếu là priority 4
-                .OrderByDescending(x => x.CreatedAt)
+                 .ThenByDescending(x => x.Priority == 4 ? x.InteractionCount : int.MinValue) // nếu Priority bằng 4 thì ưu tiên bài nhiều tương tác
+                 .ThenByDescending(x => x.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
