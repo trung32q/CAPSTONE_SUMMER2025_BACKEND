@@ -418,7 +418,7 @@ namespace API.Repositories
             var posts = await _context.Posts
                 .Where(p =>
 
-                    (followingIds.Contains(p.AccountId) || followedStartupIds.Contains(p.StartupId) || p.AccountId == userId || p.CreateAt.GetValueOrDefault() >= newAccountCutoffDate)         
+                    (followingIds.Contains(p.AccountId) || followedStartupIds.Contains(p.StartupId) || p.AccountId == userId)         
                    &&
                     // Loại trừ bài đăng từ bất kỳ tài khoản bị chặn nào (cả người dùng đã chặn và người dùng bị chặn)
                     !blockedIds.Contains(p.AccountId)
