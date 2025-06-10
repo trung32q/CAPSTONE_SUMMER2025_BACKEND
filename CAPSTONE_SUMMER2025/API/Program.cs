@@ -122,7 +122,9 @@ builder.Services.AddScoped<IChatGPTRepository, ChatGPTRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IFptAIRepository, FptAIRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IStartupRepository, StartupRepository>();
 
+builder.Services.AddScoped<IStartupService, StartupService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICCCDService, CCCDService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
