@@ -26,5 +26,13 @@ namespace API.Controllers
             var result = await _service.GetAllStartupsAsync();
             return Ok(result);
         }
+        [HttpGet("check-membership")]
+        public async Task<IActionResult> CheckMembership(int accountID)
+        {
+            if (accountID <= 0)
+                return BadRequest(new { message = "accountID không hợp lệ!" });
+            bool isMember = await _service.IsMemberOfAnyStartup(accountID);
+            return Ok(new { isMember });
+        }
     }
 }

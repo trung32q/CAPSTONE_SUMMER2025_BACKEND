@@ -10,5 +10,6 @@ namespace API.Repositories.Interfaces
         Task AddStartupCategoryAsync(StartupCategory startupCategory);
         Task SaveChangesAsync();
         Task<List<Startup>> GetAllStartupsAsync();
+        Task<bool> IsMemberOfAnyStartup(int accountId);
     }
 }

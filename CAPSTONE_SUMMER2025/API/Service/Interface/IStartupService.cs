@@ -6,5 +6,6 @@ namespace API.Service.Interface
     {
         Task<int> CreateStartupAsync(CreateStartupRequest request);
         Task<List<ResStartupDTO>> GetAllStartupsAsync();
+        Task<bool> IsMemberOfAnyStartup(int accountId);
     }
 }

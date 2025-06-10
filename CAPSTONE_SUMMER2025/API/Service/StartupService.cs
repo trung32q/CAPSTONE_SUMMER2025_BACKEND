@@ -118,6 +118,8 @@ namespace API.Service
 
             return result;
         }
+        public async Task<bool> IsMemberOfAnyStartup(int accountId)
+       => await _repo.IsMemberOfAnyStartup(accountId);
 
     }
 }

@@ -50,5 +50,9 @@ namespace API.Repositories
                     .ThenInclude(sc => sc.Category)
                 .ToListAsync();
         }
+        public async Task<bool> IsMemberOfAnyStartup(int accountId)
+        {
+            return await _context.StartupMembers.AnyAsync(sm => sm.AccountId == accountId);
+        }
     }
 }
