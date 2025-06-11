@@ -54,7 +54,7 @@ namespace API.Service
                 StartupId = startup.StartupId,
                 AccountId = request.CreatorAccountId,
                 RoleId = founderRole.RoleId,
-                JoinedAt = DateTime.UtcNow
+                JoinedAt = DateTime.Now
             };
             await _repo.AddMemberAsync(founderMember);
 
@@ -76,7 +76,7 @@ namespace API.Service
                         StartupId = startup.StartupId,
                         AccountId = accId,
                         RoleId = memberRole.RoleId,
-                        JoinedAt = DateTime.UtcNow
+                        JoinedAt = DateTime.Now
                     };
                     await _repo.AddMemberAsync(member);
                 }
@@ -143,7 +143,7 @@ namespace API.Service
                 AccountId = dto.CreatorAccountId,
                 MemberTitle = string.IsNullOrWhiteSpace(dto.MemberTitle) ? "Admin" : dto.MemberTitle,
                 CanAdministerChannel = true,
-                JoinedAt = DateTime.UtcNow
+                JoinedAt = DateTime.Now
             };
 
             await _repo.AddMemberAsync(creatorMember);
@@ -175,7 +175,7 @@ namespace API.Service
                     AccountId = m.AccountId,
                     MemberTitle = string.IsNullOrWhiteSpace(m.MemberTitle) ? "Member" : m.MemberTitle,
                     CanAdministerChannel = false,
-                    JoinedAt = DateTime.UtcNow
+                    JoinedAt = DateTime.Now
                 }).ToList();
 
             await _repo.AddMembersAsync(newMembers);
@@ -259,7 +259,7 @@ namespace API.Service
                     ChatRoomId = request.ChatRoomId,
                     AccountId = request.AccountId,
                     MessageContent = request.MessageContent,
-                    SentAt = DateTime.UtcNow,
+                    SentAt = DateTime.Now,
                     IsDeleted = false
                 };
 
