@@ -12,6 +12,10 @@ using Microsoft.EntityFrameworkCore;
 using API.DTO.ProfileDTO;
 using API.DTO.BioDTO;
 using System.Globalization;
+using Amazon.Util;
+using System.Reflection.Metadata;
+using API.Utils;
+using API.Utils.Constants;
 namespace Infrastructure.Repository
 {
     public class AccountRepository : IAccountRepository
@@ -332,8 +336,8 @@ namespace Infrastructure.Repository
                     relatedAccountIds.Contains(acc.AccountId) &&
                     !followedIds.Contains(acc.AccountId) &&
                     !blockedIds.Contains(acc.AccountId) &&
-                    acc.Status == "verified" &&
-                    acc.Role != "admin")
+                    acc.Status == AccountStatusConst.VERIFIED &&
+                    acc.Role != RoleConst.ADMIN)
                 .Select(acc => new AccountRecommendDTO
                 {
                     AccountId = acc.AccountId,
@@ -349,8 +353,8 @@ namespace Infrastructure.Repository
                     acc.AccountId != currentAccountId &&
                     !followedIds.Contains(acc.AccountId) &&
                     !blockedIds.Contains(acc.AccountId) &&
-                    acc.Status == "verified" &&
-                    acc.Role != "admin")
+                    acc.Status == AccountStatusConst.VERIFIED &&
+                    acc.Role != RoleConst.ADMIN)
                 .Select(acc => new AccountRecommendDTO
                 {
                     AccountId = acc.AccountId,
