@@ -26,5 +26,6 @@ namespace API.Repositories.Interfaces
 
         IQueryable<ChatMessage> GetMessagesByRoomId(int chatRoomId);
         Task<bool> IsMemberOfAnyStartup(int accountId);
+        Task<List<StartupStage>> GetAllAsync();
     }
 }

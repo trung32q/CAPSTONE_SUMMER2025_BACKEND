@@ -17,6 +17,7 @@ namespace API.Service.Interface
         Task SendMessageAsync(SendMessageRequest request);
 
         Task<PagedResult<ChatMessageDTO>> GetMessagesByRoomIdAsync(int chatRoomId, int pageNumber, int pageSize);
+        Task<List<StartupStage>> GetAllStagesAsync();
 
     }
 }

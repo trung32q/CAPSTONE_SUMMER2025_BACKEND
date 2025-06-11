@@ -307,5 +307,9 @@ namespace API.Service
                 throw new ApplicationException("Không thể lấy tin nhắn.");
             }
         }
+        public async Task<List<StartupStage>> GetAllStagesAsync()
+        {
+            return await _repo.GetAllAsync();
+        }
     }
 }

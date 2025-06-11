@@ -162,5 +162,9 @@ namespace API.Repositories
         {
             return await _context.StartupMembers.AnyAsync(sm => sm.AccountId == accountId);
         }
+        public async Task<List<StartupStage>> GetAllAsync()
+        {
+            return await _context.StartupStages.ToListAsync();
+        }
     }
 }

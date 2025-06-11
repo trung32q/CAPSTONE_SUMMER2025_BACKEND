@@ -151,5 +151,11 @@ namespace API.Controllers
                 return StatusCode(500, new { message = "Lỗi hệ thống" });
             }
         }
+        [HttpGet("stage")]
+        public async Task<IActionResult> GetAllstage()
+        {
+            var stages = await _service.GetAllStagesAsync();
+            return Ok(stages);
+        }
     }
 }
