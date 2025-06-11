@@ -1,9 +1,11 @@
-﻿using API.DTO.StartupDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.StartupDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
 using AutoMapper;
 using Infrastructure.Models;
+using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Ocsp;
 
 namespace API.Service
@@ -13,11 +15,14 @@ namespace API.Service
         private readonly IStartupRepository _repo;
         private readonly IMapper _mapper;
         private readonly IFilebaseHandler _filebaseHandler;
-        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler)
+        private readonly ILogger<StartupService> _logger;
+
+        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger)
         {
             _repo = repo;
             _mapper = mapper;
             _filebaseHandler = filebaseHandler;
+            _logger = logger;
         }
         public async Task<int> CreateStartupAsync(CreateStartupRequest request)
         {
@@ -121,5 +126,186 @@ namespace API.Service
         public async Task<bool> IsMemberOfAnyStartup(int accountId)
        => await _repo.IsMemberOfAnyStartup(accountId);
 
+        // hàm tạo chatroom
+        public async Task<ChatRoom> CreateChatRoomAsync(CreateChatRoomDTO dto)
+        {
+            var chatRoom = new ChatRoom
+            {
+                RoomName = dto.RoomName,
+                StartupId = dto.StartupId
+            };
+
+            var createdRoom = await _repo.CreateChatRoomAsync(chatRoom);
+
+            var creatorMember = new ChatRoomMember
+            {
+                ChatRoomId = createdRoom.ChatRoomId,
+                AccountId = dto.CreatorAccountId,
+                MemberTitle = string.IsNullOrWhiteSpace(dto.MemberTitle) ? "Admin" : dto.MemberTitle,
+                CanAdministerChannel = true,
+                JoinedAt = DateTime.UtcNow
+            };
+
+            await _repo.AddMemberAsync(creatorMember);
+            return createdRoom;
+        }
+
+        // hàm thêm người vào chatroom
+        public async Task AddMembersToChatRoomAsync(AddMembersDTO dto)
+        {
+            var isAdmin = await _repo.IsChatRoomAdminAsync(dto.ChatRoomId, dto.CurrentUserId);
+            if (!isAdmin)
+                throw new UnauthorizedAccessException("Bạn không có quyền thêm thành viên.");
+
+            var room = await _repo.GetChatRoomByIdAsync(dto.ChatRoomId);
+
+            var accountIds = dto.MembersToAdd.Select(m => m.AccountId).ToList();
+            var validMemberIds = await _repo.FilterValidStartupMembersAsync((int)room.StartupId, accountIds);
+
+            var existingMemberIds = await _repo.GetExistingChatRoomMemberIdsAsync(dto.ChatRoomId);
+            var idsToAdd = validMemberIds.Except(existingMemberIds).ToList();
+
+            if (!idsToAdd.Any()) return;
+
+            var newMembers = dto.MembersToAdd
+                .Where(m => idsToAdd.Contains(m.AccountId))
+                .Select(m => new ChatRoomMember
+                {
+                    ChatRoomId = dto.ChatRoomId,
+                    AccountId = m.AccountId,
+                    MemberTitle = string.IsNullOrWhiteSpace(m.MemberTitle) ? "Member" : m.MemberTitle,
+                    CanAdministerChannel = false,
+                    JoinedAt = DateTime.UtcNow
+                }).ToList();
+
+            await _repo.AddMembersAsync(newMembers);
+        }
+
+        //lấy ra các member trong startup theo startupId
+        public async Task<List<StartupMemberDTO>> GetMembersByStartupIdAsync(int startupId)
+        {
+            var entities = await _repo.GetByStartupIdAsync(startupId);
+
+            var result = entities.Select(sm => new StartupMemberDTO
+            {
+                AccountId = (int)sm.AccountId,
+                FullName = $"{sm.Account?.AccountProfile?.FirstName} {sm.Account?.AccountProfile?.LastName}",
+                RoleName = sm.Role?.RoleName,
+                AvatarUrl = sm.Account.AccountProfile.AvatarUrl
+            }).ToList();
+
+            return result;
+        }
+
+        // hàm lấy ra các member trong 1 chatroom theo chatRoomId
+        public async Task<List<ChatRoomMemberDTO>> GetMembersByChatRoomIdAsync(int chatRoomId)
+        {
+            try
+            {
+                var members = await _repo.GetMembersByChatRoomIdAsync(chatRoomId);
+
+                return members.Select(m => new ChatRoomMemberDTO
+                {
+                    AccountId = (int)m.AccountId,
+                    FullName = $"{m.Account?.AccountProfile?.FirstName} {m.Account?.AccountProfile?.LastName}",
+                    MemberTitle = m.MemberTitle,
+                    CanAdministerChannel = (bool)m.CanAdministerChannel,
+                    AvatarUrl = m.Account.AccountProfile.AvatarUrl
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error fetching members in chatRoomId = {chatRoomId}");
+                throw new ApplicationException("Có lỗi khi lấy thành viên phòng chat.");
+            }
+
+        }
+
+        // lấy ra các chatroom mà account thuộc về
+        public async Task<PagedResult<ChatRoomDTO>> GetChatRoomsByAccountIdAsync(int accountId, int pageNumber, int pageSize)
+        {
+            try
+            {
+                var query = _repo.GetChatRoomsByAccountId(accountId);
+
+                var totalCount = await query.CountAsync();
+
+                var items = await query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(cr => new ChatRoomDTO
+                    {
+                        ChatRoomId = cr.ChatRoomId,
+                        RoomName = cr.RoomName
+                    })
+                    .ToListAsync();
+
+                return new PagedResult<ChatRoomDTO>(items, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting chat rooms for accountId = {accountId}");
+                throw new ApplicationException("Lỗi khi lấy danh sách phòng chat.");
+            }
+        }
+
+        // gửi tin nhắn
+        public async Task SendMessageAsync(SendMessageRequest request)
+        {
+            try
+            {
+                var message = new ChatMessage
+                {
+                    ChatRoomId = request.ChatRoomId,
+                    AccountId = request.AccountId,
+                    MessageContent = request.MessageContent,
+                    SentAt = DateTime.UtcNow,
+                    IsDeleted = false
+                };
+
+                await _repo.AddMessageAsync(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending message");
+                throw new ApplicationException("Không thể gửi tin nhắn lúc này.");
+            }
+        }
+
+        // lấy ra các message trong 1 chatroom
+        public async Task<PagedResult<ChatMessageDTO>> GetMessagesByRoomIdAsync(int chatRoomId, int pageNumber, int pageSize)
+        {
+            try
+            {
+                var query = _repo.GetMessagesByRoomId(chatRoomId);
+
+                var totalCount = await query.CountAsync();
+
+                var items = await query
+                    .OrderByDescending(m => m.SentAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(m => new ChatMessageDTO
+                    {
+                        AccountId = (int) m.AccountId,
+                        MemberTitle = m.Account.ChatRoomMembers
+                            .FirstOrDefault(cm => cm.ChatRoomId == chatRoomId).MemberTitle,
+                        MessageContent = m.MessageContent,
+                        SentAt =(DateTime) m.SentAt,
+                        IsDeleted =(bool) m.IsDeleted,
+                        DeletedAt = m.DeletedAt,
+                        AvatarUrl = m.Account.AccountProfile.AvatarUrl,
+                        MessageId = m.ChatMessageId
+                    })
+                    .ToListAsync();
+
+                return new PagedResult<ChatMessageDTO>(items, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving paged chat messages");
+                throw new ApplicationException("Không thể lấy tin nhắn.");
+            }
+        }
     }
 }

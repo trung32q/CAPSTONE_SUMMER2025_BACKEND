@@ -491,7 +491,7 @@ namespace API.Service
                 AccountId = dto.AccountId,
                 PostId = dto.PostId,
                 ReasonId = dto.ReasonId,
-                Status = "Pending Review",
+                Status = Utils.Constants.PostReportStatusConst.PENDING,
             };
 
             var created = await _repository.CreatePostReportAsync(entity);

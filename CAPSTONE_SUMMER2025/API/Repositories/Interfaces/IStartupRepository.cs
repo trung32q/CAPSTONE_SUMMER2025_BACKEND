@@ -1,4 +1,5 @@
-﻿using Infrastructure.Models;
+﻿using API.DTO.StartupDTO;
+using Infrastructure.Models;
 
 namespace API.Repositories.Interfaces
 {
@@ -10,6 +11,20 @@ namespace API.Repositories.Interfaces
         Task AddStartupCategoryAsync(StartupCategory startupCategory);
         Task SaveChangesAsync();
         Task<List<Startup>> GetAllStartupsAsync();
-        Task<bool> IsMemberOfAnyStartup(int accountId);
+        Task<ChatRoom> CreateChatRoomAsync(ChatRoom room);
+        Task AddMemberAsync(ChatRoomMember member);
+        Task AddMembersAsync(List<ChatRoomMember> members);
+        Task<ChatRoom> GetChatRoomByIdAsync(int chatRoomId);
+        Task<bool> IsStartupMemberAsync(int startupId, int accountId);
+        Task<bool> IsChatRoomAdminAsync(int chatRoomId, int accountId);
+        Task<List<int>> FilterValidStartupMembersAsync(int startupId, List<int> accountIds);
+        Task<List<int>> GetExistingChatRoomMemberIdsAsync(int chatRoomId);
+        Task<List<StartupMember>> GetByStartupIdAsync(int startupId);
+        Task<List<ChatRoomMember>> GetMembersByChatRoomIdAsync(int chatRoomId);
+        IQueryable<ChatRoom> GetChatRoomsByAccountId(int accountId);
+        Task AddMessageAsync(ChatMessage message);
+
+        IQueryable<ChatMessage> GetMessagesByRoomId(int chatRoomId);
+
     }
 }
