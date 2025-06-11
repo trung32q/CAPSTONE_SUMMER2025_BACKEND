@@ -8,7 +8,7 @@ namespace API.Service.Interface
     {
         Task<int> CreateStartupAsync(CreateStartupRequest request);
         Task<List<ResStartupDTO>> GetAllStartupsAsync();
-
+        Task<bool> IsMemberOfAnyStartup(int accountId);
         Task<ChatRoom> CreateChatRoomAsync(CreateChatRoomDTO dto);
         Task AddMembersToChatRoomAsync(AddMembersDTO dto);
         Task<List<StartupMemberDTO>> GetMembersByStartupIdAsync(int startupId);

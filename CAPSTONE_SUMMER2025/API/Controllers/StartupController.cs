@@ -38,7 +38,14 @@ namespace API.Controllers
             var room = await _service.CreateChatRoomAsync(dto);
             return Ok(new { message = "Created", roomId = room.ChatRoomId });
         }
-
+        [HttpGet("check-membership")]
+        public async Task<IActionResult> CheckMembership(int accountID)
+        {
+            if (accountID <= 0)
+                return BadRequest(new { message = "accountID không hợp lệ!" });
+            bool isMember = await _service.IsMemberOfAnyStartup(accountID);
+            return Ok(new { isMember });
+        }
         //thêm member
         [HttpPost("add-chatroom-members")]
         public async Task<IActionResult> AddMembers([FromBody] AddMembersDTO dto)

@@ -25,6 +25,6 @@ namespace API.Repositories.Interfaces
         Task AddMessageAsync(ChatMessage message);
 
         IQueryable<ChatMessage> GetMessagesByRoomId(int chatRoomId);
-
+        Task<bool> IsMemberOfAnyStartup(int accountId);
     }
 }
