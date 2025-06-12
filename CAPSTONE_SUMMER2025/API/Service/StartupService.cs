@@ -13,16 +13,18 @@ namespace API.Service
     public class StartupService : IStartupService
     {
         private readonly IStartupRepository _repo;
+        private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
         private readonly IFilebaseHandler _filebaseHandler;
         private readonly ILogger<StartupService> _logger;
 
-        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger)
+        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository)
         {
             _repo = repo;
             _mapper = mapper;
             _filebaseHandler = filebaseHandler;
             _logger = logger;
+            _accountRepository = accountRepository;
         }
         public async Task<int> CreateStartupAsync(CreateStartupRequest request)
         {
@@ -137,11 +139,13 @@ namespace API.Service
 
             var createdRoom = await _repo.CreateChatRoomAsync(chatRoom);
 
+            var accountInfor = await _accountRepository.GetAccountByAccountIDAsync(dto.CreatorAccountId);
+
             var creatorMember = new ChatRoomMember
             {
                 ChatRoomId = createdRoom.ChatRoomId,
                 AccountId = dto.CreatorAccountId,
-                MemberTitle = string.IsNullOrWhiteSpace(dto.MemberTitle) ? "Admin" : dto.MemberTitle,
+                MemberTitle = string.IsNullOrWhiteSpace(dto.MemberTitle) ? accountInfor.AccountProfile.FirstName + " " + accountInfor.AccountProfile.LastName : dto.MemberTitle,
                 CanAdministerChannel = true,
                 JoinedAt = DateTime.Now
             };
@@ -165,21 +169,34 @@ namespace API.Service
             var existingMemberIds = await _repo.GetExistingChatRoomMemberIdsAsync(dto.ChatRoomId);
             var idsToAdd = validMemberIds.Except(existingMemberIds).ToList();
 
+            string fullname = "";
+
             if (!idsToAdd.Any()) return;
 
-            var newMembers = dto.MembersToAdd
-                .Where(m => idsToAdd.Contains(m.AccountId))
-                .Select(m => new ChatRoomMember
+            var newMembers = new List<ChatRoomMember>();
+
+            foreach (var m in dto.MembersToAdd)
+            {
+                if (!idsToAdd.Contains(m.AccountId)) continue;
+                
+                var accountInfor = await _accountRepository.GetAccountByAccountIDAsync(m.AccountId);
+                fullname = accountInfor.AccountProfile.FirstName + " " + accountInfor.AccountProfile.LastName;
+                var member = new ChatRoomMember
                 {
                     ChatRoomId = dto.ChatRoomId,
                     AccountId = m.AccountId,
-                    MemberTitle = string.IsNullOrWhiteSpace(m.MemberTitle) ? "Member" : m.MemberTitle,
+                    MemberTitle = string.IsNullOrWhiteSpace(m.MemberTitle) ? fullname : m.MemberTitle,
                     CanAdministerChannel = false,
                     JoinedAt = DateTime.Now
-                }).ToList();
+                };
+
+
+                newMembers.Add(member);
+            }
 
             await _repo.AddMembersAsync(newMembers);
         }
+
 
         //lấy ra các member trong startup theo startupId
         public async Task<List<StartupMemberDTO>> GetMembersByStartupIdAsync(int startupId)
