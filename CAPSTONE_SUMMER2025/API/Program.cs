@@ -151,7 +151,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+//khai báo signalr
 app.MapHub<NotificationHub>("/hubs/notification").RequireCors("AllowAll");
+app.MapHub<MessageHub>("/hubs/messagehub").RequireCors("AllowAll"); // Định nghĩa endpoint cho Hub
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

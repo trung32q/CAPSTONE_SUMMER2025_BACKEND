@@ -22,10 +22,11 @@ namespace API.Repositories.Interfaces
         Task<List<StartupMember>> GetByStartupIdAsync(int startupId);
         Task<List<ChatRoomMember>> GetMembersByChatRoomIdAsync(int chatRoomId);
         IQueryable<ChatRoom> GetChatRoomsByAccountId(int accountId);
-        Task AddMessageAsync(ChatMessage message);
-
+        Task<int> AddMessageAsync(ChatMessage message);
         IQueryable<ChatMessage> GetMessagesByRoomId(int chatRoomId);
         Task<bool> IsMemberOfAnyStartup(int accountId);
         Task<List<StartupStage>> GetAllAsync();
+        Task<ChatMessage?> GetMessageWithDetailsByIdAsync(int messageId);
+
     }
 }

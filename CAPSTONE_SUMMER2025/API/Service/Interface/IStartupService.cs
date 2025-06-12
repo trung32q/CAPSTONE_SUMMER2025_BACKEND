@@ -14,10 +14,11 @@ namespace API.Service.Interface
         Task<List<StartupMemberDTO>> GetMembersByStartupIdAsync(int startupId);
         Task<List<ChatRoomMemberDTO>> GetMembersByChatRoomIdAsync(int chatRoomId);
         Task<PagedResult<ChatRoomDTO>> GetChatRoomsByAccountIdAsync(int accountId, int pageNumber, int pageSize);
-        Task SendMessageAsync(SendMessageRequest request);
-
+        Task<ChatMessageDTO> SendMessageAsync(SendMessageRequest request);
         Task<PagedResult<ChatMessageDTO>> GetMessagesByRoomIdAsync(int chatRoomId, int pageNumber, int pageSize);
         Task<List<StartupStage>> GetAllStagesAsync();
+        Task<ChatMessageDTO?> GetMessageByIdAsync(int messageId);
+
 
     }
 }

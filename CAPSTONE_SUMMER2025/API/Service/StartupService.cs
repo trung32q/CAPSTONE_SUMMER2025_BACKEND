@@ -17,14 +17,16 @@ namespace API.Service
         private readonly IMapper _mapper;
         private readonly IFilebaseHandler _filebaseHandler;
         private readonly ILogger<StartupService> _logger;
+        private readonly CAPSTONE_SUMMER2025Context _context;
 
-        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository)
+        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext)
         {
             _repo = repo;
             _mapper = mapper;
             _filebaseHandler = filebaseHandler;
             _logger = logger;
             _accountRepository = accountRepository;
+            _context = conntext;
         }
         public async Task<int> CreateStartupAsync(CreateStartupRequest request)
         {
@@ -178,7 +180,7 @@ namespace API.Service
             foreach (var m in dto.MembersToAdd)
             {
                 if (!idsToAdd.Contains(m.AccountId)) continue;
-                
+
                 var accountInfor = await _accountRepository.GetAccountByAccountIDAsync(m.AccountId);
                 fullname = accountInfor.AccountProfile.FirstName + " " + accountInfor.AccountProfile.LastName;
                 var member = new ChatRoomMember
@@ -267,7 +269,7 @@ namespace API.Service
         }
 
         // gửi tin nhắn
-        public async Task SendMessageAsync(SendMessageRequest request)
+        public async Task<ChatMessageDTO> SendMessageAsync(SendMessageRequest request)
         {
             try
             {
@@ -280,7 +282,10 @@ namespace API.Service
                     IsDeleted = false
                 };
 
-                await _repo.AddMessageAsync(message);
+                int messageId = await _repo.AddMessageAsync(message);
+
+                return await GetMessageByIdAsync(messageId);
+
             }
             catch (Exception ex)
             {
@@ -304,12 +309,12 @@ namespace API.Service
                     .Take(pageSize)
                     .Select(m => new ChatMessageDTO
                     {
-                        AccountId = (int) m.AccountId,
+                        AccountId = (int)m.AccountId,
                         MemberTitle = m.Account.ChatRoomMembers
                             .FirstOrDefault(cm => cm.ChatRoomId == chatRoomId).MemberTitle,
                         MessageContent = m.MessageContent,
-                        SentAt =(DateTime) m.SentAt,
-                        IsDeleted =(bool) m.IsDeleted,
+                        SentAt = (DateTime)m.SentAt,
+                        IsDeleted = (bool)m.IsDeleted,
                         DeletedAt = m.DeletedAt,
                         AvatarUrl = m.Account.AccountProfile.AvatarUrl,
                         MessageId = m.ChatMessageId
@@ -327,6 +332,33 @@ namespace API.Service
         public async Task<List<StartupStage>> GetAllStagesAsync()
         {
             return await _repo.GetAllAsync();
+        }
+    
+
+        //lấy thông tin của message thông qua messageId
+        public async Task<ChatMessageDTO?> GetMessageByIdAsync(int messageId)
+        {
+            var entity = await _repo.GetMessageWithDetailsByIdAsync(messageId);
+            if (entity == null) return null;
+
+            // lấy MemberTitle từ ChatRoomMembers (không include được từ ChatMessage)
+            var member = await _context.ChatRoomMembers
+                .FirstOrDefaultAsync(m => m.ChatRoomId == entity.ChatRoomId && m.AccountId == entity.AccountId);
+
+            var dto = new ChatMessageDTO
+            {
+                MessageId = entity.ChatMessageId,
+                AccountId = (int)entity.AccountId,
+                ChatRoomId = (int)entity.ChatRoomId,
+                MessageContent = entity.MessageContent,
+                SentAt = (DateTime)entity.SentAt,
+                IsDeleted = (bool)entity.IsDeleted,
+                DeletedAt = entity.DeletedAt,
+                AvatarUrl = entity.Account?.AccountProfile?.AvatarUrl ?? "",
+                MemberTitle = member?.MemberTitle ?? ""
+            };
+
+            return dto;
         }
     }
 }

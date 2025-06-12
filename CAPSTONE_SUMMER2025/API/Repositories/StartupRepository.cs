@@ -143,11 +143,13 @@ namespace API.Repositories
 
 
         // gửi tin nhắn
-        public async Task AddMessageAsync(ChatMessage message)
+        public async Task<int> AddMessageAsync(ChatMessage message)
         {
             await _context.ChatMessages.AddAsync(message);
             await _context.SaveChangesAsync();
+            return message.ChatMessageId; // Trả về ID sau khi đã lưu
         }
+
 
         // lấy ra các message trong 1 chatroom
         public IQueryable<ChatMessage> GetMessagesByRoomId(int chatRoomId)
@@ -165,6 +167,15 @@ namespace API.Repositories
         public async Task<List<StartupStage>> GetAllAsync()
         {
             return await _context.StartupStages.ToListAsync();
+        }
+        //lấy ra thông tin của message thông qua messageId
+        public async Task<ChatMessage?> GetMessageWithDetailsByIdAsync(int messageId)
+        {
+            return await _context.ChatMessages
+                .Include(m => m.Account)
+                    .ThenInclude(a => a.AccountProfile)
+                .Include(m => m.ChatRoom) // optional nếu cần
+                .FirstOrDefaultAsync(m => m.ChatMessageId == messageId);
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using API.DTO.StartupDTO;
+using API.Hubs;
 using API.Service;
 using API.Service.Interface;
 using API.Utils.Constants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers
 {
@@ -14,12 +16,15 @@ namespace API.Controllers
         private readonly IStartupService _service;
         private readonly IAccountService _accountservice;
         private readonly ILogger<StartupService> _logger;
+        private readonly IHubContext<MessageHub> _hubContext;
 
-        public StartupController(IStartupService service, ILogger<StartupService> logger, IAccountService accountservice)
+
+        public StartupController(IStartupService service, ILogger<StartupService> logger, IAccountService accountservice, IHubContext<MessageHub> hubContext)
         {
             _service = service;
             _logger = logger;
             _accountservice = accountservice;
+            _hubContext = hubContext;
         }
         [HttpPost("create")]
         public async Task<IActionResult> CreateStartup([FromForm] CreateStartupRequest req)
@@ -120,14 +125,24 @@ namespace API.Controllers
             }
         }
 
-        // gửi tin nhắn
-        [HttpPost("message")]
+
+        // gửi message
+         [HttpPost("message")]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
         {
             try
             {
-                await _service.SendMessageAsync(request);
-                return Ok(new { message = "Gửi thành công" });
+            // 1. Lưu message vào DB qua service
+            var message = await _service.SendMessageAsync(request);
+
+            // 2. Gửi realtime qua SignalR cho Receiver (và Sender nếu muốn đồng bộ nhiều tab)
+            await _hubContext.Clients.User(message.ChatRoomId.ToString())
+                .SendAsync("ReceiveMessage", message);
+
+            await _hubContext.Clients.User(message.ChatRoomId.ToString())
+                .SendAsync("ReceiveMessage", message);
+
+            return Ok(message);
             }
             catch (ApplicationException ex)
             {
@@ -136,8 +151,8 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi hệ thống");
-                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            _logger.LogError(ex, "Lỗi hệ thống");
+            return StatusCode(500, new { message = "Lỗi hệ thống" });
             }
         }
 
