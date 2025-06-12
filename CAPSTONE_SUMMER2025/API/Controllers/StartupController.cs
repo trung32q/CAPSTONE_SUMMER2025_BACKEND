@@ -3,6 +3,7 @@ using API.Hubs;
 using API.Service;
 using API.Service.Interface;
 using API.Utils.Constants;
+using Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -135,12 +136,9 @@ namespace API.Controllers
             // 1. Lưu message vào DB qua service
             var message = await _service.SendMessageAsync(request);
 
-            // 2. Gửi realtime qua SignalR cho Receiver (và Sender nếu muốn đồng bộ nhiều tab)
-            await _hubContext.Clients.User(message.ChatRoomId.ToString())
-                .SendAsync("ReceiveMessage", message);
-
-            await _hubContext.Clients.User(message.ChatRoomId.ToString())
-                .SendAsync("ReceiveMessage", message);
+                // 2. Gửi realtime qua SignalR cho Receiver (và Sender nếu muốn đồng bộ nhiều tab)
+                await _hubContext.Clients.Group(request.ChatRoomId.ToString())
+         .SendAsync("ReceiveMessage", message);
 
             return Ok(message);
             }

@@ -86,16 +86,16 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddSignalR();
-//Config CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder =>
+    options.AddPolicy("AllowFrontend",
+        policy =>
         {
-            builder
-                .AllowAnyOrigin()
+            policy
+                .WithOrigins("https://localhost:7291") // ĐÚNG domain FE của bạn, KHÔNG được dùng "*"
                 .AllowAnyMethod()
-                .AllowAnyHeader();
+                .AllowAnyHeader()
+                .AllowCredentials(); // Phải có cho SignalR/RESTful nếu dùng cookie/auth
         });
 });
 // Add services to the container.
@@ -153,7 +153,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 //khai báo signalr
 app.MapHub<NotificationHub>("/hubs/notification").RequireCors("AllowAll");
-app.MapHub<MessageHub>("/hubs/messagehub").RequireCors("AllowAll"); // Định nghĩa endpoint cho Hub
+app.UseCors("AllowFrontend");
+app.MapHub<MessageHub>("/messagehub").RequireCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
