@@ -132,9 +132,9 @@ namespace API.Service
         {
             var success = await _repository.LikePostAsync(dto.PostId, dto.AccountId);
             var accountID = await _repository.GetAccountIdByPostIDAsync(dto.PostId);
-            if (success)
+            if ( success && accountID.HasValue && accountID.Value != dto.AccountId )
             {
-                var likerer = await _accountRepository.GetAccountByIdAsync(accountID.Value);
+                var likerer = await _accountRepository.GetAccountByIdAsync(dto.AccountId);
                 if (likerer != null)
                 {
                     var message = $"{likerer.AccountProfile?.FirstName} has liked your post.";

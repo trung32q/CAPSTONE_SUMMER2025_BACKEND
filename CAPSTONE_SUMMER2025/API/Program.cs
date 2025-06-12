@@ -16,17 +16,17 @@ using API.Service.Interface;
 using API.Hubs;
 
 
-var builder = WebApplication.CreateBuilder(args);
-var jwtSettings = builder.Configuration.GetSection("Jwt");
+var builder = WebApplication.CreateBuilder (args);
+var jwtSettings = builder.Configuration.GetSection ("Jwt");
 
 //Config JWT
-builder.Services.AddAuthentication(options =>
+builder.Services.AddAuthentication (options =>
 {
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer(options =>
+.AddJwtBearer (options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -36,30 +36,30 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-                    Convert.FromBase64String(builder.Configuration["Jwt:Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey (
+                    Convert.FromBase64String (builder.Configuration["Jwt:Key"])),
         LifetimeValidator = JwtTokenLifetimeManager.ValidateTokenLifetime
     };
     options.Events = new JwtBearerEvents
     {
         OnTokenValidated = context =>
         {
-            var userClaims = context.Principal.Claims.ToList();
+            var userClaims = context.Principal.Claims.ToList ();
             return Task.CompletedTask;
         }
     };
-}).AddCookie()
-.AddGoogle(options =>
+}).AddCookie ()
+.AddGoogle (options =>
 {
-    IConfigurationSection googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
+    IConfigurationSection googleAuthNSection = builder.Configuration.GetSection ("Authentication:Google");
     options.ClientId = googleAuthNSection["ClientId"];
     options.ClientSecret = googleAuthNSection["ClientSecret"];
 });
 // yeu cau nhap token
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen (options =>
 {
     // Định nghĩa SecurityScheme cho Bearer Token
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.AddSecurityDefinition ("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
@@ -70,7 +70,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     // Áp dụng yêu cầu bảo mật toàn cầu
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement (new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -85,88 +85,85 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-builder.Services.AddSignalR();
-builder.Services.AddCors(options =>
+builder.Services.AddSignalR ();
+//Config CORS
+builder.Services.AddCors (options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
+    options.AddPolicy ("AllowAll",
+        builder =>
         {
-            policy
-                .WithOrigins("https://localhost:7291") // ĐÚNG domain FE của bạn, KHÔNG được dùng "*"
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials(); // Phải có cho SignalR/RESTful nếu dùng cookie/auth
+            builder
+            .WithOrigins ("http://localhost:5173") // Chỉ định origin cụ thể
+            .AllowAnyHeader ()
+            .AllowAnyMethod ()
+            .AllowCredentials (); // Cho phép cookie/authorization
         });
 });
 // Add services to the container.
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+builder.Services.AddControllers ()
+    .AddJsonOptions (options =>
     {
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 // Authorization
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization ();
 // DBContext
-builder.Services.AddDbContext<CAPSTONE_SUMMER2025Context>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DBContext")));
-builder.Services.AddScoped<CAPSTONE_SUMMER2025Context>();
+builder.Services.AddDbContext<CAPSTONE_SUMMER2025Context> (options =>
+    options.UseSqlServer (builder.Configuration.GetConnectionString ("DBContext")));
+builder.Services.AddScoped<CAPSTONE_SUMMER2025Context> ();
 
 // Dependency Injection
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IPolicyRepository, PolicyRepository>();
-builder.Services.AddScoped<IPostRepository, PostRepository>();
-builder.Services.AddScoped<IFilebaseHandler, FilebaseHandler>();
-builder.Services.AddScoped<IChatGPTRepository, ChatGPTRepository>();
-builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-builder.Services.AddScoped<IFptAIRepository, FptAIRepository>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<IStartupRepository, StartupRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository> ();
+builder.Services.AddScoped<IAuthRepository, AuthRepository> ();
+builder.Services.AddScoped<IPolicyRepository, PolicyRepository> ();
+builder.Services.AddScoped<IPostRepository, PostRepository> ();
+builder.Services.AddScoped<IFilebaseHandler, FilebaseHandler> ();
+builder.Services.AddScoped<IChatGPTRepository, ChatGPTRepository> ();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository> ();
+builder.Services.AddScoped<IFptAIRepository, FptAIRepository> ();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository> ();
+builder.Services.AddScoped<IStartupRepository, StartupRepository> ();
 
-builder.Services.AddScoped<IStartupService, StartupService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<ICCCDService, CCCDService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IChatGPTService, ChatGPTService>();
-builder.Services.AddScoped<IPostService, PostService>();
-builder.Services.AddScoped<IPolicyService, PolicyService>();
-builder.Services.AddScoped<IAuthSevice, AuthService>();
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<JwtService>();
-builder.Services.AddScoped<GoogleService>();
+builder.Services.AddScoped<IStartupService, StartupService> ();
+builder.Services.AddScoped<ICategoryService, CategoryService> ();
+builder.Services.AddScoped<ICCCDService, CCCDService> ();
+builder.Services.AddScoped<INotificationService, NotificationService> ();
+builder.Services.AddScoped<IChatGPTService, ChatGPTService> ();
+builder.Services.AddScoped<IPostService, PostService> ();
+builder.Services.AddScoped<IPolicyService, PolicyService> ();
+builder.Services.AddScoped<IAuthSevice, AuthService> ();
+builder.Services.AddScoped<IAccountService, AccountService> ();
+builder.Services.AddScoped<IEmailService, EmailService> ();
+builder.Services.AddScoped<JwtService> ();
+builder.Services.AddScoped<GoogleService> ();
 
 
-builder.Services.AddHttpClient<IChatGPTRepository, ChatGPTRepository>();
+builder.Services.AddHttpClient<IChatGPTRepository, ChatGPTRepository> ();
 // AutoMapper
-builder.Services.AddAutoMapper(typeof(Program),
-                               typeof(MappingAccount));
+builder.Services.AddAutoMapper (typeof (Program),
+                               typeof (MappingAccount));
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddControllers ();
+builder.Services.AddEndpointsApiExplorer ();
+builder.Services.AddSwaggerGen ();
 
-var app = builder.Build();
-//khai báo signalr
-app.MapHub<NotificationHub>("/hubs/notification").RequireCors("AllowAll");
-app.UseCors("AllowFrontend");
-app.MapHub<MessageHub>("/messagehub").RequireCors("AllowFrontend");
-
+var app = builder.Build ();
+app.MapHub<NotificationHub> ("/hubs/notification").RequireCors ("AllowAll");
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.MapHub<MessageHub> ("/messagehub").RequireCors ("AllowAll");
+if ( app.Environment.IsDevelopment () ) {
+    app.UseSwagger ();
+    app.UseSwaggerUI ();
 }
 
-app.UseCors("AllowAll");
-app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
+app.UseCors ("AllowAll");
+app.UseHttpsRedirection ();
+app.UseAuthentication ();
+app.UseAuthorization ();
+app.MapControllers ();
 
-app.Run();
+app.Run ();
