@@ -1,6 +1,7 @@
 ﻿using API.DTO.StartupDTO;
 using API.Service;
 using API.Service.Interface;
+using API.Utils.Constants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,16 +12,28 @@ namespace API.Controllers
     public class StartupController : ControllerBase
     {
         private readonly IStartupService _service;
+        private readonly IAccountService _accountservice;
         private readonly ILogger<StartupService> _logger;
 
-        public StartupController(IStartupService service, ILogger<StartupService> logger)
+        public StartupController(IStartupService service, ILogger<StartupService> logger, IAccountService accountservice)
         {
             _service = service;
             _logger = logger;
+            _accountservice = accountservice;
         }
         [HttpPost("create")]
         public async Task<IActionResult> CreateStartup([FromForm] CreateStartupRequest req)
         {
+            var account = _accountservice.GetAccountByAccountIDAsync(req.CreatorAccountId);
+            if (!account.Status.Equals(AccountStatusConst.VERIFIED))
+            {
+                return BadRequest("Account chua verified!");
+            }
+            bool isMember = await _service.IsMemberOfAnyStartup(req.CreatorAccountId);
+            if (!isMember)
+            {
+                return BadRequest("Account da nam trong 1 startup!");
+            }
             var startupId = await _service.CreateStartupAsync(req);
             return Ok(new { StartupId = startupId });
         }
