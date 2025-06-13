@@ -177,5 +177,13 @@ namespace API.Repositories
                 .Include(m => m.ChatRoom) // optional nếu cần
                 .FirstOrDefaultAsync(m => m.ChatMessageId == messageId);
         }
+        public async Task<List<Account>> SearchByEmailAsync(string keyword)
+        {
+            return await _context.Accounts
+                .Include(a => a.AccountProfile)
+                .Where(a => a.Email.Contains(keyword))
+                .Take(10)
+                .ToListAsync();
+        }
     }
 }

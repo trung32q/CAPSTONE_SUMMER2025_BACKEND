@@ -360,5 +360,9 @@ namespace API.Service
 
             return dto;
         }
+        public async Task<List<Account>> SearchByEmailAsync(string keyword)
+        {
+            return await _repo.SearchByEmailAsync(keyword);
+        }
     }
 }

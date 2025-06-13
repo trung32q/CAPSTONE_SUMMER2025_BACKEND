@@ -183,5 +183,18 @@ namespace API.Controllers
             var stages = await _service.GetAllStagesAsync();
             return Ok(stages);
         }
+        [HttpGet("search-account-by-email")]
+        public async Task<IActionResult> SearchAccountByEmail([FromQuery] string keyword)
+        {
+            var accounts = await _service.SearchByEmailAsync(keyword);
+
+            var result = accounts.Select(a => new {
+                AccountId = a.AccountId,
+                Email = a.Email,
+                AvatarUrl = a.AccountProfile.AvatarUrl // Đảm bảo Include AccountProfile
+            }).ToList();
+
+            return Ok(result);
+        }
     }
 }

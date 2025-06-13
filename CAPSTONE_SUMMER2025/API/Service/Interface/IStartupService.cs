@@ -19,6 +19,6 @@ namespace API.Service.Interface
         Task<List<StartupStage>> GetAllStagesAsync();
         Task<ChatMessageDTO?> GetMessageByIdAsync(int messageId);
 
-
+        Task<List<Account>> SearchByEmailAsync(string keyword);
     }
 }

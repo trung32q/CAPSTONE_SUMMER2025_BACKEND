@@ -10,7 +10,6 @@ namespace Infrastructure.Models
         public string? Content { get; set; }
         public bool? IsRead { get; set; }
         public DateTime? SendAt { get; set; }
-
         public virtual Account? Account { get; set; }
     }
 }
