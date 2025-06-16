@@ -353,7 +353,7 @@ namespace Infrastructure.Repository
                     acc.AccountId != currentAccountId &&
                     !followedIds.Contains(acc.AccountId) &&
                     !blockedIds.Contains(acc.AccountId) &&
-                    acc.Status == AccountStatusConst.VERIFIED &&
+                    acc.Status != AccountStatusConst.BANNED &&
                     acc.Role != RoleConst.ADMIN)
                 .Select(acc => new AccountRecommendDTO
                 {
