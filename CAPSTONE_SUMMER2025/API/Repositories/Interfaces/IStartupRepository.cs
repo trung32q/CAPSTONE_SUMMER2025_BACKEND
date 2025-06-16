@@ -28,7 +28,7 @@ namespace API.Repositories.Interfaces
         Task<List<StartupStage>> GetAllAsync();
         Task<ChatMessage?> GetMessageWithDetailsByIdAsync(int messageId);
         Task<List<Account>> SearchByEmailAsync(string keyword);
-
-
+        Task<Invite> AddInviteAsync(Invite invite);
+        Task<int?> GetStartupIdByAccountIdAsync(int accountId);
     }
 }

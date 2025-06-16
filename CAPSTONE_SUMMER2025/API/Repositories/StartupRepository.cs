@@ -185,5 +185,21 @@ namespace API.Repositories
                 .Take(10)
                 .ToListAsync();
         }
+        public async Task<Invite> AddInviteAsync(Invite invite)
+        {
+            _context.Invites.Add(invite);
+            await _context.SaveChangesAsync();
+            return invite;
+        }
+        public async Task<int?> GetStartupIdByAccountIdAsync(int accountId)
+        {
+            
+            var startupId = await _context.StartupMembers
+                .Where(sm => sm.AccountId == accountId)
+                .Select(sm => (int?)sm.StartupId) 
+                .FirstOrDefaultAsync();
+
+            return startupId;
+        }
     }
 }

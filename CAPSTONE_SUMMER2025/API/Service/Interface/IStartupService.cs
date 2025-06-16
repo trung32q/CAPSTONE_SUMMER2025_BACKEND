@@ -20,5 +20,7 @@ namespace API.Service.Interface
         Task<ChatMessageDTO?> GetMessageByIdAsync(int messageId);
 
         Task<List<Account>> SearchByEmailAsync(string keyword);
+        Task<Invite> CreateInviteAsync(CreateInviteDTO dto);
+        Task<int?> GetStartupIdByAccountIdAsync(int accountId);
     }
 }
