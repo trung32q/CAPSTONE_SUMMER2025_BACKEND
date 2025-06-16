@@ -317,7 +317,8 @@ namespace API.Service
                         IsDeleted = (bool)m.IsDeleted,
                         DeletedAt = m.DeletedAt,
                         AvatarUrl = m.Account.AccountProfile.AvatarUrl,
-                        MessageId = m.ChatMessageId
+                        MessageId = m.ChatMessageId,
+                        ChatRoomId = chatRoomId,
                     })
                     .ToListAsync();
 
