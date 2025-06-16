@@ -196,5 +196,16 @@ namespace API.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpPut("update-member-title")]
+        public async Task<IActionResult> UpdateMemberTitle([FromBody] UpdateMemberTitleRequest request)
+        {
+            var success = await _service.UpdateMemberTitleAsync(request);
+            if (!success)
+                return NotFound(new { message = "ChatRoomMember not found." });
+
+            return Ok(new { message = "Member title updated successfully." });
+        }
     }
 }

@@ -365,5 +365,16 @@ namespace API.Service
         {
             return await _repo.SearchByEmailAsync(keyword);
         }
+
+        // hàm cập nhật lại membertitle theo accountid và chatroomid
+        public async Task<bool> UpdateMemberTitleAsync(UpdateMemberTitleRequest request)
+        {
+            var member = await _repo.GetChatRoomMemberAsync(request.ChatRoom_ID, request.Account_ID);
+            if (member == null) return false;
+
+            member.MemberTitle = request.MemberTitle;
+            await _repo.UpdateMemberTitleAsync(member);
+            return true;
+        }
     }
 }

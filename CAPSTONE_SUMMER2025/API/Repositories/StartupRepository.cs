@@ -185,5 +185,19 @@ namespace API.Repositories
                 .Take(10)
                 .ToListAsync();
         }
+
+        //lấy ra member theo chatRoomId và accountId
+        public async Task<ChatRoomMember?> GetChatRoomMemberAsync(int chatRoomId, int accountId)
+        {
+            return await _context.ChatRoomMembers
+                .FirstOrDefaultAsync(m => m.ChatRoomId == chatRoomId && m.AccountId == accountId);
+        }
+
+        //cập nhật lại memberTitle
+        public async Task UpdateMemberTitleAsync(ChatRoomMember member)
+        {
+            _context.ChatRoomMembers.Update(member);
+            await _context.SaveChangesAsync();
+        }
     }
 }

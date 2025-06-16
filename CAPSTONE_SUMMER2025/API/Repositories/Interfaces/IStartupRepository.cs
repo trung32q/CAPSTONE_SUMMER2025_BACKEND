@@ -28,7 +28,8 @@ namespace API.Repositories.Interfaces
         Task<List<StartupStage>> GetAllAsync();
         Task<ChatMessage?> GetMessageWithDetailsByIdAsync(int messageId);
         Task<List<Account>> SearchByEmailAsync(string keyword);
-
+        Task<ChatRoomMember?> GetChatRoomMemberAsync(int chatRoomId, int accountId);
+        Task UpdateMemberTitleAsync(ChatRoomMember member);
 
     }
 }

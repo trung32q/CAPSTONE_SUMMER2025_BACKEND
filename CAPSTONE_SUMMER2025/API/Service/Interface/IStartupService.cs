@@ -18,7 +18,8 @@ namespace API.Service.Interface
         Task<PagedResult<ChatMessageDTO>> GetMessagesByRoomIdAsync(int chatRoomId, int pageNumber, int pageSize);
         Task<List<StartupStage>> GetAllStagesAsync();
         Task<ChatMessageDTO?> GetMessageByIdAsync(int messageId);
-
         Task<List<Account>> SearchByEmailAsync(string keyword);
+        Task<bool> UpdateMemberTitleAsync(UpdateMemberTitleRequest request);
+
     }
 }
