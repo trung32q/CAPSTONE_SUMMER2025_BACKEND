@@ -27,6 +27,8 @@ namespace API.Repositories.Interfaces
         Task<bool> IsMemberOfAnyStartup(int accountId);
         Task<List<StartupStage>> GetAllAsync();
         Task<ChatMessage?> GetMessageWithDetailsByIdAsync(int messageId);
+        Task<List<Account>> SearchByEmailAsync(string keyword);
+
 
     }
 }
