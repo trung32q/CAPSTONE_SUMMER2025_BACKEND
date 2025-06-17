@@ -7,6 +7,7 @@ using Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Org.BouncyCastle.Ocsp;
 
 namespace API.Controllers
 {
@@ -196,6 +197,7 @@ namespace API.Controllers
 
             return Ok(result);
         }
+<<<<<<< HEAD
 
 
         [HttpPut("update-member-title")]
@@ -206,6 +208,26 @@ namespace API.Controllers
                 return NotFound(new { message = "ChatRoomMember not found." });
 
             return Ok(new { message = "Member title updated successfully." });
+=======
+        [HttpPost("create-invite")]
+        public async Task<IActionResult> CreateInvite([FromBody] CreateInviteDTO dto)
+        {
+            bool isMember = await _service.IsMemberOfAnyStartup(dto.Account_ID);
+            if (!isMember)
+            {
+                return BadRequest("Account da nam trong 1 startup!");
+            }
+            var invite = await _service.CreateInviteAsync(dto);
+            return Ok(invite);
+        }
+        [HttpGet("startupid/{accountId}")]
+        public async Task<IActionResult> GetStartupIdByAccountId(int accountId)
+        {
+            var startupId = await _service.GetStartupIdByAccountIdAsync(accountId);
+            if (startupId == null)
+                return NotFound("Account does not belong to any startup.");
+            return Ok(startupId);
+>>>>>>> origin/TrungVD
         }
     }
 }

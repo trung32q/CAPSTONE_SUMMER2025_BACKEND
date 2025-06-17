@@ -28,8 +28,13 @@ namespace API.Repositories.Interfaces
         Task<List<StartupStage>> GetAllAsync();
         Task<ChatMessage?> GetMessageWithDetailsByIdAsync(int messageId);
         Task<List<Account>> SearchByEmailAsync(string keyword);
+<<<<<<< HEAD
         Task<ChatRoomMember?> GetChatRoomMemberAsync(int chatRoomId, int accountId);
         Task UpdateMemberTitleAsync(ChatRoomMember member);
 
+=======
+        Task<Invite> AddInviteAsync(Invite invite);
+        Task<int?> GetStartupIdByAccountIdAsync(int accountId);
+>>>>>>> origin/TrungVD
     }
 }

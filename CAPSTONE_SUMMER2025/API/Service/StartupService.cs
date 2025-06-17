@@ -3,6 +3,7 @@ using API.DTO.StartupDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
+using API.Utils.Constants;
 using AutoMapper;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +18,10 @@ namespace API.Service
         private readonly IMapper _mapper;
         private readonly IFilebaseHandler _filebaseHandler;
         private readonly ILogger<StartupService> _logger;
+        private readonly INotificationService _notificationService;
         private readonly CAPSTONE_SUMMER2025Context _context;
 
-        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext)
+        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext, INotificationService notificationService)
         {
             _repo = repo;
             _mapper = mapper;
@@ -27,6 +29,7 @@ namespace API.Service
             _logger = logger;
             _accountRepository = accountRepository;
             _context = conntext;
+            _notificationService = notificationService;
         }
         public async Task<int> CreateStartupAsync(CreateStartupRequest request)
         {
@@ -210,7 +213,8 @@ namespace API.Service
                 AccountId = (int)sm.AccountId,
                 FullName = $"{sm.Account?.AccountProfile?.FirstName} {sm.Account?.AccountProfile?.LastName}",
                 RoleName = sm.Role?.RoleName,
-                AvatarUrl = sm.Account.AccountProfile.AvatarUrl
+                AvatarUrl = sm.Account.AccountProfile.AvatarUrl,
+                JoinAT = (DateTime)sm.JoinedAt
             }).ToList();
 
             return result;
@@ -365,6 +369,7 @@ namespace API.Service
         {
             return await _repo.SearchByEmailAsync(keyword);
         }
+<<<<<<< HEAD
 
         // hàm cập nhật lại membertitle theo accountid và chatroomid
         public async Task<bool> UpdateMemberTitleAsync(UpdateMemberTitleRequest request)
@@ -375,6 +380,28 @@ namespace API.Service
             member.MemberTitle = request.MemberTitle;
             await _repo.UpdateMemberTitleAsync(member);
             return true;
+=======
+        public async Task<Invite> CreateInviteAsync(CreateInviteDTO dto)
+        {
+            var invite = new Invite
+            {
+                ReceiverAccountId = dto.Account_ID,
+                StartupId = dto.Startup_ID,
+                RoleId = dto.Role_ID,
+                SenderAccountId = dto.InviteBy,
+                InviteSentAt = DateTime.UtcNow,
+                InviteStatus = InviteStatus.PENDING,
+            };
+            var result = await _repo.AddInviteAsync(invite);
+
+            // Send notification to invited user
+            //await _notificationService.CreateAndSendAsync(invite);
+            return result;
+        }
+        public async Task<int?> GetStartupIdByAccountIdAsync(int accountId)
+        {
+            return await _repo.GetStartupIdByAccountIdAsync(accountId);
+>>>>>>> origin/TrungVD
         }
     }
 }
