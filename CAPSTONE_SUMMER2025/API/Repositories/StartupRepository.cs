@@ -1,4 +1,6 @@
-﻿using API.Repositories.Interfaces;
+﻿using System.Globalization;
+using System.Text;
+using API.Repositories.Interfaces;
 using AutoMapper;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
@@ -160,6 +162,9 @@ namespace API.Repositories
                 .Include(m => m.Account.ChatRoomMembers)
                 .Where(m => m.ChatRoomId == chatRoomId);
         }
+
+     
+
         public async Task<bool> IsMemberOfAnyStartup(int accountId)
         {
             return await _context.StartupMembers.AnyAsync(sm => sm.AccountId == accountId);

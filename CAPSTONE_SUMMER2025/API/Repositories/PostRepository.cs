@@ -352,7 +352,7 @@ namespace API.Repositories
             return result;
         }
 
-
+        // hàm xóa dấu
         private string RemoveDiacritics(string text)
         {
             if (string.IsNullOrEmpty(text)) return "";

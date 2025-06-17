@@ -23,5 +23,6 @@ namespace API.Service.Interface
 
         Task<Invite> CreateInviteAsync(CreateInviteDTO dto);
         Task<int?> GetStartupIdByAccountIdAsync(int accountId);
+        Task<PagedResult<ChatMessageDTO>> SearchMessageAsync(int chatRoomId, int pageNumber, int pageSize, string searchKey);
     }
 }
