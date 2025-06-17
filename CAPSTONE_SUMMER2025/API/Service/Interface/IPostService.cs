@@ -31,5 +31,7 @@ namespace API.Service.Interface
         Task<bool> UpdateReportReasonAsync(int id, CreateReportReasonDTO dto);
         Task<bool> DeleteReportReasonAsync(int id);
         Task<PostReportDTO> CreateReportAsync(CreatePostReportDTO dto);
+        Task CreateInternshipPostAsync(CreateInternshipPostDTO dto);
+        Task<PagedResult<FeedItemDTO>> GetStartupFeedAsync(int startupId, int page, int pageSize);
     }
 }

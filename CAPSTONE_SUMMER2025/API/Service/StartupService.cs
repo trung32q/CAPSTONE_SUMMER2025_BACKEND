@@ -369,7 +369,6 @@ namespace API.Service
         {
             return await _repo.SearchByEmailAsync(keyword);
         }
-<<<<<<< HEAD
 
         // hàm cập nhật lại membertitle theo accountid và chatroomid
         public async Task<bool> UpdateMemberTitleAsync(UpdateMemberTitleRequest request)
@@ -380,7 +379,7 @@ namespace API.Service
             member.MemberTitle = request.MemberTitle;
             await _repo.UpdateMemberTitleAsync(member);
             return true;
-=======
+        }
         public async Task<Invite> CreateInviteAsync(CreateInviteDTO dto)
         {
             var invite = new Invite
@@ -401,7 +400,6 @@ namespace API.Service
         public async Task<int?> GetStartupIdByAccountIdAsync(int accountId)
         {
             return await _repo.GetStartupIdByAccountIdAsync(accountId);
->>>>>>> origin/TrungVD
         }
     }
 }

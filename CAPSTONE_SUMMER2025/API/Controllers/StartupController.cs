@@ -197,7 +197,6 @@ namespace API.Controllers
 
             return Ok(result);
         }
-<<<<<<< HEAD
 
 
         [HttpPut("update-member-title")]
@@ -208,7 +207,7 @@ namespace API.Controllers
                 return NotFound(new { message = "ChatRoomMember not found." });
 
             return Ok(new { message = "Member title updated successfully." });
-=======
+        }
         [HttpPost("create-invite")]
         public async Task<IActionResult> CreateInvite([FromBody] CreateInviteDTO dto)
         {
@@ -227,7 +226,6 @@ namespace API.Controllers
             if (startupId == null)
                 return NotFound("Account does not belong to any startup.");
             return Ok(startupId);
->>>>>>> origin/TrungVD
         }
     }
 }

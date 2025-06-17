@@ -225,15 +225,26 @@ namespace API.Repositories
         // Upload post
         public async Task<bool> CreatePost(ReqPostDTO reqPostDTO)
         {
-            if (!await IsAccountExistsAsync(reqPostDTO.AccountId.Value))
-                return false;
+            var post = new Post();
 
-            var post = new Post
+            if(reqPostDTO.AccountId != null)
             {
-                AccountId = reqPostDTO.AccountId.Value,
-                Content = reqPostDTO.Content,
-                Title = reqPostDTO.Title,
-            };
+                post = new Post
+                {
+                    AccountId = reqPostDTO.AccountId.Value,
+                    Content = reqPostDTO.Content,
+                    Title = reqPostDTO.Title,
+                };
+            }
+            else if(reqPostDTO.StartupId != null)
+            {
+                post = new Post
+                {
+                    StartupId = reqPostDTO.StartupId.Value,
+                    Content = reqPostDTO.Content,
+                    Title = reqPostDTO.Title,
+                };
+            }
 
             await _context.Posts.AddAsync(post);
             await _context.SaveChangesAsync();
@@ -388,7 +399,63 @@ namespace API.Repositories
                 throw new ApplicationException($"Lỗi khi lấy AccountId của comment có ID {commentId}", ex);
             }
         }
+        // lấy ra feed của startup
+        public async Task<(List<FeedItemDTO> Items, int TotalCount)> GetStartupFeedItemsAsync(int startupId, int skip, int take)
+        {
+            var postsQuery = _context.Posts
+                .Where(p => p.StartupId == startupId)
+                .Include(p => p.Startup)
+                .Include(p => p.PostMedia);
 
+            var internshipsQuery = _context.InternshipPosts
+                .Where(i => i.StartupId == startupId && i.Status == StatusInternshipPost.ACTIVE)
+                .Include(i => i.Position)
+                .Include(i => i.Startup);
+
+            var postItems = await postsQuery.Select(p => new FeedItemDTO
+            {
+                PostId = p.PostId,
+                StartupId = p.StartupId,
+                name = p.Startup.StartupName,
+                AvatarURL = p.Startup.Logo,
+                Type = "Post",
+                Title = p.Title,
+                Content = p.Content,
+                CreatedAt = p.CreateAt ?? DateTime.MinValue,
+                PostMedia = p.PostMedia.Select(m => new PostMediaDTO
+                {
+                    MediaUrl = _filebaseHandler.GeneratePreSignedUrl(m.MediaUrl),
+                    DisplayOrder = m.DisplayOrder
+                }).ToList(),
+                InteractionCount = (p.PostLikes.Count() + p.PostComments.Count()),
+                Priority = 1,
+                LikeCount = (p.PostLikes.Count())
+            }).ToListAsync();
+
+            var internshipItems = await internshipsQuery.Select(i => new FeedItemDTO
+            {
+                PostId = i.InternshipId,
+                StartupId = i.StartupId,
+                name = i.Startup.StartupName,
+                AvatarURL = i.Startup.Logo,
+                Type = "Internship",
+                Title = i.Position.Title,
+                Content = $"{i.Description}\n{i.Requirement}\n{i.Benefits}",
+                CreatedAt = i.CreateAt ?? DateTime.MinValue,
+                PostMedia = new List<PostMediaDTO>(),
+                InteractionCount = 0,
+                Priority = 2
+            }).ToListAsync();
+
+            var combined = postItems
+                .Concat(internshipItems)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToList();
+
+            var pagedItems = combined.Skip(skip).Take(take).ToList();
+
+            return (pagedItems, combined.Count);
+        }
         public async Task<List<FeedItemDTO>> GetRecommendedFeedAsync(int userId, int page, int pageSize)
         {          
             // Lấy danh sách ID của các tài khoản mà người dùng đang theo dõi
@@ -588,6 +655,12 @@ namespace API.Repositories
           .FirstOrDefaultAsync(r => r.ReportId == reportId);
         }
 
-        
+        // tạo mới internshippost
+        public async Task AddInternshipPostAsync(InternshipPost post)
+        {
+            await _context.InternshipPosts.AddAsync(post);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

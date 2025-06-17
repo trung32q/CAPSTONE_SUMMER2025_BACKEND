@@ -19,12 +19,9 @@ namespace API.Service.Interface
         Task<List<StartupStage>> GetAllStagesAsync();
         Task<ChatMessageDTO?> GetMessageByIdAsync(int messageId);
         Task<List<Account>> SearchByEmailAsync(string keyword);
-<<<<<<< HEAD
         Task<bool> UpdateMemberTitleAsync(UpdateMemberTitleRequest request);
 
-=======
         Task<Invite> CreateInviteAsync(CreateInviteDTO dto);
         Task<int?> GetStartupIdByAccountIdAsync(int accountId);
->>>>>>> origin/TrungVD
     }
 }

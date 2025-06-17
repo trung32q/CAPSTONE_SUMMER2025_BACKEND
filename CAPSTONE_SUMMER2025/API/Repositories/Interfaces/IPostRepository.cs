@@ -35,6 +35,9 @@ namespace API.Repositories.Interfaces
         Task<PostReport> CreatePostReportAsync(PostReport report);
         Task<PostReport?> GetPostReportByIdAsync(int reportId);
         Task<Post> GetPostByPostIdAsync(int id);
+        Task AddInternshipPostAsync(InternshipPost post);
+        Task<(List<FeedItemDTO> Items, int TotalCount)> GetStartupFeedItemsAsync(int startupId, int skip, int take);
+
 
     }
 }

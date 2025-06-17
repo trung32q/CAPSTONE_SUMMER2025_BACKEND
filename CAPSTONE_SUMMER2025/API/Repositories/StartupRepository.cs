@@ -185,7 +185,6 @@ namespace API.Repositories
                 .Take(10)
                 .ToListAsync();
         }
-<<<<<<< HEAD
 
         //lấy ra member theo chatRoomId và accountId
         public async Task<ChatRoomMember?> GetChatRoomMemberAsync(int chatRoomId, int accountId)
@@ -199,7 +198,8 @@ namespace API.Repositories
         {
             _context.ChatRoomMembers.Update(member);
             await _context.SaveChangesAsync();
-=======
+        }
+
         public async Task<Invite> AddInviteAsync(Invite invite)
         {
             _context.Invites.Add(invite);
@@ -215,7 +215,6 @@ namespace API.Repositories
                 .FirstOrDefaultAsync();
 
             return startupId;
->>>>>>> origin/TrungVD
         }
     }
 }
