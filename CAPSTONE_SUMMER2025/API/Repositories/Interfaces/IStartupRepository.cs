@@ -30,5 +30,10 @@ namespace API.Repositories.Interfaces
         Task<List<Account>> SearchByEmailAsync(string keyword);
         Task<Invite> AddInviteAsync(Invite invite);
         Task<int?> GetStartupIdByAccountIdAsync(int accountId);
+        Task<RoleInStartup> CreateRoleAsync(RoleInStartup role);
+        Task<RoleInStartup?> GetRoleAsync(int roleId);
+        Task<RoleInStartup> UpdateRoleAsync(RoleInStartup role);
+        Task<bool> DeleteRoleAsync(int roleId);
+        Task<List<RoleInStartup>> GetRolesByStartupAsync(int startupId);
     }
 }

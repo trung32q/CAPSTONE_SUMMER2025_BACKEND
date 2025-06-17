@@ -201,5 +201,44 @@ namespace API.Repositories
 
             return startupId;
         }
+        // Create new role
+        public async Task<RoleInStartup> CreateRoleAsync(RoleInStartup role)
+        {
+            _context.RoleInStartups.Add(role);
+            await _context.SaveChangesAsync();
+            return role;
+        }
+
+        // Get role by Id
+        public async Task<RoleInStartup?> GetRoleAsync(int roleId)
+        {
+            return await _context.RoleInStartups.FindAsync(roleId);
+        }
+
+        // Update role
+        public async Task<RoleInStartup> UpdateRoleAsync(RoleInStartup role)
+        {
+            _context.RoleInStartups.Update(role);
+            await _context.SaveChangesAsync();
+            return role;
+        }
+
+        // Delete role by Id
+        public async Task<bool> DeleteRoleAsync(int roleId)
+        {
+            var role = await _context.RoleInStartups.FindAsync(roleId);
+            if (role == null) return false;
+            _context.RoleInStartups.Remove(role);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Get all roles by StartupId
+        public async Task<List<RoleInStartup>> GetRolesByStartupAsync(int startupId)
+        {
+            return await _context.RoleInStartups
+                .Where(r => r.StartupId == startupId)
+                .ToListAsync();
+        }
     }
 }

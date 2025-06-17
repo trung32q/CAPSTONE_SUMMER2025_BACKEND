@@ -22,5 +22,10 @@ namespace API.Service.Interface
         Task<List<Account>> SearchByEmailAsync(string keyword);
         Task<Invite> CreateInviteAsync(CreateInviteDTO dto);
         Task<int?> GetStartupIdByAccountIdAsync(int accountId);
+        Task<RoleInStartup> CreateRoleAsync(CreateRoleDto dto);
+        Task<RoleInStartup?> GetRoleAsync(int roleId);
+        Task<RoleInStartup> UpdateRoleAsync(UpdateRoleDto dto);
+        Task<bool> DeleteRoleAsync(int roleId);
+        Task<List<RoleInStartup>> GetRolesByStartupAsync(int startupId);
     }
 }

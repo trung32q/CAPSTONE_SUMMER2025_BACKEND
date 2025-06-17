@@ -216,5 +216,42 @@ namespace API.Controllers
                 return NotFound("Account does not belong to any startup.");
             return Ok(startupId);
         }
+        // GET: api/rolestartup/{roleId}
+        [HttpGet("rolestartup/{roleId}")]
+        public async Task<IActionResult> GetRole(int roleId)
+        {
+            var role = await _service.GetRoleAsync(roleId);
+            if (role == null) return NotFound();
+            return Ok(role);
+        }
+    
+        [HttpGet("Getall-rolestartup/{startupId}")]
+        public async Task<IActionResult> GetRolesByStartup(int startupId)
+        {
+            var roles = await _service.GetRolesByStartupAsync(startupId);
+            return Ok(roles);
+        }
+    
+        [HttpPost("Create-role")]
+        public async Task<IActionResult> CreateRole([FromBody] CreateRoleDto dto)
+        {
+            var role = await _service.CreateRoleAsync(dto);
+            return Ok(role);
+        }
+
+        [HttpPut("Update-role")]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto dto)
+        {
+            var role = await _service.UpdateRoleAsync(dto);
+            return Ok(role);
+        }
+
+        [HttpDelete("Update-role/{roleId}")]
+        public async Task<IActionResult> DeleteRole(int roleId)
+        {
+            var success = await _service.DeleteRoleAsync(roleId);
+            if (!success) return NotFound();
+            return Ok();
+        }
     }
 }

@@ -390,5 +390,37 @@ namespace API.Service
         {
             return await _repo.GetStartupIdByAccountIdAsync(accountId);
         }
+        public async Task<RoleInStartup> CreateRoleAsync(CreateRoleDto dto)
+        {
+            var role = new RoleInStartup
+            {
+                StartupId = dto.Startup_ID,
+                RoleName = dto.RoleName
+            };
+            return await _repo.CreateRoleAsync(role);
+        }
+
+        public async Task<RoleInStartup?> GetRoleAsync(int roleId)
+        {
+            return await _repo.GetRoleAsync(roleId);
+        }
+
+        public async Task<RoleInStartup> UpdateRoleAsync(UpdateRoleDto dto)
+        {
+            var role = await _repo.GetRoleAsync(dto.Role_ID);
+            if (role == null) throw new Exception("Role not found");
+            role.RoleName = dto.RoleName;
+            return await _repo.UpdateRoleAsync(role);
+        }
+
+        public async Task<bool> DeleteRoleAsync(int roleId)
+        {
+            return await _repo.DeleteRoleAsync(roleId);
+        }
+
+        public async Task<List<RoleInStartup>> GetRolesByStartupAsync(int startupId)
+        {
+            return await _repo.GetRolesByStartupAsync(startupId);
+        }
     }
 }
