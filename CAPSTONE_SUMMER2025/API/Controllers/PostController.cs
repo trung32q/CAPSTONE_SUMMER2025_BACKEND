@@ -94,7 +94,7 @@ namespace API.Controllers
             return Ok(new { message = result });
         }
 
-        // Create post
+        // Create post cho cả statup với account
         [HttpPost("CreatePost")]
         public async Task<IActionResult> CreatePost([FromForm] ReqPostDTO reqPostDTO)
         {
@@ -308,5 +308,27 @@ namespace API.Controllers
             }
         }
 
+        // tạo mới internshipPost
+        [HttpPost("create-internship-post")]
+        public async Task<IActionResult> Create([FromBody] CreateInternshipPostDTO dto)
+        {
+            try
+            {
+                await _postService.CreateInternshipPostAsync(dto);
+                return Ok(new { message = "Tạo bài tuyển dụng thành công." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống", detail = ex.Message });
+            }
+        }
+
+        //lấy ra feed của startup
+        [HttpGet("startup-feeds/{startupId}")]
+        public async Task<IActionResult> GetStartupFeed(int startupId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _postService.GetStartupFeedAsync(startupId, page, pageSize);
+            return Ok(result);
+        }
     }
 }

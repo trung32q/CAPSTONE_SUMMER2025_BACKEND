@@ -498,5 +498,30 @@ namespace API.Service
             return _mapper.Map<PostReportDTO>(created);
         }
 
+
+        // tạo mới internshippost
+        public async Task CreateInternshipPostAsync(CreateInternshipPostDTO dto)
+        {
+            var post = new InternshipPost
+            {
+                StartupId = dto.Startup_ID,
+                PositionId = dto.Position_ID,
+                Description = dto.Description,
+                Requirement = dto.Requirement,
+                Benefits = dto.Benefits,
+                Deadline = dto.Deadline,
+                CreateAt = DateTime.Now,
+                Status = Utils.Constants.StatusInternshipPost.ACTIVE
+            };
+
+            await _repository.AddInternshipPostAsync(post);
+        }
+        //lấy ra feed của startup
+        public async Task<PagedResult<FeedItemDTO>> GetStartupFeedAsync(int startupId, int page, int pageSize)
+        {
+            int skip = (page - 1) * pageSize;
+            var (items, totalCount) = await _repository.GetStartupFeedItemsAsync(startupId, skip, pageSize);
+            return new API.DTO.AccountDTO.PagedResult<FeedItemDTO>(items, totalCount, page, pageSize);
+        }
     }
 }

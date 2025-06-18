@@ -1,4 +1,6 @@
-﻿using API.DTO.AccountDTO;
+﻿using System.Globalization;
+using System.Text;
+using API.DTO.AccountDTO;
 using API.DTO.StartupDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
@@ -334,6 +336,68 @@ namespace API.Service
                 throw new ApplicationException("Không thể lấy tin nhắn.");
             }
         }
+
+        // hàm xóa dấu câu
+        private string RemoveDiacritics(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                    builder.Append(c);
+            }
+            return builder.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        // search tin nhắn trong một room chat
+        public async Task<PagedResult<ChatMessageDTO>> SearchMessageAsync(int chatRoomId, int pageNumber, int pageSize, string searchKey)
+        {
+            try
+            {
+                string key = RemoveDiacritics(searchKey).ToLower();
+
+                // Lấy toàn bộ tin nhắn trong phòng
+                var allMessages = await _repo.GetMessagesByRoomId(chatRoomId).ToListAsync();
+
+                // Lọc bằng RemoveDiacritics trong C#
+                var filtered = allMessages
+                    .Where(m => !string.IsNullOrEmpty(m.MessageContent) &&
+                                RemoveDiacritics(m.MessageContent).ToLower().Contains(key))
+                    .OrderByDescending(m => m.SentAt)
+                    .ToList();
+
+                var totalCount = filtered.Count;
+
+                var pagedItems = filtered
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(m => new ChatMessageDTO
+                    {
+                        AccountId = (int)m.AccountId,
+                        MemberTitle = m.Account.ChatRoomMembers
+                            .FirstOrDefault(cm => cm.ChatRoomId == chatRoomId)?.MemberTitle,
+                        MessageContent = m.MessageContent,
+                        SentAt = (DateTime)m.SentAt,
+                        IsDeleted = (bool)m.IsDeleted,
+                        DeletedAt = m.DeletedAt,
+                        AvatarUrl = m.Account.AccountProfile.AvatarUrl,
+                        MessageId = m.ChatMessageId,
+                        ChatRoomId = chatRoomId,
+                    })
+                    .ToList();
+
+                return new PagedResult<ChatMessageDTO>(pagedItems, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching messages in chat room");
+                throw new ApplicationException("Không thể tìm kiếm tin nhắn.");
+            }
+        }
+
         public async Task<List<StartupStage>> GetAllStagesAsync()
         {
             return await _repo.GetAllAsync();
@@ -368,6 +432,17 @@ namespace API.Service
         public async Task<List<Account>> SearchByEmailAsync(string keyword)
         {
             return await _repo.SearchByEmailAsync(keyword);
+        }
+
+        // hàm cập nhật lại membertitle theo accountid và chatroomid
+        public async Task<bool> UpdateMemberTitleAsync(UpdateMemberTitleRequest request)
+        {
+            var member = await _repo.GetChatRoomMemberAsync(request.ChatRoom_ID, request.Account_ID);
+            if (member == null) return false;
+
+            member.MemberTitle = request.MemberTitle;
+            await _repo.UpdateMemberTitleAsync(member);
+            return true;
         }
         public async Task<Invite> CreateInviteAsync(CreateInviteDTO dto)
         {

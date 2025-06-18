@@ -178,6 +178,33 @@ namespace API.Controllers
                 return StatusCode(500, new { message = "Lỗi hệ thống" });
             }
         }
+
+        //tìm kiếm tin nhắn trong 1 chatroom
+        [HttpGet("room-messages-search")]
+        public async Task<IActionResult> SearchMessagesInRoom(
+            int chatRoomId,
+            string searchKey,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var result = await _service.SearchMessageAsync(chatRoomId, pageNumber, pageSize, searchKey);
+                return Ok(result);
+            }
+            catch (ApplicationException ex)
+            {
+                _logger.LogWarning(ex, "Handled message error");
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled server error");
+                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            }
+        }
+
+
         [HttpGet("stage")]
         public async Task<IActionResult> GetAllstage()
         {
@@ -196,6 +223,17 @@ namespace API.Controllers
             }).ToList();
 
             return Ok(result);
+        }
+
+
+        [HttpPut("update-member-title")]
+        public async Task<IActionResult> UpdateMemberTitle([FromBody] UpdateMemberTitleRequest request)
+        {
+            var success = await _service.UpdateMemberTitleAsync(request);
+            if (!success)
+                return NotFound(new { message = "ChatRoomMember not found." });
+
+            return Ok(new { message = "Member title updated successfully." });
         }
         [HttpPost("create-invite")]
         public async Task<IActionResult> CreateInvite([FromBody] CreateInviteDTO dto)

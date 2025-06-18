@@ -1,4 +1,6 @@
-﻿using API.Repositories.Interfaces;
+﻿using System.Globalization;
+using System.Text;
+using API.Repositories.Interfaces;
 using AutoMapper;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
@@ -160,6 +162,9 @@ namespace API.Repositories
                 .Include(m => m.Account.ChatRoomMembers)
                 .Where(m => m.ChatRoomId == chatRoomId);
         }
+
+     
+
         public async Task<bool> IsMemberOfAnyStartup(int accountId)
         {
             return await _context.StartupMembers.AnyAsync(sm => sm.AccountId == accountId);
@@ -185,6 +190,21 @@ namespace API.Repositories
                 .Take(10)
                 .ToListAsync();
         }
+
+        //lấy ra member theo chatRoomId và accountId
+        public async Task<ChatRoomMember?> GetChatRoomMemberAsync(int chatRoomId, int accountId)
+        {
+            return await _context.ChatRoomMembers
+                .FirstOrDefaultAsync(m => m.ChatRoomId == chatRoomId && m.AccountId == accountId);
+        }
+
+        //cập nhật lại memberTitle
+        public async Task UpdateMemberTitleAsync(ChatRoomMember member)
+        {
+            _context.ChatRoomMembers.Update(member);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<Invite> AddInviteAsync(Invite invite)
         {
             _context.Invites.Add(invite);
