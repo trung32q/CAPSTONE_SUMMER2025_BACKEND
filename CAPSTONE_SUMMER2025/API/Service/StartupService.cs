@@ -216,7 +216,8 @@ namespace API.Service
                 FullName = $"{sm.Account?.AccountProfile?.FirstName} {sm.Account?.AccountProfile?.LastName}",
                 RoleName = sm.Role?.RoleName,
                 AvatarUrl = sm.Account.AccountProfile.AvatarUrl,
-                JoinAT = (DateTime)sm.JoinedAt
+                JoinAT = (DateTime)sm.JoinedAt,
+                Email = sm.Account.Email
             }).ToList();
 
             return result;

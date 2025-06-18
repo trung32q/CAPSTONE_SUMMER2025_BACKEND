@@ -7,6 +7,7 @@
         public string RoleName { get; set; }
         public string AvatarUrl {  get; set; }
         public DateTime JoinAT { get; set; }
+        public string Email {  get; set; }
 
     }
 }
