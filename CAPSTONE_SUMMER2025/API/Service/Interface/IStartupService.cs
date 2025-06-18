@@ -18,7 +18,7 @@ namespace API.Service.Interface
         Task<PagedResult<ChatMessageDTO>> GetMessagesByRoomIdAsync(int chatRoomId, int pageNumber, int pageSize);
         Task<List<StartupStage>> GetAllStagesAsync();
         Task<ChatMessageDTO?> GetMessageByIdAsync(int messageId);
-
+        Task<bool> UpdateMemberTitleAsync(UpdateMemberTitleRequest request);
         Task<List<Account>> SearchByEmailAsync(string keyword);
         Task<Invite> CreateInviteAsync(CreateInviteDTO dto);
         Task<int?> GetStartupIdByAccountIdAsync(int accountId);
@@ -27,5 +27,6 @@ namespace API.Service.Interface
         Task<RoleInStartup> UpdateRoleAsync(UpdateRoleDto dto);
         Task<bool> DeleteRoleAsync(int roleId);
         Task<List<RoleInStartup>> GetRolesByStartupAsync(int startupId);
+        Task<PagedResult<ChatMessageDTO>> SearchMessageAsync(int chatRoomId, int pageNumber, int pageSize, string searchKey);
     }
 }
