@@ -246,7 +246,7 @@ namespace API.Controllers
             return Ok(role);
         }
 
-        [HttpDelete("Update-role/{roleId}")]
+        [HttpDelete("Delete-role/{roleId}")]
         public async Task<IActionResult> DeleteRole(int roleId)
         {
             var success = await _service.DeleteRoleAsync(roleId);
