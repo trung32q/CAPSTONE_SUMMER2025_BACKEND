@@ -157,58 +157,50 @@ namespace API.Repositories
             }
         }
 
-
-
-        public string GeneratePreSignedUrl(string publicIdWithType)
+        public string GeneratePreSignedUrl(string mediaUrlFromDb)
         {
-            // Log the input for debugging
-            Console.WriteLine($"GeneratePreSignedUrl input: {publicIdWithType}");
+            if (string.IsNullOrEmpty(mediaUrlFromDb))
+                throw new Exception("mediaUrlFromDb cannot be null or empty");
 
-            // Handle null or empty input
-            if (string.IsNullOrEmpty(publicIdWithType))
-                throw new Exception("publicIdWithType cannot be null or empty");
-
-            // If publicIdWithType already looks like a full URL, return it as-is
-            if (publicIdWithType.StartsWith("https://"))
+            // Nếu đã là URL đầy đủ và là video thì chèn f_mp4 nếu cần
+            if (mediaUrlFromDb.StartsWith("https://"))
             {
-                Console.WriteLine("Input is already a full URL. Returning as-is.");
-                return publicIdWithType;
+                // Nếu là video Cloudinary thì xử lý f_mp4
+                if (mediaUrlFromDb.Contains("/video/") && mediaUrlFromDb.Contains("/upload/") && !mediaUrlFromDb.Contains("/f_mp4/"))
+                {
+                    // Chèn f_mp4/ sau upload/
+                    var idx = mediaUrlFromDb.IndexOf("/upload/") + "/upload/".Length;
+                    var urlWithMp4 = mediaUrlFromDb.Insert(idx, "f_mp4/");
+                    return urlWithMp4;
+                }
+                // Còn lại trả về nguyên bản
+                return mediaUrlFromDb;
             }
 
-            // Split the publicIdWithType to extract resource type and publicId
-            var parts = publicIdWithType.Split('/');
-            string resourceType;
-            string publicId;
+            string cloudName = "dbtrnadoo";
 
-            if (parts.Length == 2)
+            // Nếu lưu từ DB là path (không phải url đầy đủ)
+            if (mediaUrlFromDb.Contains("video/upload/"))
             {
-                resourceType = parts[0]; // e.g., "image", "video", "raw"
-                publicId = parts[1];     // e.g., "media/076e9632-3036-431b-a149-78a15495ab3d"
+                string videoPath = mediaUrlFromDb.Insert(mediaUrlFromDb.IndexOf("video/upload/") + "video/upload/".Length, "f_mp4/");
+                return $"https://res.cloudinary.com/{cloudName}/{videoPath}";
+            }
+            else if (mediaUrlFromDb.Contains("image/upload/"))
+            {
+                return $"https://res.cloudinary.com/{cloudName}/{mediaUrlFromDb}";
+            }
+            else if (mediaUrlFromDb.Contains("raw/upload/"))
+            {
+                return $"https://res.cloudinary.com/{cloudName}/{mediaUrlFromDb}";
             }
             else
             {
-                // Fallback: Assume resourceType is "image" and treat the input as publicId
-                Console.WriteLine($"Invalid publicIdWithType format: {publicIdWithType}. Assuming resourceType='image'.");
-                resourceType = "image";
-                publicId = publicIdWithType;
+                return $"https://res.cloudinary.com/{cloudName}/{mediaUrlFromDb}";
             }
-
-            // Validate resourceType
-            if (!new[] { "image", "video", "raw", "auto" }.Contains(resourceType))
-            {
-                Console.WriteLine($"Invalid resourceType: {resourceType}. Defaulting to 'image'.");
-                resourceType = "image";
-            }
-
-            // Generate secure URL for the file
-            var url = _cloudinary.Api.Url
-                .Secure(true)
-                .ResourceType(resourceType) // Use the determined resource type
-                .BuildUrl(publicId);
-
-            // Log the generated URL
-            Console.WriteLine($"Generated URL: {url}");
-            return url;
         }
+
+
+
+
     }
 }
