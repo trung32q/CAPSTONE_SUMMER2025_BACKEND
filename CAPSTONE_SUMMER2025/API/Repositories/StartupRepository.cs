@@ -260,5 +260,26 @@ namespace API.Repositories
                 .Where(r => r.StartupId == startupId)
                 .ToListAsync();
         }
+        public IQueryable<StartupMember> SearchAndFilterMembers(int startupId, int? roleId, string? search)
+        {
+            var query = _context.StartupMembers
+                .Include(m => m.Account)
+                .Include(m => m.Role)
+                .Where(m => m.StartupId == startupId);
+
+            if (roleId.HasValue)
+                query = query.Where(m => m.RoleId == roleId.Value);
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var lowerSearch = search.ToLower();
+                query = query.Where(m =>
+                    m.Account.AccountProfile.FirstName.ToLower().Contains(lowerSearch) ||
+                    m.Account.AccountProfile.LastName.ToLower().Contains(lowerSearch)||
+                    m.Account.Email.ToLower().Contains(lowerSearch));
+            }
+            return query;
+        }
+
     }
 }

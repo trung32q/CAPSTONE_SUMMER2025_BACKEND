@@ -498,5 +498,22 @@ namespace API.Service
         {
             return await _repo.GetRolesByStartupAsync(startupId);
         }
+        public async Task<List<StartupMemberDTO>> SearchAndFilterMembersAsync(int startupId, int? roleId, string? search)
+        {
+            var query = _repo.SearchAndFilterMembers(startupId, roleId, search);
+
+            var result = await query.Select(m => new StartupMemberDTO
+            {
+                AccountId = (int)m.AccountId,
+                FullName = m.Account.AccountProfile.FirstName + m.Account.AccountProfile.LastName,
+                RoleName = m.Role.RoleName,
+                AvatarUrl = m.Account.AccountProfile.AvatarUrl,
+                JoinAT = (DateTime)m.JoinedAt,
+                Email = m.Account.Email
+            }).ToListAsync();
+
+            return result;
+        }
+
     }
 }

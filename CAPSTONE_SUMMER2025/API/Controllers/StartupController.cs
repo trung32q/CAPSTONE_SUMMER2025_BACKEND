@@ -291,5 +291,15 @@ namespace API.Controllers
             if (!success) return NotFound();
             return Ok();
         }
+        [HttpGet("search-members")]
+        public async Task<IActionResult> SearchAndFilterMembers(
+    [FromQuery] int startupId,
+    [FromQuery] int? roleId,
+    [FromQuery] string? search)
+        {
+            var members = await _service.SearchAndFilterMembersAsync(startupId, roleId, search);
+            return Ok(members);
+        }
+
     }
 }

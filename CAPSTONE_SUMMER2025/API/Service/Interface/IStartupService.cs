@@ -28,5 +28,6 @@ namespace API.Service.Interface
         Task<bool> DeleteRoleAsync(int roleId);
         Task<List<RoleInStartup>> GetRolesByStartupAsync(int startupId);
         Task<PagedResult<ChatMessageDTO>> SearchMessageAsync(int chatRoomId, int pageNumber, int pageSize, string searchKey);
+        Task<List<StartupMemberDTO>> SearchAndFilterMembersAsync(int startupId, int? roleId, string? search);
     }
 }
