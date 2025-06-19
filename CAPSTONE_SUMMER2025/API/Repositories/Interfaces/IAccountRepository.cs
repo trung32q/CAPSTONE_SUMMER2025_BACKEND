@@ -27,6 +27,9 @@ namespace API.Repositories.Interfaces
         Task<bool> IsFollowingAsync(int followerAccountId, int followingAccountId);
         IQueryable<AccountSearchResultDTO> GetSearchAccounts(string keyword, int currentUserId);
         Task<PagedResult<AccountRecommendDTO>> RecommendAccountsAsync(int currentAccountId, int pageNumber, int pageSize);
-
+        Task<bool> BlockAccountAsync(int blockerId, int blockedId);
+        Task<bool> UnblockAccountAsync(int blockerId, int blockedId);
+        Task<List<AccountBlock>> GetBlockedAccountsAsync(int blockerId);
+        Task<AccountBlock?> GetBlockAsync(int blockerId, int blockedId);
     }
 }

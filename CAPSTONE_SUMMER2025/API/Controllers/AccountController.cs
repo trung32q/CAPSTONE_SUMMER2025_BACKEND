@@ -15,6 +15,7 @@ using API.DTO.BioDTO;
 using API.Service.Interface;
 using API.Service;
 using MailKit.Search;
+using Google.Api;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -207,6 +208,28 @@ namespace API.Controllers
             var isFollowing = await _accountService.IsFollowingAsync(followerAccountId, followingAccountId);
             return Ok(new { isFollowing });
         }
+        // POST: api/accountblock/block
+        [HttpPost("block")]
+        public async Task<IActionResult> BlockAccount(int accountId, int blockedId)
+        {
+            var success = await _accountService.BlockAccountAsync(accountId, blockedId);
+            if (!success) return BadRequest("Already blocked or invalid.");
+            return Ok("Blocked successfully.");
+        }
 
+        // POST: api/accountblock/unblock
+        [HttpPost("unblock")]
+        public async Task<IActionResult> UnblockAccount(int accountId, int blockedId)
+        {
+            var success = await _accountService.UnblockAccountAsync(accountId, blockedId);
+            if (!success) return BadRequest("Not blocked or invalid.");
+            return Ok("Unblocked successfully.");
+        }
+        [HttpGet("blocked-list/{accountId}")]
+        public async Task<IActionResult> GetBlockedAccounts(int accountId)
+        {
+            var list = await _accountService.GetBlockedAccountsAsync(accountId);
+            return Ok(list);
+        }
     }
 }

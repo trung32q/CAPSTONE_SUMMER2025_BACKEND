@@ -238,6 +238,27 @@ namespace API.Service
         {
             return await _accountRepository.IsFollowingAsync(followerAccountId, followingAccountId);
         }
+        public async Task<bool> BlockAccountAsync(int blockerId, int blockedId)
+        {
+            return await _accountRepository.BlockAccountAsync(blockerId, blockedId);
+        }
+
+        public async Task<bool> UnblockAccountAsync(int blockerId, int blockedId)
+        {
+            return await _accountRepository.UnblockAccountAsync(blockerId, blockedId);
+        }
+        public async Task<List<BlockedAccountDto>> GetBlockedAccountsAsync(int blockerId)
+        {
+            var blocks = await _accountRepository.GetBlockedAccountsAsync(blockerId);
+            var dtos = blocks.Select(x => new BlockedAccountDto
+            {
+                BlockedAccountId = x.BlockedAccountId ?? 0,
+                BlockedFullName = x.BlockedAccount?.AccountProfile.FirstName+" " + x.BlockedAccount?.AccountProfile.LastName,
+                BlockedAvatar = x.BlockedAccount?.AccountProfile.AvatarUrl
+            }).ToList();
+            return dtos;
+        }
+
     }
 }
 

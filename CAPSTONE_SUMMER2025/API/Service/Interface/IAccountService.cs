@@ -21,5 +21,8 @@ namespace API.Service.Interface
         Task<PagedResult<AccountSearchResultDTO>> SearchAccountsAsync(string searchText, int pageNumber, int pageSize, int currentUser);
         Task<PagedResult<AccountRecommendDTO>> RecommendAccountsAsync(int currentAccountId, int pageNumber, int pageSize);
         Task<bool> IsFollowingAsync(int followerAccountId, int followingAccountId);
+        Task<bool> BlockAccountAsync(int blockerId, int blockedId);
+        Task<bool> UnblockAccountAsync(int blockerId, int blockedId);
+        Task<List<BlockedAccountDto>> GetBlockedAccountsAsync(int blockerId);
     }
 }

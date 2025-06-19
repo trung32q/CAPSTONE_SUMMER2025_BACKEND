@@ -378,8 +378,41 @@ namespace Infrastructure.Repository
 
             return new PagedResult<AccountRecommendDTO>(items, totalCount, pageNumber, pageSize);
         }
+        public async Task<AccountBlock?> GetBlockAsync(int blockerId, int blockedId)
+        {
+            return await _context.AccountBlocks
+                .FirstOrDefaultAsync(x => x.BlockerAccountId == blockerId && x.BlockedAccountId == blockedId);
+        }
+        public async Task<bool> BlockAccountAsync(int blockerId, int blockedId)
+        {
+            if (await GetBlockAsync(blockerId, blockedId) != null) return false; // Đã block
+            var block = new AccountBlock
+            {
+                BlockerAccountId = blockerId,
+                BlockedAccountId = blockedId,
+                BlockedAt = DateTime.UtcNow
+            };
+            _context.AccountBlocks.Add(block);
+            return await _context.SaveChangesAsync() > 0;
+        }
 
+        public async Task<bool> UnblockAccountAsync(int blockerId, int blockedId)
+        {
+            var block = await GetBlockAsync(blockerId, blockedId);
+            if (block == null) return false;
+            _context.AccountBlocks.Remove(block);
+            return await _context.SaveChangesAsync() > 0;
+        }
 
+        public async Task<List<AccountBlock>> GetBlockedAccountsAsync(int blockerId)
+        {
+            return await _context.AccountBlocks
+     .Include(x => x.BlockedAccount)
+     .ThenInclude(acc => acc.AccountProfile) 
+     .Where(x => x.BlockerAccountId == blockerId)
+     .ToListAsync();
+
+        }
 
     }
 }
