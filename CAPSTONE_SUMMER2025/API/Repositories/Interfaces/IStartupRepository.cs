@@ -38,5 +38,9 @@ namespace API.Repositories.Interfaces
         Task<bool> DeleteRoleAsync(int roleId);
         Task<List<RoleInStartup>> GetRolesByStartupAsync(int startupId);
         IQueryable<StartupMember> SearchAndFilterMembers(int startupId, int? roleId, string? search);
+        Task<StartupMember?> GetMemberAsync(int startupId, int accountId);
+        Task<bool> RemoveMemberAsync(StartupMember member);
+        Task<StartupMember?> GetMemberByAccountAsync(int accountId);
+        Task<bool> UpdateMemberRoleAsync(int startupId, int accountId, int newRoleId);
     }
 }

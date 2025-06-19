@@ -300,6 +300,29 @@ namespace API.Controllers
             var members = await _service.SearchAndFilterMembersAsync(startupId, roleId, search);
             return Ok(members);
         }
+        [HttpPost("kick-member")]
+        public async Task<IActionResult> KickMember(int startupId, int accountId)
+        {
+            var success = await _service.KickMemberAsync(startupId, accountId);
+            if (!success) return NotFound("Member not found or already removed.");
+            return Ok("Kicked successfully.");
+        }
+
+        // POST: api/startupmember/out
+        [HttpPost("out-startup")]
+        public async Task<IActionResult> OutStartup(int accountId)
+        {
+            var success = await _service.OutStartupAsync(accountId);
+            if (!success) return NotFound("Member not found or already removed.");
+            return Ok("Left startup successfully.");
+        }
+        [HttpPut("update-member-role")]
+        public async Task<IActionResult> UpdateMemberRole([FromBody] UpdateMemberRoleDto dto)
+        {
+            var result = await _service.UpdateMemberRoleAsync(dto.StartupId, dto.AccountId, dto.NewRoleId);
+            if (!result) return NotFound("Member not found.");
+            return Ok("Role updated successfully.");
+        }
 
     }
 }

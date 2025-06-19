@@ -514,6 +514,25 @@ namespace API.Service
 
             return result;
         }
+        // Kick member (admin dùng)
+        public async Task<bool> KickMemberAsync(int startupId, int accountId)
+        {
+            var member = await _repo.GetMemberAsync(startupId, accountId);
+            if (member == null) return false;
+            return await _repo.RemoveMemberAsync(member);
+        }
+
+        // Out startup (thành viên tự rời)
+        public async Task<bool> OutStartupAsync(int accountId)
+        {
+            var member = await _repo.GetMemberByAccountAsync(accountId);
+            if (member == null) return false;
+            return await _repo.RemoveMemberAsync(member);
+        }
+        public async Task<bool> UpdateMemberRoleAsync(int startupId, int accountId, int newRoleId)
+        {
+            return await _repo.UpdateMemberRoleAsync(startupId, accountId, newRoleId);
+        }
 
     }
 }

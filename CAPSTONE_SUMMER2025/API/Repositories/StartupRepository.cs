@@ -280,6 +280,33 @@ namespace API.Repositories
             }
             return query;
         }
+        public async Task<StartupMember?> GetMemberAsync(int startupId, int accountId)
+        {
+            return await _context.StartupMembers
+                .FirstOrDefaultAsync(x => x.StartupId == startupId && x.AccountId == accountId);
+        }
 
+        public async Task<StartupMember?> GetMemberByAccountAsync(int accountId)
+        {
+            return await _context.StartupMembers
+                .FirstOrDefaultAsync(x => x.AccountId == accountId);
+        }
+
+        public async Task<bool> RemoveMemberAsync(StartupMember member)
+        {
+            _context.StartupMembers.Remove(member);
+            return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<bool> UpdateMemberRoleAsync(int startupId, int accountId, int newRoleId)
+        {
+            var member = await _context.StartupMembers
+                .FirstOrDefaultAsync(m => m.StartupId == startupId && m.AccountId == accountId);
+
+            if (member == null) return false;
+
+            member.RoleId = newRoleId;
+            _context.StartupMembers.Update(member);
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }
