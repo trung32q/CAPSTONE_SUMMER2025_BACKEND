@@ -22,21 +22,27 @@ namespace API.Mapping
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.AccountProfile.FirstName))  // Lấy FirstName từ AccountProfiles
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.AccountProfile.LastName))    // Lấy LastName từ AccountProfiles
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                    .ForAllOtherMembers(opt => opt.Ignore());
+            ;
 
             // Map từ ReqAccountDTO sang Account
             CreateMap<ReqAccountDTO, Account>()
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Password, opt => opt.Ignore()) // bỏ qua, vì sẽ hash
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => RoleConst.STARTUP))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => AccountStatusConst.DEACTIVE));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => AccountStatusConst.DEACTIVE))
+                    .ForAllOtherMembers(opt => opt.Ignore());
+            ;
 
             // Tạo mapping từ Account Model sang ResLoginDTO
             CreateMap<Account, ResLoginDTO>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccountId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role))
-                .ForMember(dest => dest.AccessToken, opt => opt.Ignore());
+                .ForMember(dest => dest.AccessToken, opt => opt.Ignore())
+                    .ForAllOtherMembers(opt => opt.Ignore());
+            ;
 
             CreateMap<Account, ResAccountInfoDTO>()
                 .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
@@ -62,7 +68,9 @@ namespace API.Mapping
                 .ForMember(dest => dest.Country, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.Country : null))
                 .ForMember(dest => dest.PostCount, opt => opt.MapFrom(src => src.Posts.Count()))
                 .ForMember(dest => dest.FollowingCount, opt => opt.MapFrom(src => src.FollowFollowerAccounts.Count))
-                .ForMember(dest => dest.FollowerCount, opt => opt.MapFrom(src => src.FollowFollowingAccounts.Count));
+                .ForMember(dest => dest.FollowerCount, opt => opt.MapFrom(src => src.FollowFollowingAccounts.Count))
+                    .ForAllOtherMembers(opt => opt.Ignore());
+            ;
 
 
         }

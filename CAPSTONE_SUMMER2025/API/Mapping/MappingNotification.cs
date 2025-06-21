@@ -10,9 +10,9 @@ namespace API.Mapping
         public MappingNotification()
         {
            
-            CreateMap<reqNotificationDTO, Notification>();
+            CreateMap<reqNotificationDTO, Notification>().ForAllOtherMembers(opt => opt.Ignore());
             CreateMap<Notification, resNotificationDTO>()
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.SendAt));
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.SendAt)).ForAllOtherMembers(opt => opt.Ignore());
         }
     }
 }

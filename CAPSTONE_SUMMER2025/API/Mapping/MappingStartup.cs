@@ -20,7 +20,8 @@ namespace API.Mapping
              .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
             .ForMember(dest => dest.StageId, opt => opt.MapFrom(src => src.StageId))
             .ForMember(dest => dest.CreateAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => StartupStatus.UNVERIFIED));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => StartupStatus.UNVERIFIED))
+            .ForAllOtherMembers(opt => opt.Ignore());
 
 
         }

@@ -70,7 +70,7 @@ namespace API.Repositories
         //hàm tìm bài post theo id
         public async Task<Post> GetPostByPostIdAsync(int id)
         {
-            return await _context.Posts.FirstOrDefaultAsync(x => x.PostId == id);
+            return await _context.Posts.Include(p => p.PostMedia).FirstOrDefaultAsync(x => x.PostId == id);
         }
 
 
@@ -189,6 +189,9 @@ namespace API.Repositories
 
             return new PagedResult<PostComment>(items, totalCount, pageNumber, pageSize);
         }
+
+      
+
 
         //hàm lấy ra các bài post theo accountid
         public async Task<PagedResult<Post>> GetPostsByAccountId(int accountId,int pageNumber, int pageSize, int currentAccountId)
@@ -418,6 +421,7 @@ namespace API.Repositories
                 StartupId = p.StartupId,
                 name = p.Startup.StartupName,
                 AvatarURL = p.Startup.Logo,
+                PostShareId = p.PostShareId,
                 Type = "Post",
                 Title = p.Title,
                 Content = p.Content,
@@ -493,6 +497,7 @@ namespace API.Repositories
                 {
                     PostId = p.PostId,
                     AccountID = p.AccountId,
+                    PostShareId = p.PostShareId,
                     name = p.Account.AccountProfile.FirstName +" "+ p.Account.AccountProfile.LastName,
                     AvatarURL = p.Account.AccountProfile.AvatarUrl,
                     Type = "Post",
@@ -662,5 +667,12 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
         }
 
+        // hàm sharepost
+        public async Task ShareAsync(Post post)
+        {
+            await _context.Posts.AddAsync(post);
+            await _context.SaveChangesAsync();
+
+        }
     }
 }

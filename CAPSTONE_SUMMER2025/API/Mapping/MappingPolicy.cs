@@ -12,11 +12,11 @@ namespace API.Mapping
     public class MappingPolicy: Profile
     {
         public MappingPolicy() {
-            CreateMap<PolicyType, resPolicyTypeDTO>();
-            CreateMap<reqPolicyTypeDTO, PolicyType>();
+            CreateMap<PolicyType, resPolicyTypeDTO>().ForAllOtherMembers(opt => opt.Ignore());
+            CreateMap<reqPolicyTypeDTO, PolicyType>().ForAllOtherMembers(opt => opt.Ignore());
 
-            CreateMap<Policy, resPolicyDTO>();
-            CreateMap<reqPolicyDTO, Policy>();
+            CreateMap<Policy, resPolicyDTO>().ForAllOtherMembers(opt => opt.Ignore());
+            CreateMap<reqPolicyDTO, Policy>().ForAllOtherMembers(opt => opt.Ignore());
         }
        
     }

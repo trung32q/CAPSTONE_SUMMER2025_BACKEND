@@ -15,6 +15,7 @@
         public DateTime CreatedAt { get; set; }
         public int Priority { get; set; }
         public int InteractionCount { get; set; }
+        public int? PostShareId {  get; set; }
         
     }
 }

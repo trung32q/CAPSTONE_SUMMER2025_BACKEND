@@ -15,7 +15,7 @@ namespace API.Mapping
         public MappingPost()
         {
             CreateMap<Post, resPostDTO>();
-            CreateMap<resPostDTO, Post>();
+            //CreateMap<resPostDTO, Post>();
 
             CreateMap<PostComment, PostCommentDTO>();
             CreateMap<PostCommentDTO, PostComment>();
@@ -29,7 +29,7 @@ namespace API.Mapping
 
 
 
-            CreateMap<PostMedium, PostMediaDTO>();        
+            CreateMap<PostMedium, PostMediaDTO>();
             CreateMap<PostMediaDTO, PostMedium>();
 
         }
