@@ -411,7 +411,6 @@ namespace Infrastructure.Repository
      .ThenInclude(acc => acc.AccountProfile) 
      .Where(x => x.BlockerAccountId == blockerId)
      .ToListAsync();
-
         }
 
     }

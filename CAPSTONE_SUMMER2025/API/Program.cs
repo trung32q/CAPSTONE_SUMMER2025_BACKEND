@@ -141,16 +141,15 @@ builder.Services.AddScoped<GoogleService> ();
 
 builder.Services.AddHttpClient<IChatGPTRepository, ChatGPTRepository> ();
 // AutoMapper
-builder.Services.AddAutoMapper (typeof (Program),
-                               typeof (MappingAccount));
 builder.Services.AddAutoMapper(
-                               typeof(MappingNotification));
-builder.Services.AddAutoMapper(
-                               typeof(MappingPolicy));
-builder.Services.AddAutoMapper(
-                               typeof(MappingPost));
+    typeof(Program),
+    typeof(MappingAccount),
+    typeof(MappingNotification),
+    typeof(MappingPolicy),
+    typeof(MappingPost),
+    typeof(MappingStartup)
+);
 
-builder.Services.AddAutoMapper(typeof(MappingStartup));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 

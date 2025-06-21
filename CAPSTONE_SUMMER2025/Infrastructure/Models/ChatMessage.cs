@@ -12,6 +12,7 @@ namespace Infrastructure.Models
         public DateTime? SentAt { get; set; }
         public bool? IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }
+        public string? TypeMessage { get; set; }
 
         public virtual Account? Account { get; set; }
         public virtual ChatRoom? ChatRoom { get; set; }
