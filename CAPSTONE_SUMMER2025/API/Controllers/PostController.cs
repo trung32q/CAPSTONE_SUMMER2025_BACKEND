@@ -157,7 +157,7 @@ namespace API.Controllers
             return Ok(count);
         }
 
-        // hàm đếm số lượng like bài viết
+        // hàm đếm số lượng comment bài viết
         [HttpGet("{postId}/comment-count")]
         public async Task<IActionResult> GetPostCommentCount(int postId)
         {
@@ -329,6 +329,41 @@ namespace API.Controllers
         {
             var result = await _postService.GetStartupFeedAsync(startupId, page, pageSize);
             return Ok(result);
+        }
+
+
+        // share bài viết
+        [HttpPost("share")]
+        public async Task<IActionResult> SharePost([FromBody] SharePostRequest request)
+        {
+            try
+            {
+                var sharedPost = await _postService.SharePostAsync(request);
+                return Ok(new
+                {
+                    message = "Chia sẻ thành công",
+                    sharedPostId = sharedPost.PostId
+                });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi hệ thống", error = ex.Message });
+            }
+        }
+
+        //lấy ra post theo postid
+        [HttpGet("post/{postId}")]
+        public async Task<IActionResult> GetPostById(int postId)
+        {
+            var post = await _postService.GetPostByPostId(postId);
+            if (post == null)
+                return NotFound(new { message = "Post not found" });
+
+            return Ok(post);
         }
     }
 }

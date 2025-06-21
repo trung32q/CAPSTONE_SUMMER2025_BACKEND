@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Models
 {
@@ -39,6 +38,7 @@ namespace Infrastructure.Models
         public virtual DbSet<Milestone> Milestones { get; set; } = null!;
         public virtual DbSet<MilestoneAssignment> MilestoneAssignments { get; set; } = null!;
         public virtual DbSet<Notification> Notifications { get; set; } = null!;
+        public virtual DbSet<PermissionInStartup> PermissionInStartups { get; set; } = null!;
         public virtual DbSet<Policy> Policies { get; set; } = null!;
         public virtual DbSet<PolicyType> PolicyTypes { get; set; } = null!;
         public virtual DbSet<PositionRequirement> PositionRequirements { get; set; } = null!;
@@ -48,7 +48,6 @@ namespace Infrastructure.Models
         public virtual DbSet<PostLike> PostLikes { get; set; } = null!;
         public virtual DbSet<PostMedium> PostMedia { get; set; } = null!;
         public virtual DbSet<PostReport> PostReports { get; set; } = null!;
-        public virtual DbSet<PostShare> PostShares { get; set; } = null!;
         public virtual DbSet<ReportReason> ReportReasons { get; set; } = null!;
         public virtual DbSet<RoleInStartup> RoleInStartups { get; set; } = null!;
         public virtual DbSet<Startup> Startups { get; set; } = null!;
@@ -63,11 +62,11 @@ namespace Infrastructure.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var builder = new ConfigurationBuilder()
-                                .SetBasePath(Directory.GetCurrentDirectory())
-                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            IConfigurationRoot configuration = builder.Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("server =DESKTOP-PNOLAD5\\HE176899; database = CAPSTONE_SUMMER2025;uid=sa;pwd=123;TrustServerCertificate=true");
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -80,6 +79,10 @@ namespace Infrastructure.Models
                     .IsUnique();
 
                 entity.Property(e => e.AccountId).HasColumnName("Account_ID");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(255)
@@ -298,6 +301,8 @@ namespace Infrastructure.Models
 
                 entity.Property(e => e.SentAt).HasColumnType("datetime");
 
+                entity.Property(e => e.TypeMessage).HasMaxLength(100);
+
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.ChatMessages)
                     .HasForeignKey(d => d.AccountId)
@@ -432,6 +437,8 @@ namespace Infrastructure.Models
 
                 entity.Property(e => e.InternshipId).HasColumnName("Internship_ID");
 
+                entity.Property(e => e.Address).HasMaxLength(255);
+
                 entity.Property(e => e.CreateAt)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
@@ -439,6 +446,8 @@ namespace Infrastructure.Models
                 entity.Property(e => e.Deadline).HasColumnType("datetime");
 
                 entity.Property(e => e.PositionId).HasColumnName("Position_ID");
+
+                entity.Property(e => e.Salary).HasMaxLength(255);
 
                 entity.Property(e => e.StartupId).HasColumnName("Startup_ID");
 
@@ -642,14 +651,40 @@ namespace Infrastructure.Models
 
                 entity.Property(e => e.AccountId).HasColumnName("Account_ID");
 
+                entity.Property(e => e.NotificationType).HasMaxLength(100);
+
                 entity.Property(e => e.SendAt)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.SenderId).HasColumnName("SenderID");
+
+                entity.Property(e => e.TargetUrl)
+                    .HasMaxLength(500)
+                    .HasColumnName("TargetURL");
 
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.Notifications)
                     .HasForeignKey(d => d.AccountId)
                     .HasConstraintName("FK__Notificat__Accou__35BCFE0A");
+            });
+
+            modelBuilder.Entity<PermissionInStartup>(entity =>
+            {
+                entity.HasKey(e => e.PermissionId)
+                    .HasName("PK__Permissi__89B744E54A367E58");
+
+                entity.ToTable("PermissionInStartup");
+
+                entity.Property(e => e.PermissionId).HasColumnName("Permission_ID");
+
+                entity.Property(e => e.RoleId).HasColumnName("Role_ID");
+
+                entity.HasOne(d => d.Role)
+                    .WithMany(p => p.PermissionInStartups)
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Permission_Role");
             });
 
             modelBuilder.Entity<Policy>(entity =>
@@ -707,6 +742,10 @@ namespace Infrastructure.Models
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.PostShareId).HasColumnName("PostShare_ID");
+
+                entity.Property(e => e.Schedule).HasColumnType("datetime");
+
                 entity.Property(e => e.StartupId).HasColumnName("Startup_ID");
 
                 entity.Property(e => e.Title)
@@ -717,6 +756,11 @@ namespace Infrastructure.Models
                     .WithMany(p => p.Posts)
                     .HasForeignKey(d => d.AccountId)
                     .HasConstraintName("FK__Post__Account_ID__1F98B2C1");
+
+                entity.HasOne(d => d.PostShare)
+                    .WithMany(p => p.InversePostShare)
+                    .HasForeignKey(d => d.PostShareId)
+                    .HasConstraintName("FK_Post_Share");
 
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.Posts)
@@ -868,31 +912,6 @@ namespace Infrastructure.Models
                     .WithMany(p => p.PostReports)
                     .HasForeignKey(d => d.ReasonId)
                     .HasConstraintName("FK__PostRepor__Reaso__3B40CD36");
-            });
-
-            modelBuilder.Entity<PostShare>(entity =>
-            {
-                entity.ToTable("PostShare");
-
-                entity.Property(e => e.PostShareId).HasColumnName("PostShare_ID");
-
-                entity.Property(e => e.AccountId).HasColumnName("Account_ID");
-
-                entity.Property(e => e.CreateAt)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.PostId).HasColumnName("Post_ID");
-
-                entity.HasOne(d => d.Account)
-                    .WithMany(p => p.PostShares)
-                    .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__PostShare__Accou__2FCF1A8A");
-
-                entity.HasOne(d => d.Post)
-                    .WithMany(p => p.PostShares)
-                    .HasForeignKey(d => d.PostId)
-                    .HasConstraintName("FK__PostShare__Post___2EDAF651");
             });
 
             modelBuilder.Entity<ReportReason>(entity =>

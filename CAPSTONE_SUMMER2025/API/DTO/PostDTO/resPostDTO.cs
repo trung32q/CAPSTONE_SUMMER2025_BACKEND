@@ -9,5 +9,6 @@
         public string? Title { get; set; }
         public DateTime? CreateAt { get; set; }
         public int LikeCount { get; set; }
+        public int? PostShareId { get; set; }
     }
 }

@@ -11,6 +11,7 @@ using Google.Cloud.AIPlatform.V1;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace API.Service
 {
@@ -37,6 +38,29 @@ namespace API.Service
             _notificationService = notificationService;
             _context = context;
         }
+
+        public async Task<resPostDTO> GetPostByPostId(int postId)
+        {
+            var post = await _repository.GetPostByPostIdAsync(postId);
+            if (post == null) return null;
+
+            var dto = new resPostDTO
+            {
+                PostId = post.PostId,
+                AccountId = post.AccountId,
+                Content = post.Content,
+                Title = post.Title,
+                CreateAt = post.CreateAt,
+                PostMedia = post.PostMedia.Select(m => new PostMediaDTO
+                {
+                    MediaUrl = m.MediaUrl,
+                    DisplayOrder = m.DisplayOrder
+                }).ToList()
+            };
+
+            return dto;
+        }
+
         public async Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize, int currentAccountId)
         {
             var pagedPosts = await _repository.GetPostsByAccountId(accountId, pageNumber, pageSize, currentAccountId);
@@ -522,6 +546,23 @@ namespace API.Service
             int skip = (page - 1) * pageSize;
             var (items, totalCount) = await _repository.GetStartupFeedItemsAsync(startupId, skip, pageSize);
             return new API.DTO.AccountDTO.PagedResult<FeedItemDTO>(items, totalCount, page, pageSize);
+        }
+
+        // hàm share post
+        public async Task<Post> SharePostAsync(SharePostRequest request)
+        {
+            var sharedPost = new Post
+            {
+                AccountId = request.AccountId ?? throw new ArgumentException("AccountId không được null"),
+                StartupId = request.StartupId,
+                PostShareId = request.OriginalPostId,
+                Content = request.Content,
+                Title = request.Title,
+                CreateAt = DateTime.Now
+            };
+
+            await _repository.ShareAsync(sharedPost);
+            return sharedPost;
         }
     }
 }

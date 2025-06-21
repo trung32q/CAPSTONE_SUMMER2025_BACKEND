@@ -37,7 +37,6 @@ namespace API.Repositories.Interfaces
         Task<Post> GetPostByPostIdAsync(int id);
         Task AddInternshipPostAsync(InternshipPost post);
         Task<(List<FeedItemDTO> Items, int TotalCount)> GetStartupFeedItemsAsync(int startupId, int skip, int take);
-
-
+        Task ShareAsync(Post post);
     }
 }
