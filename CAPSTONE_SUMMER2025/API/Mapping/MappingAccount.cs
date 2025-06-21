@@ -52,7 +52,7 @@ namespace API.Mapping
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.PhoneNumber : null))
                 .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.AvatarUrl : null))
                   .ForMember(dest => dest.BackgroundUrl, opt => opt.MapFrom(src => src.AccountProfile != null ? src.AccountProfile.BackgroundUrl : null))
-                .ForMember(dest => dest.IntroTitle, opt => opt.MapFrom(src => src.AccountProfile != null ? src.Bio.IntroTitle : null))
+               .ForMember(dest => dest.IntroTitle, opt => opt.MapFrom(src => src.AccountProfile != null && src.Bio != null ? src.Bio.IntroTitle : null))
                 .ForMember(dest => dest.Position, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.Position : null))
                 .ForMember(dest => dest.Workplace, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.Workplace : null))
                 .ForMember(dest => dest.FacebookUrl, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.FacebookUrl : null))
@@ -60,9 +60,13 @@ namespace API.Mapping
                 .ForMember(dest => dest.GithubUrl, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.GithubUrl : null))
                 .ForMember(dest => dest.PortfolioUrl, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.PortfolioUrl : null))
                 .ForMember(dest => dest.Country, opt => opt.MapFrom(src => src.Bio != null ? src.Bio.Country : null))
-                .ForMember(dest => dest.PostCount, opt => opt.MapFrom(src => src.Posts.Count()))
-                .ForMember(dest => dest.FollowingCount, opt => opt.MapFrom(src => src.FollowFollowerAccounts.Count))
-                .ForMember(dest => dest.FollowerCount, opt => opt.MapFrom(src => src.FollowFollowingAccounts.Count));
+               .ForMember(dest => dest.PostCount,
+    opt => opt.MapFrom(src => src.Posts != null ? src.Posts.Count() : 0))
+.ForMember(dest => dest.FollowingCount,
+    opt => opt.MapFrom(src => src.FollowFollowerAccounts != null ? src.FollowFollowerAccounts.Count : 0))
+.ForMember(dest => dest.FollowerCount,
+    opt => opt.MapFrom(src => src.FollowFollowingAccounts != null ? src.FollowFollowingAccounts.Count : 0));
+
 
 
         }

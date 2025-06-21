@@ -24,6 +24,7 @@ namespace Infrastructure.Models
             PostHides = new HashSet<PostHide>();
             PostLikes = new HashSet<PostLike>();
             PostReports = new HashSet<PostReport>();
+            PostShares = new HashSet<PostShare>();
             Posts = new HashSet<Post>();
             StartupMembers = new HashSet<StartupMember>();
             Subcribes = new HashSet<Subcribe>();
@@ -40,7 +41,6 @@ namespace Infrastructure.Models
         public int? Flag { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
-        public DateTime CreatedAt { get; set; }
 
         public virtual AccountProfile? AccountProfile { get; set; }
         public virtual Bio? Bio { get; set; }
@@ -61,6 +61,7 @@ namespace Infrastructure.Models
         public virtual ICollection<PostHide> PostHides { get; set; }
         public virtual ICollection<PostLike> PostLikes { get; set; }
         public virtual ICollection<PostReport> PostReports { get; set; }
+        public virtual ICollection<PostShare> PostShares { get; set; }
         public virtual ICollection<Post> Posts { get; set; }
         public virtual ICollection<StartupMember> StartupMembers { get; set; }
         public virtual ICollection<Subcribe> Subcribes { get; set; }

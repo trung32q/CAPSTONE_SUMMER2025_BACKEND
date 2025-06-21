@@ -19,8 +19,6 @@ namespace Infrastructure.Models
         public DateTime? CreateAt { get; set; }
         public DateTime? Deadline { get; set; }
         public string? Status { get; set; }
-        public string? Address { get; set; }
-        public string? Salary { get; set; }
 
         public virtual PositionRequirement? Position { get; set; }
         public virtual Startup? Startup { get; set; }

@@ -8,7 +8,6 @@ namespace Infrastructure.Models
         public RoleInStartup()
         {
             Invites = new HashSet<Invite>();
-            PermissionInStartups = new HashSet<PermissionInStartup>();
             StartupMembers = new HashSet<StartupMember>();
         }
 
@@ -18,7 +17,6 @@ namespace Infrastructure.Models
 
         public virtual Startup? Startup { get; set; }
         public virtual ICollection<Invite> Invites { get; set; }
-        public virtual ICollection<PermissionInStartup> PermissionInStartups { get; set; }
         public virtual ICollection<StartupMember> StartupMembers { get; set; }
     }
 }
