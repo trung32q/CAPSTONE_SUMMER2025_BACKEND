@@ -239,7 +239,7 @@ namespace API.Controllers
         public async Task<IActionResult> CreateInvite([FromBody] CreateInviteDTO dto)
         {
             bool isMember = await _service.IsMemberOfAnyStartup(dto.Account_ID);
-            if (!isMember)
+            if (isMember)
             {
                 return BadRequest("Account da nam trong 1 startup!");
             }
