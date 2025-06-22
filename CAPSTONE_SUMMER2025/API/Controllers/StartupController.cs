@@ -31,13 +31,13 @@ namespace API.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateStartup([FromForm] CreateStartupRequest req)
         {
-            var account = _accountservice.GetAccountByAccountIDAsync(req.CreatorAccountId);
+            var account = await _accountservice.GetAccountByAccountIDAsync(req.CreatorAccountId);
             if (!account.Status.Equals(AccountStatusConst.VERIFIED))
             {
                 return BadRequest("Account chua verified!");
             }
             bool isMember = await _service.IsMemberOfAnyStartup(req.CreatorAccountId);
-            if (!isMember)
+            if (isMember)
             {
                 return BadRequest("Account da nam trong 1 startup!");
             }
