@@ -365,5 +365,32 @@ namespace API.Controllers
 
             return Ok(post);
         }
+        // lấy ra số lượng tương tác với bài viết của starup trong 7 ngày
+        [HttpGet("startup/{startupId}/interactions/daily")]
+        public async Task<IActionResult> GetDailyInteractionsByStartup(int startupId)
+        {
+            var result = await _postService.GetStartupDailyStatsAsync(startupId);
+            return Ok(result);
+        }
+
+        //lấy ra những bài post được hẹn nhưng chưa đăng
+        [HttpGet("scheduled")]
+        public async Task<IActionResult> GetScheduledPosts()
+        {
+            var posts = await _postService.GetScheduledPostsAsync();
+            return Ok(posts);
+        }
+
+        //publish bài post
+        [HttpPut("publish/{postId}")]
+        public async Task<IActionResult> PublishPost(int postId)
+        {
+            var success = await _postService.PublishPostAsync(postId);
+            if (!success)
+                return NotFound(new { message = "Post not found or already published." });
+
+            return Ok(new { message = "Post published successfully." });
+        }
+
     }
 }

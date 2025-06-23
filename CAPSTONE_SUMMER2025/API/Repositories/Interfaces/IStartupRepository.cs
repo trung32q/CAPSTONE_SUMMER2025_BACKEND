@@ -1,4 +1,5 @@
-﻿using API.DTO.StartupDTO;
+﻿using API.DTO.PostDTO;
+using API.DTO.StartupDTO;
 using Infrastructure.Models;
 
 namespace API.Repositories.Interfaces
@@ -42,5 +43,6 @@ namespace API.Repositories.Interfaces
         Task<bool> RemoveMemberAsync(StartupMember member);
         Task<StartupMember?> GetMemberByAccountAsync(int accountId);
         Task<bool> UpdateMemberRoleAsync(int startupId, int accountId, int newRoleId);
+        
     }
 }

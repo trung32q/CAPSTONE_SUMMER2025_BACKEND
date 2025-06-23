@@ -7,6 +7,7 @@ using Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Ocsp;
 
 namespace API.Controllers
@@ -19,14 +20,16 @@ namespace API.Controllers
         private readonly IAccountService _accountservice;
         private readonly ILogger<StartupService> _logger;
         private readonly IHubContext<MessageHub> _hubContext;
+        private readonly CAPSTONE_SUMMER2025Context _context;
 
 
-        public StartupController(IStartupService service, ILogger<StartupService> logger, IAccountService accountservice, IHubContext<MessageHub> hubContext)
+        public StartupController(IStartupService service, ILogger<StartupService> logger, IAccountService accountservice, IHubContext<MessageHub> hubContext, CAPSTONE_SUMMER2025Context context)
         {
             _service = service;
             _logger = logger;
             _accountservice = accountservice;
             _hubContext = hubContext;
+            _context = context;
         }
         [HttpPost("create")]
         public async Task<IActionResult> CreateStartup([FromForm] CreateStartupRequest req)
@@ -324,5 +327,10 @@ namespace API.Controllers
             return Ok("Role updated successfully.");
         }
 
+       
+
+      
+
     }
 }
+

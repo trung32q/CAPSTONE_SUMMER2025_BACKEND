@@ -10,5 +10,6 @@
         public DateTime? CreateAt { get; set; }
         public int LikeCount { get; set; }
         public int? PostShareId { get; set; }
+        public DateTime? Schedule { get; set; }
     }
 }
