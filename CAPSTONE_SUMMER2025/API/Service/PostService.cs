@@ -51,6 +51,7 @@ namespace API.Service
                 Content = post.Content,
                 Title = post.Title,
                 CreateAt = post.CreateAt,
+                Schedule = post.Schedule,
                 PostMedia = post.PostMedia.Select(m => new PostMediaDTO
                 {
                     MediaUrl = m.MediaUrl,
@@ -535,7 +536,9 @@ namespace API.Service
                 Benefits = dto.Benefits,
                 Deadline = dto.Deadline,
                 CreateAt = DateTime.Now,
-                Status = Utils.Constants.StatusInternshipPost.ACTIVE
+                Status = Utils.Constants.StatusInternshipPost.ACTIVE,
+                Salary = dto.Salary,
+                Address = dto.Address,
             };
 
             await _repository.AddInternshipPostAsync(post);
@@ -554,7 +557,6 @@ namespace API.Service
             var sharedPost = new Post
             {
                 AccountId = request.AccountId ?? throw new ArgumentException("AccountId không được null"),
-                StartupId = request.StartupId,
                 PostShareId = request.OriginalPostId,
                 Content = request.Content,
                 Title = request.Title,
@@ -563,6 +565,40 @@ namespace API.Service
 
             await _repository.ShareAsync(sharedPost);
             return sharedPost;
+        }
+        // lấy ra số lượng tương tác với bài viết của starup trong 7 ngày
+        public async Task<List<DailyInteractionStatDTO>> GetStartupDailyStatsAsync(int startupId)
+        {
+            return await _repository.GetStartupInteractionsByDayLast7DaysAsync(startupId);
+        }
+        //lấy ra những bài post được hẹn nhưng chưa đăng
+        public async Task<List<PostScheduleDTO>> GetScheduledPostsAsync()
+        {
+            var posts = await _repository.GetScheduledPostsAsync();
+            return posts.Select(p => new PostScheduleDTO
+            {
+                PostId = p.PostId,
+                Title = p.Title,
+                CreateAt = p.CreateAt,
+                Schedule = p.Schedule
+            }).ToList();
+        }
+
+        //publish bài post
+        public async Task<bool> PublishPostAsync(int postId)
+        {
+            var post = await _repository.GetPostByPostIdAsync(postId);
+            if (post == null)
+                return false;
+        
+            // Nếu chưa đến giờ lên lịch thì không cho đăng
+            //if (post.Schedule.HasValue && post.Schedule > DateTime.Now)
+            //    return false;
+
+            // Cho đăng bài
+            post.CreateAt = post.Schedule;
+            await _repository.SaveChangesAsync();
+            return true;
         }
     }
 }

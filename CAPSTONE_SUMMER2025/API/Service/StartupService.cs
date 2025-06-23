@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 using API.DTO.AccountDTO;
+using API.DTO.PostDTO;
 using API.DTO.StartupDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
@@ -16,6 +17,7 @@ namespace API.Service
     public class StartupService : IStartupService
     {
         private readonly IStartupRepository _repo;
+        private readonly IPostRepository _postRepo;
         private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
         private readonly IFilebaseHandler _filebaseHandler;
@@ -23,7 +25,7 @@ namespace API.Service
         private readonly INotificationService _notificationService;
         private readonly CAPSTONE_SUMMER2025Context _context;
 
-        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext, INotificationService notificationService)
+        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext, INotificationService notificationService, IPostRepository postRepo)
         {
             _repo = repo;
             _mapper = mapper;
@@ -32,6 +34,7 @@ namespace API.Service
             _accountRepository = accountRepository;
             _context = conntext;
             _notificationService = notificationService;
+            _postRepo = postRepo;
         }
         public async Task<int> CreateStartupAsync(CreateStartupRequest request)
         {
@@ -542,5 +545,8 @@ namespace API.Service
             return await _repo.UpdateMemberRoleAsync(startupId, accountId, newRoleId);
         }
 
+     
+
+       
     }
 }

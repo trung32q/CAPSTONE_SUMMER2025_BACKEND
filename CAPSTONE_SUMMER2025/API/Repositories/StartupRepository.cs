@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
-using API.DTO.AccountDTO;
+using API.DTO.PostDTO;
 using API.Repositories.Interfaces;
 using AutoMapper;
 using Infrastructure.Models;
@@ -46,27 +46,12 @@ namespace API.Repositories
         }
 
         public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
-        public async Task<PagedResult<Startup>> GetAllStartupsAsync(int pageNumber, int pageSize)
+        public async Task<List<Startup>> GetAllStartupsAsync()
         {
-            var query = _context.Startups
-         .Include(s => s.StartupCategories)
-             .ThenInclude(sc => sc.Category)
-         .Select(s => new
-         {
-             Startup = s,
-             FollowCount = _context.Subcribes.Count(sub => sub.FollowingStartUpId== s.StartupId)
-         })
-         .OrderByDescending(x => x.FollowCount);
-
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(x => x.Startup)
+            return await _context.Startups
+                .Include(s => s.StartupCategories)
+                    .ThenInclude(sc => sc.Category)
                 .ToListAsync();
-
-            return new PagedResult<Startup>(items, totalCount, pageNumber, pageSize);
         }
 
         //tạo chatroom
@@ -324,5 +309,10 @@ namespace API.Repositories
             _context.StartupMembers.Update(member);
             return await _context.SaveChangesAsync() > 0;
         }
+
+
+     
+
+      
     }
 }

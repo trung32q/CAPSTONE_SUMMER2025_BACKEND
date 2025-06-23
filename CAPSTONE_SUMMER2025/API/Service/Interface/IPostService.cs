@@ -35,5 +35,8 @@ namespace API.Service.Interface
         Task<PagedResult<FeedItemDTO>> GetStartupFeedAsync(int startupId, int page, int pageSize);
         Task<Post> SharePostAsync(SharePostRequest request);
         Task<resPostDTO> GetPostByPostId(int postId);
+        Task<List<DailyInteractionStatDTO>> GetStartupDailyStatsAsync(int startupId);
+        Task<List<PostScheduleDTO>> GetScheduledPostsAsync();
+        Task<bool> PublishPostAsync(int postId);
     }
 }

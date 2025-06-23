@@ -1,4 +1,5 @@
 ﻿using API.DTO.AccountDTO;
+using API.DTO.PostDTO;
 using API.DTO.StartupDTO;
 using Infrastructure.Models;
 
@@ -32,5 +33,6 @@ namespace API.Service.Interface
         Task<bool> KickMemberAsync(int startupId, int accountId);
         Task<bool> OutStartupAsync(int accountId);
         Task<bool> UpdateMemberRoleAsync(int startupId, int accountId, int newRoleId);
+       
     }
 }

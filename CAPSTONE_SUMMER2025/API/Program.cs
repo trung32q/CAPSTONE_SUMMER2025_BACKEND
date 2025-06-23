@@ -154,6 +154,8 @@ builder.Services.AddAutoMapper(typeof(MappingStartup));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
+
+
 builder.Services.AddControllers ();
 builder.Services.AddEndpointsApiExplorer ();
 builder.Services.AddSwaggerGen ();
@@ -168,7 +170,7 @@ if ( app.Environment.IsDevelopment () ) {
 }
 
 app.UseCors ("AllowAll");
-app.UseHttpsRedirection ();
+//app.UseHttpsRedirection ();
 app.UseAuthentication ();
 app.UseAuthorization ();
 app.MapControllers ();
