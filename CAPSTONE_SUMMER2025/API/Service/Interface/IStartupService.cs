@@ -7,7 +7,7 @@ namespace API.Service.Interface
     public interface IStartupService
     {
         Task<int> CreateStartupAsync(CreateStartupRequest request);
-        Task<List<ResStartupDTO>> GetAllStartupsAsync();
+        Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize);
         Task<bool> IsMemberOfAnyStartup(int accountId);
         Task<ChatRoom> CreateChatRoomAsync(CreateChatRoomDTO dto);
         Task AddMembersToChatRoomAsync(AddMembersDTO dto);

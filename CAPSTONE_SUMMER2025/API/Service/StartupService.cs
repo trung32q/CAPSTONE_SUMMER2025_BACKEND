@@ -107,31 +107,39 @@ namespace API.Service
 
             return startup.StartupId;
         }
-        public async Task<List<ResStartupDTO>> GetAllStartupsAsync()
+        public async Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize)
         {
-            var startups = await _repo.GetAllStartupsAsync();
-            var result = startups.Select(s => new ResStartupDTO
+            var pagedResult = await _repo.GetAllStartupsAsync(pageNumber, pageSize);
+
+            var dtoList = pagedResult.Items.Select(s => new ResStartupDTO
             {
                 Startup_ID = s.StartupId,
                 Startup_Name = s.StartupName,
+                AbbreviationName = s.AbbreviationName,
+                Mission = s.Mission,
+                Vision = s.Vision,
+                Stage = s.Stage?.StageName,
+                createAt = (DateTime)s.CreateAt,
                 Description = s.Description,
-                // Nếu Logo không rỗng, tạo PreSignedUrl
-                Logo = !string.IsNullOrEmpty(s.Logo) ? _filebaseHandler.GeneratePreSignedUrl(
-                    s.Logo.Contains("/") ? s.Logo : $"image/{s.Logo}"
-                ) : null,
-                BackgroundUrl = !string.IsNullOrEmpty(s.BackgroundUrl) ? _filebaseHandler.GeneratePreSignedUrl(
-                     s.BackgroundUrl.Contains("/") ? s.BackgroundUrl : $"image/{s.BackgroundUrl}"
-                ) : null,
-
+                Logo = !string.IsNullOrEmpty(s.Logo)
+                    ? _filebaseHandler.GeneratePreSignedUrl(
+                        s.Logo.Contains("/") ? s.Logo : $"image/{s.Logo}")
+                    : null,
+                BackgroundUrl = !string.IsNullOrEmpty(s.BackgroundUrl)
+                    ? _filebaseHandler.GeneratePreSignedUrl(
+                        s.BackgroundUrl.Contains("/") ? s.BackgroundUrl : $"image/{s.BackgroundUrl}")
+                    : null,
                 WebsiteURL = s.WebsiteUrl,
                 Email = s.Email,
                 Status = s.Status,
                 Categories = s.StartupCategories?
-                    .Select(sc => sc.Category.CategoryName).ToList() ?? new List<string>()
+                    .Select(sc => sc.Category.CategoryName).ToList() ?? new List<string>(),
+                FollowerCount = s.Subcribes?.Count(x => x.FollowingStartUpId == s.StartupId) ?? 0
             }).ToList();
 
-            return result;
+            return new PagedResult<ResStartupDTO>(dtoList, pagedResult.TotalCount, pageNumber, pageSize);
         }
+
         public async Task<bool> IsMemberOfAnyStartup(int accountId)
        => await _repo.IsMemberOfAnyStartup(accountId);
 

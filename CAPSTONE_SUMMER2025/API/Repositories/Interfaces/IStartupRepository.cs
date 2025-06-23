@@ -1,4 +1,5 @@
-﻿using API.DTO.StartupDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.StartupDTO;
 using Infrastructure.Models;
 
 namespace API.Repositories.Interfaces
@@ -10,7 +11,7 @@ namespace API.Repositories.Interfaces
         Task<StartupMember> AddMemberAsync(StartupMember member);
         Task AddStartupCategoryAsync(StartupCategory startupCategory);
         Task SaveChangesAsync();
-        Task<List<Startup>> GetAllStartupsAsync();
+        Task<PagedResult<Startup>> GetAllStartupsAsync(int pageNumber, int pageSize);
         Task<ChatRoom> CreateChatRoomAsync(ChatRoom room);
         Task AddMemberAsync(ChatRoomMember member);
         Task AddMembersAsync(List<ChatRoomMember> members);

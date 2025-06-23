@@ -45,9 +45,9 @@ namespace API.Controllers
             return Ok(new { StartupId = startupId });
         }
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllStartups()
+        public async Task<IActionResult> GetAllStartups(int pageNumber=1, int pageSize = 10)
         {
-            var result = await _service.GetAllStartupsAsync();
+            var result = await _service.GetAllStartupsAsync( pageNumber, pageSize);
             return Ok(result);
         }
 
