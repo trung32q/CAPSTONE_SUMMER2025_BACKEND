@@ -64,8 +64,8 @@ namespace Infrastructure.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                                .SetBasePath(Directory.GetCurrentDirectory())
-                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                              .SetBasePath(Directory.GetCurrentDirectory())
+                              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -76,7 +76,7 @@ namespace Infrastructure.Models
             {
                 entity.ToTable("Account");
 
-                entity.HasIndex(e => e.Email, "UQ__Account__A9D1053407E52B43")
+                entity.HasIndex(e => e.Email, "UQ__Account__A9D10534F99CE875")
                     .IsUnique();
 
                 entity.Property(e => e.AccountId).HasColumnName("Account_ID");
@@ -111,7 +111,7 @@ namespace Infrastructure.Models
             modelBuilder.Entity<AccountBlock>(entity =>
             {
                 entity.HasKey(e => e.BlockId)
-                    .HasName("PK__AccountB__A848958614329245");
+                    .HasName("PK__AccountB__A848958614581D83");
 
                 entity.ToTable("AccountBlock");
 
@@ -131,19 +131,19 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.BlockedAccount)
                     .WithMany(p => p.AccountBlockBlockedAccounts)
                     .HasForeignKey(d => d.BlockedAccountId)
-                    .HasConstraintName("FK__AccountBl__Block__5BAD9CC8");
+                    .HasConstraintName("FK__AccountBl__Block__489AC854");
 
                 entity.HasOne(d => d.BlockerAccount)
                     .WithMany(p => p.AccountBlockBlockerAccounts)
                     .HasForeignKey(d => d.BlockerAccountId)
-                    .HasConstraintName("FK__AccountBl__Block__5AB9788F");
+                    .HasConstraintName("FK__AccountBl__Block__47A6A41B");
             });
 
             modelBuilder.Entity<AccountProfile>(entity =>
             {
                 entity.ToTable("AccountProfile");
 
-                entity.HasIndex(e => e.AccountId, "UQ__AccountP__B19E45C89F675177")
+                entity.HasIndex(e => e.AccountId, "UQ__AccountP__B19E45C85FFEC27E")
                     .IsUnique();
 
                 entity.Property(e => e.AccountProfileId).HasColumnName("AccountProfile_ID");
@@ -177,14 +177,14 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithOne(p => p.AccountProfile)
                     .HasForeignKey<AccountProfile>(d => d.AccountId)
-                    .HasConstraintName("FK__AccountPr__Accou__403A8C7D");
+                    .HasConstraintName("FK__AccountPr__Accou__2D27B809");
             });
 
             modelBuilder.Entity<Bio>(entity =>
             {
                 entity.ToTable("BIO");
 
-                entity.HasIndex(e => e.AccountId, "UQ__BIO__B19E45C81BF4AA26")
+                entity.HasIndex(e => e.AccountId, "UQ__BIO__B19E45C828528E94")
                     .IsUnique();
 
                 entity.Property(e => e.BioId).HasColumnName("Bio_ID");
@@ -224,15 +224,15 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithOne(p => p.Bio)
                     .HasForeignKey<Bio>(d => d.AccountId)
-                    .HasConstraintName("FK__BIO__Account_ID__44FF419A");
+                    .HasConstraintName("FK__BIO__Account_ID__31EC6D26");
             });
 
             modelBuilder.Entity<BusinessModelCanva>(entity =>
             {
                 entity.HasKey(e => e.BmcId)
-                    .HasName("PK__Business__806D52F60DC6BD05");
+                    .HasName("PK__Business__806D52F655948A67");
 
-                entity.HasIndex(e => e.StartupId, "UQ__Business__BB46C8C0BA97C28C")
+                entity.HasIndex(e => e.StartupId, "UQ__Business__BB46C8C087A3C0A9")
                     .IsUnique();
 
                 entity.Property(e => e.BmcId).HasColumnName("BMC_ID");
@@ -244,7 +244,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Startup)
                     .WithOne(p => p.BusinessModelCanva)
                     .HasForeignKey<BusinessModelCanva>(d => d.StartupId)
-                    .HasConstraintName("FK__BusinessM__Start__778AC167");
+                    .HasConstraintName("FK__BusinessM__Start__6477ECF3");
             });
 
             modelBuilder.Entity<CandidateCv>(entity =>
@@ -263,22 +263,24 @@ namespace Infrastructure.Models
 
                 entity.Property(e => e.InternshipId).HasColumnName("Internship_ID");
 
+                entity.Property(e => e.Status).HasMaxLength(30);
+
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.CandidateCvs)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__Candidate__Accou__2DE6D218");
+                    .HasConstraintName("FK__Candidate__Accou__1AD3FDA4");
 
                 entity.HasOne(d => d.Internship)
                     .WithMany(p => p.CandidateCvs)
                     .HasForeignKey(d => d.InternshipId)
-                    .HasConstraintName("FK__Candidate__Inter__2EDAF651");
+                    .HasConstraintName("FK__Candidate__Inter__1BC821DD");
             });
 
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.ToTable("Category");
 
-                entity.HasIndex(e => e.CategoryName, "UQ__Category__B35EB4190D9A4953")
+                entity.HasIndex(e => e.CategoryName, "UQ__Category__B35EB419EA70543B")
                     .IsUnique();
 
                 entity.Property(e => e.CategoryId).HasColumnName("Category_ID");
@@ -307,12 +309,12 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.ChatMessages)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__ChatMessa__Accou__671F4F74");
+                    .HasConstraintName("FK__ChatMessa__Accou__540C7B00");
 
                 entity.HasOne(d => d.ChatRoom)
                     .WithMany(p => p.ChatMessages)
                     .HasForeignKey(d => d.ChatRoomId)
-                    .HasConstraintName("FK__ChatMessa__ChatR__662B2B3B");
+                    .HasConstraintName("FK__ChatMessa__ChatR__531856C7");
             });
 
             modelBuilder.Entity<ChatRoom>(entity =>
@@ -328,13 +330,13 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.ChatRooms)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__ChatRoom__Startu__5E8A0973");
+                    .HasConstraintName("FK__ChatRoom__Startu__4B7734FF");
             });
 
             modelBuilder.Entity<ChatRoomMember>(entity =>
             {
                 entity.HasKey(e => e.ChatGroupMembersId)
-                    .HasName("PK__ChatRoom__AFC056A733FA8EA1");
+                    .HasName("PK__ChatRoom__AFC056A7097FF714");
 
                 entity.HasIndex(e => new { e.ChatRoomId, e.AccountId }, "UC_ChatRoomMember")
                     .IsUnique();
@@ -352,12 +354,12 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.ChatRoomMembers)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__ChatRoomM__Accou__634EBE90");
+                    .HasConstraintName("FK__ChatRoomM__Accou__503BEA1C");
 
                 entity.HasOne(d => d.ChatRoom)
                     .WithMany(p => p.ChatRoomMembers)
                     .HasForeignKey(d => d.ChatRoomId)
-                    .HasConstraintName("FK__ChatRoomM__ChatR__625A9A57");
+                    .HasConstraintName("FK__ChatRoomM__ChatR__4F47C5E3");
             });
 
             modelBuilder.Entity<ColumnnStatus>(entity =>
@@ -371,7 +373,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Milestone)
                     .WithMany(p => p.ColumnnStatuses)
                     .HasForeignKey(d => d.MilestoneId)
-                    .HasConstraintName("FK__ColumnnSt__Miles__7A672E12");
+                    .HasConstraintName("FK__ColumnnSt__Miles__6754599E");
             });
 
             modelBuilder.Entity<CommentTask>(entity =>
@@ -393,12 +395,12 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.CommentTasks)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__CommentTa__Accou__0F624AF8");
+                    .HasConstraintName("FK__CommentTa__Accou__7C4F7684");
 
                 entity.HasOne(d => d.Task)
                     .WithMany(p => p.CommentTasks)
                     .HasForeignKey(d => d.TaskId)
-                    .HasConstraintName("FK__CommentTa__Task___0E6E26BF");
+                    .HasConstraintName("FK__CommentTa__Task___7B5B524B");
             });
 
             modelBuilder.Entity<Follow>(entity =>
@@ -421,18 +423,18 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.FollowerAccount)
                     .WithMany(p => p.FollowFollowerAccounts)
                     .HasForeignKey(d => d.FollowerAccountId)
-                    .HasConstraintName("FK__Follow__Follower__2180FB33");
+                    .HasConstraintName("FK__Follow__Follower__0E6E26BF");
 
                 entity.HasOne(d => d.FollowingAccount)
                     .WithMany(p => p.FollowFollowingAccounts)
                     .HasForeignKey(d => d.FollowingAccountId)
-                    .HasConstraintName("FK__Follow__Followin__22751F6C");
+                    .HasConstraintName("FK__Follow__Followin__0F624AF8");
             });
 
             modelBuilder.Entity<InternshipPost>(entity =>
             {
                 entity.HasKey(e => e.InternshipId)
-                    .HasName("PK__Internsh__A16168F7313F4C32");
+                    .HasName("PK__Internsh__A16168F7AE998B3C");
 
                 entity.ToTable("InternshipPost");
 
@@ -457,18 +459,18 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Position)
                     .WithMany(p => p.InternshipPosts)
                     .HasForeignKey(d => d.PositionId)
-                    .HasConstraintName("FK__Internshi__Posit__29221CFB");
+                    .HasConstraintName("FK__Internshi__Posit__160F4887");
 
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.InternshipPosts)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__Internshi__Start__2A164134");
+                    .HasConstraintName("FK__Internshi__Start__17036CC0");
             });
 
             modelBuilder.Entity<InvestmentEvent>(entity =>
             {
                 entity.HasKey(e => e.EventId)
-                    .HasName("PK__Investme__FD6BEFE40A11A9F6");
+                    .HasName("PK__Investme__FD6BEFE450626E2D");
 
                 entity.Property(e => e.EventId).HasColumnName("Event_ID");
 
@@ -481,13 +483,13 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.InvestmentEvents)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__Investmen__Start__123EB7A3");
+                    .HasConstraintName("FK__Investmen__Start__7F2BE32F");
             });
 
             modelBuilder.Entity<InvestmentEventTicket>(entity =>
             {
                 entity.HasKey(e => e.TicketId)
-                    .HasName("PK__Investme__ED7260D9632A613B");
+                    .HasName("PK__Investme__ED7260D997A1237D");
 
                 entity.ToTable("InvestmentEventTicket");
 
@@ -505,18 +507,18 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.InvestmentEventTickets)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__Investmen__Accou__17036CC0");
+                    .HasConstraintName("FK__Investmen__Accou__03F0984C");
 
                 entity.HasOne(d => d.Event)
                     .WithMany(p => p.InvestmentEventTickets)
                     .HasForeignKey(d => d.EventId)
-                    .HasConstraintName("FK__Investmen__Event__160F4887");
+                    .HasConstraintName("FK__Investmen__Event__02FC7413");
             });
 
             modelBuilder.Entity<InvestmentEventsRequest>(entity =>
             {
                 entity.HasKey(e => e.RequestId)
-                    .HasName("PK__Investme__E9C5B2935AA19800");
+                    .HasName("PK__Investme__E9C5B29326248B28");
 
                 entity.ToTable("InvestmentEventsRequest");
 
@@ -534,12 +536,12 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.InvestmentEventsRequests)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__Investmen__Accou__1CBC4616");
+                    .HasConstraintName("FK__Investmen__Accou__09A971A2");
 
                 entity.HasOne(d => d.Event)
                     .WithMany(p => p.InvestmentEventsRequests)
                     .HasForeignKey(d => d.EventId)
-                    .HasConstraintName("FK__Investmen__Event__1BC821DD");
+                    .HasConstraintName("FK__Investmen__Event__08B54D69");
             });
 
             modelBuilder.Entity<Invite>(entity =>
@@ -565,22 +567,22 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.ReceiverAccount)
                     .WithMany(p => p.InviteReceiverAccounts)
                     .HasForeignKey(d => d.ReceiverAccountId)
-                    .HasConstraintName("FK__Invite__Receiver__619B8048");
+                    .HasConstraintName("FK__Invite__Receiver__4E88ABD4");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.Invites)
                     .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK__Invite__Role_ID__6383C8BA");
+                    .HasConstraintName("FK__Invite__Role_ID__5070F446");
 
                 entity.HasOne(d => d.SenderAccount)
                     .WithMany(p => p.InviteSenderAccounts)
                     .HasForeignKey(d => d.SenderAccountId)
-                    .HasConstraintName("FK__Invite__Sender_A__60A75C0F");
+                    .HasConstraintName("FK__Invite__Sender_A__4D94879B");
 
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.Invites)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__Invite__Startup___628FA481");
+                    .HasConstraintName("FK__Invite__Startup___4F7CD00D");
             });
 
             modelBuilder.Entity<Label>(entity =>
@@ -598,7 +600,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Milestone)
                     .WithMany(p => p.Labels)
                     .HasForeignKey(d => d.MilestoneId)
-                    .HasConstraintName("FK__Label__Color__01142BA1");
+                    .HasConstraintName("FK__Label__Color__6E01572D");
             });
 
             modelBuilder.Entity<Milestone>(entity =>
@@ -620,7 +622,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.Milestones)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__Milestone__Start__6D0D32F4");
+                    .HasConstraintName("FK__Milestone__Start__59FA5E80");
             });
 
             modelBuilder.Entity<MilestoneAssignment>(entity =>
@@ -636,12 +638,12 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Member)
                     .WithMany(p => p.MilestoneAssignments)
                     .HasForeignKey(d => d.MemberId)
-                    .HasConstraintName("FK__Milestone__Membe__70DDC3D8");
+                    .HasConstraintName("FK__Milestone__Membe__5DCAEF64");
 
                 entity.HasOne(d => d.Milestone)
                     .WithMany(p => p.MilestoneAssignments)
                     .HasForeignKey(d => d.MilestoneId)
-                    .HasConstraintName("FK__Milestone__Miles__6FE99F9F");
+                    .HasConstraintName("FK__Milestone__Miles__5CD6CB2B");
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -667,13 +669,13 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.Notifications)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__Notificat__Accou__48CFD27E");
+                    .HasConstraintName("FK__Notificat__Accou__35BCFE0A");
             });
 
             modelBuilder.Entity<PermissionInStartup>(entity =>
             {
                 entity.HasKey(e => e.PermissionId)
-                    .HasName("PK__Permissi__89B744E5768FED93");
+                    .HasName("PK__Permissi__89B744E54A367E58");
 
                 entity.ToTable("PermissionInStartup");
 
@@ -702,7 +704,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.PolicyType)
                     .WithMany(p => p.Policies)
                     .HasForeignKey(d => d.PolicyTypeId)
-                    .HasConstraintName("FK__Policy__PolicyTy__6CD828CA");
+                    .HasConstraintName("FK__Policy__PolicyTy__59C55456");
             });
 
             modelBuilder.Entity<PolicyType>(entity =>
@@ -717,7 +719,7 @@ namespace Infrastructure.Models
             modelBuilder.Entity<PositionRequirement>(entity =>
             {
                 entity.HasKey(e => e.PositionId)
-                    .HasName("PK__Position__3C3EAFE6275594D1");
+                    .HasName("PK__Position__3C3EAFE606822E24");
 
                 entity.ToTable("PositionRequirement");
 
@@ -755,7 +757,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.Posts)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__Post__Account_ID__32AB8735");
+                    .HasConstraintName("FK__Post__Account_ID__1F98B2C1");
 
                 entity.HasOne(d => d.PostShare)
                     .WithMany(p => p.InversePostShare)
@@ -765,7 +767,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.Posts)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__Post__Startup_ID__339FAB6E");
+                    .HasConstraintName("FK__Post__Startup_ID__208CD6FA");
             });
 
             modelBuilder.Entity<PostComment>(entity =>
@@ -787,17 +789,17 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.PostComments)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__PostComme__Accou__3D2915A8");
+                    .HasConstraintName("FK__PostComme__Accou__2A164134");
 
                 entity.HasOne(d => d.ParentComment)
                     .WithMany(p => p.InverseParentComment)
                     .HasForeignKey(d => d.ParentCommentId)
-                    .HasConstraintName("FK__PostComme__Paren__3E1D39E1");
+                    .HasConstraintName("FK__PostComme__Paren__2B0A656D");
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.PostComments)
                     .HasForeignKey(d => d.PostId)
-                    .HasConstraintName("FK__PostComme__Post___3C34F16F");
+                    .HasConstraintName("FK__PostComme__Post___29221CFB");
             });
 
             modelBuilder.Entity<PostHide>(entity =>
@@ -818,12 +820,12 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.PostHides)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__PostHide__Accoun__47A6A41B");
+                    .HasConstraintName("FK__PostHide__Accoun__3493CFA7");
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.PostHides)
                     .HasForeignKey(d => d.PostId)
-                    .HasConstraintName("FK__PostHide__Post_I__46B27FE2");
+                    .HasConstraintName("FK__PostHide__Post_I__339FAB6E");
             });
 
             modelBuilder.Entity<PostLike>(entity =>
@@ -846,18 +848,18 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.PostLikes)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__PostLike__Accoun__55F4C372");
+                    .HasConstraintName("FK__PostLike__Accoun__42E1EEFE");
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.PostLikes)
                     .HasForeignKey(d => d.PostId)
-                    .HasConstraintName("FK__PostLike__Post_I__55009F39");
+                    .HasConstraintName("FK__PostLike__Post_I__41EDCAC5");
             });
 
             modelBuilder.Entity<PostMedium>(entity =>
             {
                 entity.HasKey(e => e.PostMediaId)
-                    .HasName("PK__PostMedi__AC7FDCFF8DE3DE0D");
+                    .HasName("PK__PostMedi__AC7FDCFF3F324546");
 
                 entity.Property(e => e.PostMediaId).HasColumnName("PostMedia_ID");
 
@@ -874,13 +876,13 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.PostMedia)
                     .HasForeignKey(d => d.PostId)
-                    .HasConstraintName("FK__PostMedia__Post___3864608B");
+                    .HasConstraintName("FK__PostMedia__Post___25518C17");
             });
 
             modelBuilder.Entity<PostReport>(entity =>
             {
                 entity.HasKey(e => e.ReportId)
-                    .HasName("PK__PostRepo__30FA9DB1B798550B");
+                    .HasName("PK__PostRepo__30FA9DB1287081AD");
 
                 entity.ToTable("PostReport");
 
@@ -901,27 +903,27 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.PostReports)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__PostRepor__Accou__503BEA1C");
+                    .HasConstraintName("FK__PostRepor__Accou__3D2915A8");
 
                 entity.HasOne(d => d.Post)
                     .WithMany(p => p.PostReports)
                     .HasForeignKey(d => d.PostId)
-                    .HasConstraintName("FK__PostRepor__Post___4F47C5E3");
+                    .HasConstraintName("FK__PostRepor__Post___3C34F16F");
 
                 entity.HasOne(d => d.Reason)
                     .WithMany(p => p.PostReports)
                     .HasForeignKey(d => d.ReasonId)
-                    .HasConstraintName("FK__PostRepor__Reaso__4E53A1AA");
+                    .HasConstraintName("FK__PostRepor__Reaso__3B40CD36");
             });
 
             modelBuilder.Entity<ReportReason>(entity =>
             {
                 entity.HasKey(e => e.ReasonId)
-                    .HasName("PK__ReportRe__3435D2D73380FF7F");
+                    .HasName("PK__ReportRe__3435D2D7D1539224");
 
                 entity.ToTable("ReportReason");
 
-                entity.HasIndex(e => e.Reason, "UQ__ReportRe__1CC9147ACD5DE412")
+                entity.HasIndex(e => e.Reason, "UQ__ReportRe__1CC9147A0F1A1339")
                     .IsUnique();
 
                 entity.Property(e => e.ReasonId).HasColumnName("Reason_ID");
@@ -934,11 +936,11 @@ namespace Infrastructure.Models
             modelBuilder.Entity<RoleInStartup>(entity =>
             {
                 entity.HasKey(e => e.RoleId)
-                    .HasName("PK__RoleInSt__D80AB49BBAB8A744");
+                    .HasName("PK__RoleInSt__D80AB49BD3C32957");
 
                 entity.ToTable("RoleInStartup");
 
-                entity.HasIndex(e => e.RoleName, "UQ__RoleInSt__035DB749CB0598D2")
+                entity.HasIndex(e => e.RoleName, "UQ__RoleInSt__035DB749CFDE8C9E")
                     .IsUnique();
 
                 entity.Property(e => e.RoleId).HasColumnName("Role_ID");
@@ -952,14 +954,14 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.RoleInStartups)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__RoleInSta__Start__5BE2A6F2");
+                    .HasConstraintName("FK__RoleInSta__Start__48CFD27E");
             });
 
             modelBuilder.Entity<Startup>(entity =>
             {
                 entity.ToTable("Startup");
 
-                entity.HasIndex(e => e.Email, "UQ__Startup__A9D105342D99A111")
+                entity.HasIndex(e => e.Email, "UQ__Startup__A9D10534687DDA3B")
                     .IsUnique();
 
                 entity.Property(e => e.StartupId).HasColumnName("Startup_ID");
@@ -997,7 +999,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Stage)
                     .WithMany(p => p.Startups)
                     .HasForeignKey(d => d.StageId)
-                    .HasConstraintName("FK__Startup__Stage_I__5070F446");
+                    .HasConstraintName("FK__Startup__Stage_I__3D5E1FD2");
             });
 
             modelBuilder.Entity<StartupCategory>(entity =>
@@ -1016,18 +1018,18 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.StartupCategories)
                     .HasForeignKey(d => d.CategoryId)
-                    .HasConstraintName("FK__StartupCa__Categ__5812160E");
+                    .HasConstraintName("FK__StartupCa__Categ__44FF419A");
 
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.StartupCategories)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__StartupCa__Start__571DF1D5");
+                    .HasConstraintName("FK__StartupCa__Start__440B1D61");
             });
 
             modelBuilder.Entity<StartupLicense>(entity =>
             {
                 entity.HasKey(e => e.LicenseId)
-                    .HasName("PK__StartupL__5CA896B68BACD798");
+                    .HasName("PK__StartupL__5CA896B6136D5AF2");
 
                 entity.Property(e => e.LicenseId).HasColumnName("License_ID");
 
@@ -1048,7 +1050,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.StartupLicenses)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__StartupLi__Start__73BA3083");
+                    .HasConstraintName("FK__StartupLi__Start__60A75C0F");
             });
 
             modelBuilder.Entity<StartupMember>(entity =>
@@ -1071,27 +1073,27 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.StartupMembers)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__StartupMe__Accou__68487DD7");
+                    .HasConstraintName("FK__StartupMe__Accou__5535A963");
 
                 entity.HasOne(d => d.Role)
                     .WithMany(p => p.StartupMembers)
                     .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK__StartupMe__Role___693CA210");
+                    .HasConstraintName("FK__StartupMe__Role___5629CD9C");
 
                 entity.HasOne(d => d.Startup)
                     .WithMany(p => p.StartupMembers)
                     .HasForeignKey(d => d.StartupId)
-                    .HasConstraintName("FK__StartupMe__Start__6754599E");
+                    .HasConstraintName("FK__StartupMe__Start__5441852A");
             });
 
             modelBuilder.Entity<StartupStage>(entity =>
             {
                 entity.HasKey(e => e.StageId)
-                    .HasName("PK__StartupS__32456A379A996F8F");
+                    .HasName("PK__StartupS__32456A37F4978335");
 
                 entity.ToTable("StartupStage");
 
-                entity.HasIndex(e => e.StageName, "UQ__StartupS__8FE31B3319D345AA")
+                entity.HasIndex(e => e.StageName, "UQ__StartupS__8FE31B335BCBAC56")
                     .IsUnique();
 
                 entity.Property(e => e.StageId).HasColumnName("Stage_ID");
@@ -1104,7 +1106,7 @@ namespace Infrastructure.Models
             modelBuilder.Entity<StartupTask>(entity =>
             {
                 entity.HasKey(e => e.TaskId)
-                    .HasName("PK__StartupT__716F4ACDDC4E1D28");
+                    .HasName("PK__StartupT__716F4ACD3892639B");
 
                 entity.ToTable("StartupTask");
 
@@ -1125,22 +1127,22 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.ColumnnStatus)
                     .WithMany(p => p.StartupTasks)
                     .HasForeignKey(d => d.ColumnnStatusId)
-                    .HasConstraintName("FK__StartupTa__Colum__7D439ABD");
+                    .HasConstraintName("FK__StartupTa__Colum__6A30C649");
 
                 entity.HasOne(d => d.Milestone)
                     .WithMany(p => p.StartupTasks)
                     .HasForeignKey(d => d.MilestoneId)
-                    .HasConstraintName("FK__StartupTa__Miles__7E37BEF6");
+                    .HasConstraintName("FK__StartupTa__Miles__6B24EA82");
 
                 entity.HasMany(d => d.Labels)
                     .WithMany(p => p.Tasks)
                     .UsingEntity<Dictionary<string, object>>(
                         "StartupTaskLabel",
-                        l => l.HasOne<Label>().WithMany().HasForeignKey("LabelId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__StartupTa__Label__04E4BC85"),
-                        r => r.HasOne<StartupTask>().WithMany().HasForeignKey("TaskId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__StartupTa__Task___03F0984C"),
+                        l => l.HasOne<Label>().WithMany().HasForeignKey("LabelId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__StartupTa__Label__71D1E811"),
+                        r => r.HasOne<StartupTask>().WithMany().HasForeignKey("TaskId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__StartupTa__Task___70DDC3D8"),
                         j =>
                         {
-                            j.HasKey("TaskId", "LabelId").HasName("PK__StartupT__42BD0FAFE27679DC");
+                            j.HasKey("TaskId", "LabelId").HasName("PK__StartupT__42BD0FAF0D7B4724");
 
                             j.ToTable("StartupTask_Label");
 
@@ -1170,18 +1172,18 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.FollowerAccount)
                     .WithMany(p => p.Subcribes)
                     .HasForeignKey(d => d.FollowerAccountId)
-                    .HasConstraintName("FK__Subcribe__Follow__72910220");
+                    .HasConstraintName("FK__Subcribe__Follow__6BE40491");
 
                 entity.HasOne(d => d.FollowingStartUp)
                     .WithMany(p => p.Subcribes)
                     .HasForeignKey(d => d.FollowingStartUpId)
-                    .HasConstraintName("FK__Subcribe__Follow__719CDDE7");
+                    .HasConstraintName("FK__Subcribe__Follow__6AEFE058");
             });
 
             modelBuilder.Entity<TaskAssignment>(entity =>
             {
                 entity.HasKey(e => e.TaskAssignmentsId)
-                    .HasName("PK__TaskAssi__D12359858266CF73");
+                    .HasName("PK__TaskAssi__D123598578A622A6");
 
                 entity.Property(e => e.TaskAssignmentsId).HasColumnName("TaskAssignments_ID");
 
@@ -1198,17 +1200,17 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.AssignToAccount)
                     .WithMany(p => p.TaskAssignmentAssignToAccounts)
                     .HasForeignKey(d => d.AssignToAccountId)
-                    .HasConstraintName("FK__TaskAssig__Assig__0A9D95DB");
+                    .HasConstraintName("FK__TaskAssig__Assig__778AC167");
 
                 entity.HasOne(d => d.AssignedByAccount)
                     .WithMany(p => p.TaskAssignmentAssignedByAccounts)
                     .HasForeignKey(d => d.AssignedByAccountId)
-                    .HasConstraintName("FK__TaskAssig__Assig__09A971A2");
+                    .HasConstraintName("FK__TaskAssig__Assig__76969D2E");
 
                 entity.HasOne(d => d.Task)
                     .WithMany(p => p.TaskAssignments)
                     .HasForeignKey(d => d.TaskId)
-                    .HasConstraintName("FK__TaskAssig__Task___08B54D69");
+                    .HasConstraintName("FK__TaskAssig__Task___75A278F5");
             });
 
             modelBuilder.Entity<UserOtp>(entity =>
@@ -1232,7 +1234,7 @@ namespace Infrastructure.Models
                 entity.HasOne(d => d.Account)
                     .WithMany(p => p.UserOtps)
                     .HasForeignKey(d => d.AccountId)
-                    .HasConstraintName("FK__UserOTP__Account__3C69FB99");
+                    .HasConstraintName("FK__UserOTP__Account__29572725");
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -10,6 +10,7 @@ namespace Infrastructure.Models
         public int? InternshipId { get; set; }
         public string? Cvurl { get; set; }
         public DateTime? CreateAt { get; set; }
+        public string? Status { get; set; }
 
         public virtual Account? Account { get; set; }
         public virtual InternshipPost? Internship { get; set; }
