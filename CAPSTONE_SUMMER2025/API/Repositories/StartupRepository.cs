@@ -325,10 +325,11 @@ namespace API.Repositories
             _context.StartupMembers.Update(member);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task AddPermissionAsync(PermissionInStartup permission)
+        {
+            _context.PermissionInStartups.Add(permission);
+            await _context.SaveChangesAsync();
+        }
 
-
-     
-
-      
     }
 }

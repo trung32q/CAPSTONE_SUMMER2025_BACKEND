@@ -59,7 +59,16 @@ namespace API.Service
                 StartupId = startup.StartupId
             };
             await _repo.AddRoleAsync(founderRole);
-
+            var founderPermission = new PermissionInStartup
+            {
+                RoleId = founderRole.RoleId,
+                CanManagePost = true,
+                CanManageCandidate = true,
+                CanManageChatRoom = true,
+                CanManageMember = true,
+                CanManageMilestone = true
+            };
+            await _repo.AddPermissionAsync(founderPermission);
             // 3. Gán creator vào làm Founder
             var founderMember = new StartupMember
             {

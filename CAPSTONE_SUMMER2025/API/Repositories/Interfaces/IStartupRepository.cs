@@ -44,6 +44,6 @@ namespace API.Repositories.Interfaces
         Task<bool> RemoveMemberAsync(StartupMember member);
         Task<StartupMember?> GetMemberByAccountAsync(int accountId);
         Task<bool> UpdateMemberRoleAsync(int startupId, int accountId, int newRoleId);
-        
+        Task AddPermissionAsync(PermissionInStartup permission);
     }
 }
