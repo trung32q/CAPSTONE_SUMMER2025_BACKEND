@@ -12,6 +12,7 @@ using Infrastructure.Models;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using static Google.Cloud.AIPlatform.V1.LogprobsResult.Types;
 
 namespace API.Service
 {
@@ -599,6 +600,50 @@ namespace API.Service
             post.CreateAt = post.Schedule;
             await _repository.SaveChangesAsync();
             return true;
+        }
+
+        //cập nhật status của internshippost
+        public async Task<bool> UpdateInternshipPostAsync(int internshipPostId)
+        {
+            var post = await _repository.GetInternshipPostByIdAsync(internshipPostId);
+            if (post == null) return false;
+
+            if (post.Status == Utils.Constants.StatusInternshipPost.ACTIVE)
+            {
+                post.Status = Utils.Constants.StatusInternshipPost.DEACTIVE;
+            }
+            else
+            {
+                post.Status = Utils.Constants.StatusInternshipPost.ACTIVE;
+            }
+            await _repository.UpdateInternshipPostAsync(post);
+            await _repository.SaveChangesAsync();
+            return true;
+        }
+
+        //apply cv
+        public async Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto)
+        {
+
+            var cvURL = await _filebase.UploadMediaFile((IFormFile)dto.CVFile);
+
+            var cv = new CandidateCv
+            {
+                AccountId = dto.Account_ID,
+                InternshipId = dto.Internship_ID,
+                Cvurl = cvURL,
+                CreateAt = DateTime.Now,
+                Status = Utils.Constants.CVStatus.PENDING
+            };
+
+            await _repository.AddCandidateCvAsync(cv);
+            await _repository.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId)
+        {
+            return await _repository.GetCandidateCVsByStartupIdAsync(startupId);
         }
     }
 }

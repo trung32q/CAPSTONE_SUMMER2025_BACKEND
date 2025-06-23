@@ -392,5 +392,37 @@ namespace API.Controllers
             return Ok(new { message = "Post published successfully." });
         }
 
+        //cập nhật status của internshippost (nếu đang là active thì sẽ thành deactive và ngược lại)
+        [HttpPut("update-internshippost-status")]
+        public async Task<IActionResult> UpdateStatus(int internshipPostId)
+        {
+            var result = await _postService.UpdateInternshipPostAsync(internshipPostId);
+            if (!result) return NotFound("Internship post not found");
+
+            return Ok("Status updated successfully");
+        }
+
+        //apply cv
+        [HttpPost("apply-cv")]
+        public async Task<IActionResult> Apply([FromForm] ApplyCVRequestDTO dto)
+        {
+            var success = await _postService.ApplyCVAsync(dto);
+            if (!success)
+                return BadRequest("Already applied or error occurred");
+
+            return Ok("CV submitted successfully");
+        }
+
+        // lấy ra cv theo statupid
+        [HttpGet("candidateCv/{startupId}")]
+        public async Task<IActionResult> GetCVsByStartup(int startupId)
+        {
+            var cvs = await _postService.GetCVsOfStartupAsync(startupId);
+
+            if (cvs == null || cvs.Count == 0)
+                return NotFound("No CVs found for this startup");
+
+            return Ok(cvs);
+        }
     }
 }

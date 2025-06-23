@@ -40,6 +40,11 @@ namespace API.Repositories.Interfaces
         Task ShareAsync(Post post);
         Task<List<DailyInteractionStatDTO>> GetStartupInteractionsByDayLast7DaysAsync(int startupId);
         Task<List<Post>> GetScheduledPostsAsync();
+        Task<InternshipPost> GetInternshipPostByIdAsync(int id);
+        Task UpdateInternshipPostAsync(InternshipPost post);
         Task SaveChangesAsync();
+        Task AddCandidateCvAsync(CandidateCv cv);
+        Task<List<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(int startupId);
+
     }
 }

@@ -721,10 +721,55 @@ namespace API.Repositories
                 .Where(p => p.Schedule != null && p.Schedule != p.CreateAt)
                 .ToListAsync();
         }
-
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        // hàm lấy internshippost theo id
+        public async Task<InternshipPost> GetByInternshipPostIdAsync(int id)
+        {
+            return await _context.InternshipPosts.FindAsync(id);
+        }
+
+        //cập nhật InternShipPost
+        public async Task UpdateInternshipPostAsync(InternshipPost post)
+        {
+            _context.InternshipPosts.Update(post);
+        }
+
+        //lấy ra internshippost theo id
+        public async Task<InternshipPost> GetInternshipPostByIdAsync(int id)
+        {
+            return await _context.InternshipPosts.FindAsync(id);
+        }
+
+        // apply cv
+        public async Task AddCandidateCvAsync(CandidateCv cv)
+        {
+            await _context.CandidateCvs.AddAsync(cv);
+        }
+
+        // lấy ra các candidate cv theo statup
+        public async Task<List<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(int startupId)
+        {
+            return await _context.CandidateCvs
+                .Where(cv => cv.Internship.StartupId == startupId)
+                .Include(cv => cv.Account)
+                    .ThenInclude(a => a.AccountProfile)
+                .Include(cv => cv.Internship)
+                    .ThenInclude(ip => ip.Position)
+                .Select(cv => new CandidateCVResponseDTO
+                {
+                    CandidateCV_ID = cv.CandidateCvId,
+                    CVURL = cv.Cvurl,
+                    CreateAt = (DateTime)cv.CreateAt,
+                    Status = cv.Status,
+                    Email = cv.Account.Email,
+                    FullName = cv.Account.AccountProfile.FirstName + " " + cv.Account.AccountProfile.LastName,
+                    PositionRequirement = cv.Internship.Position.Title
+                })
+                .ToListAsync();
         }
     }
 }

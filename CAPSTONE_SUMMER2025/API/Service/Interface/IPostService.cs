@@ -38,5 +38,9 @@ namespace API.Service.Interface
         Task<List<DailyInteractionStatDTO>> GetStartupDailyStatsAsync(int startupId);
         Task<List<PostScheduleDTO>> GetScheduledPostsAsync();
         Task<bool> PublishPostAsync(int postId);
+        Task<bool> UpdateInternshipPostAsync(int internShipPostId);
+        Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto);
+        Task<List<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId);
+
     }
 }
