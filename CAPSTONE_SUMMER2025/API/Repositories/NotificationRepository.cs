@@ -17,18 +17,10 @@ namespace API.Repositories
             _context = context;
         }
 
-        public async Task<Notification?> CreateNotificationAsync(int accountId, string content)
+        public async Task<Notification?> CreateNotificationAsync(int accountId, Notification notification)
         {
             var accountExists = await _context.Accounts.AnyAsync(acc => acc.AccountId == accountId);
             if (!accountExists) return null;
-
-            var notification = new Notification
-            {
-                AccountId = accountId,
-                Content = content,
-                IsRead = false,
-            };
-
             await _context.Notifications.AddAsync(notification);
             await _context.SaveChangesAsync();
 

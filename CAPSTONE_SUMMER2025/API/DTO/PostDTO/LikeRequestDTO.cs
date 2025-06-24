@@ -4,5 +4,6 @@
     {
         public int PostId { get; set; }
         public int AccountId { get; set; }
+
     }
 }

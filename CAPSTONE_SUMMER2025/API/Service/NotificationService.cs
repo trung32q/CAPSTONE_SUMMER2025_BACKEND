@@ -14,14 +14,16 @@ namespace API.Service
     public class NotificationService : INotificationService
     {
         private readonly INotificationRepository _repository;
+        private readonly IAccountRepository _accrepository;
         private readonly IHubContext<NotificationHub> _hub;
         private readonly IMapper _mapper;
 
-        public NotificationService(INotificationRepository repository, IMapper mapper, IHubContext<NotificationHub> hub)
+        public NotificationService(INotificationRepository repository, IMapper mapper, IHubContext<NotificationHub> hub,IAccountRepository accountRepository)
         {
             _repository = repository;
             _mapper = mapper;
             _hub = hub;
+            _accrepository = accountRepository;
         }
 
         public async Task<resNotificationDTO> CreateAndSendAsync(reqNotificationDTO dto)
@@ -32,10 +34,29 @@ namespace API.Service
                 AccountId = dto.UserId,
                 Content = dto.Message,
                 IsRead = false,
-                SendAt = DateTime.UtcNow
+                SendAt = DateTime.UtcNow,
+                SenderId=dto.senderid,
+                TargetUrl=dto.TargetURL,
+                NotificationType = dto.NotificationType
+                
             };
-
-            var notificationEntity = await _repository.CreateNotificationAsync(dto.UserId, dto.Message);        
+            var account =await _accrepository.GetAccountByAccountIDAsync(dto.senderid);
+            var notificationDto = new resNotificationDTO
+            {
+                NotificationId = noti.NotificationId,
+                AccountId = (int)noti.AccountId,
+                Content = noti.Content,
+                CreatedAt = (DateTime)noti.SendAt,
+                IsRead = (bool)noti.IsRead,
+                SenderID = (int)noti.SenderId,
+                Type = noti.NotificationType,
+                TargetURL = noti.TargetUrl,
+                AvartarURL=account.AccountProfile.AvatarUrl,
+            };
+            var notificationEntity = await _repository.CreateNotificationAsync(dto.UserId,noti);
+            // Gửi qua Hub (SignalR)
+            await _hub.Clients.Group(dto.UserId.ToString())
+                .SendAsync("ReceiveNotification", notificationDto);
             return _mapper.Map<resNotificationDTO>(notificationEntity);
         }
 
@@ -45,21 +66,37 @@ namespace API.Service
             if (pageNumber < 1 || pageSize < 1)
                 throw new ArgumentException("pageNumber and pageSize must be greater than 0");
 
-            // 1. Lấy dữ liệu từ repository
             var (notifications, totalCount) = await _repository.GetPagedNotificationsAsync(accountId, pageNumber, pageSize);
-            // 2. Map sang DTO
-            var mapped = _mapper.Map<List<resNotificationDTO>>(notifications);
 
-           foreach (var item in mapped)
+            var mapped = new List<resNotificationDTO>();
+
+            foreach (var n in notifications)
             {
-                item.AccountId = accountId;
+                string avatarUrl = null;
+                // Nếu có senderId thì lấy account profile
+                if (n.SenderId > 0)
+                {
+                    var senderAccount = await _accrepository.GetAccountByAccountIDAsync((int)n.SenderId);
+                    avatarUrl = senderAccount?.AccountProfile?.AvatarUrl;
+                }
+
+                mapped.Add(new resNotificationDTO
+                {
+                    NotificationId = n.NotificationId,
+                    AccountId = n.AccountId ?? 0,
+                    Content = n.Content,
+                    CreatedAt = n.SendAt ?? DateTime.MinValue,
+                    IsRead = n.IsRead ?? false,
+                    SenderID = n.SenderId ?? 0,
+                    Type = n.NotificationType,
+                    TargetURL = n.TargetUrl,
+                    AvartarURL = avatarUrl
+                });
             }
 
-
-            // 3. Gửi dữ liệu qua SignalR
             await _hub.Clients.Group(accountId.ToString()).SendAsync("ReceivePagedNotifications", new
             {
-                notifications = mapped, // ← gửi nguyên danh sách DTO
+                notifications = mapped,
                 totalCount,
                 pageNumber,
                 pageSize
@@ -67,6 +104,8 @@ namespace API.Service
 
             return new PagedResult<resNotificationDTO>(mapped, totalCount, pageNumber, pageSize);
         }
+
+
 
         public async Task<int> GetUnreadNotificationCountAsync(int accountId)
         {

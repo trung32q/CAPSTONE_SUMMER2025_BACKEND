@@ -6,10 +6,12 @@ using API.DTO.PostDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
+using API.Utils.Constants;
 using AutoMapper;
 using Google.Cloud.AIPlatform.V1;
 using Infrastructure.Models;
 using Infrastructure.Repository;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using static Google.Cloud.AIPlatform.V1.LogprobsResult.Types;
@@ -158,6 +160,7 @@ namespace API.Service
         {
             var success = await _repository.LikePostAsync(dto.PostId, dto.AccountId);
             var accountID = await _repository.GetAccountIdByPostIDAsync(dto.PostId);
+            var targetUrl = $"/post/{dto.PostId}";
             if ( success && accountID.HasValue && accountID.Value != dto.AccountId )
             {
                 var likerer = await _accountRepository.GetAccountByIdAsync(dto.AccountId);
@@ -169,8 +172,12 @@ namespace API.Service
                         UserId = accountID.Value,
                         Message = message,
                         CreatedAt = DateTime.UtcNow,
-                        IsRead = false
+                        IsRead = false,
+                        senderid = dto.AccountId,
+                        NotificationType = NotiConst.LIKE,
+                        TargetURL = targetUrl
                     });
+                   
                 }
             }
 
