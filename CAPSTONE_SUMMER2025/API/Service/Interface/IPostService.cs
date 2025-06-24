@@ -40,7 +40,6 @@ namespace API.Service.Interface
         Task<bool> PublishPostAsync(int postId);
         Task<bool> UpdateInternshipPostAsync(int internShipPostId);
         Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto);
-        Task<List<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId);
-
+        Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId, int page, int pageSize);
     }
 }
