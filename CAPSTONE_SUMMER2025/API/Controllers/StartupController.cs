@@ -327,9 +327,18 @@ namespace API.Controllers
             return Ok("Role updated successfully.");
         }
 
-       
+        //kick chatroom members
+        [HttpDelete("kick-chatroom-members")]
+        public async Task<IActionResult> KickMembers([FromBody] KickChatRoomMembersRequestDTO dto)
+        {
+            var success = await _service.KickMembersAsync(dto);
+            if (!success)
+                return Forbid("You don't have permission or members not found");
 
-      
+            return Ok("Members kicked successfully");
+        }
+
+
 
     }
 }

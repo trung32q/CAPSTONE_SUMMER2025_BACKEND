@@ -166,7 +166,7 @@ namespace API.Controllers
         }
 
         //hàm kiểm tra xem bài viết được like chưa
-        [HttpGet("{postId}/liked")]
+        [HttpGet("liked")]
         public async Task<IActionResult> IsPostLikedAsync([FromQuery] LikeRequestDTO dto)
         {
             var success = await _postService.IsPostLikedAsync(dto);

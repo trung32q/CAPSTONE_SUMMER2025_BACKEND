@@ -64,8 +64,8 @@ namespace Infrastructure.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                              .SetBasePath(Directory.GetCurrentDirectory())
-                              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                                .SetBasePath(Directory.GetCurrentDirectory())
+                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -939,9 +939,6 @@ namespace Infrastructure.Models
                     .HasName("PK__RoleInSt__D80AB49BD3C32957");
 
                 entity.ToTable("RoleInStartup");
-
-                entity.HasIndex(e => e.RoleName, "UQ__RoleInSt__035DB749CFDE8C9E")
-                    .IsUnique();
 
                 entity.Property(e => e.RoleId).HasColumnName("Role_ID");
 

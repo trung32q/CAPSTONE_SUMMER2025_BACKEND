@@ -545,8 +545,18 @@ namespace API.Service
             return await _repo.UpdateMemberRoleAsync(startupId, accountId, newRoleId);
         }
 
-     
+        // kick member
+        public async Task<bool> KickMembersAsync(KickChatRoomMembersRequestDTO dto)
+        {
+            var isAdmin = await _repo.IsAdminChatRoomAsync(dto.ChatRoomId, dto.RequesterAccountId);
+            if (!isAdmin) return false;
 
-       
+            var membersToKick = await _repo.GetChatRoomMembersAsync(dto.ChatRoomId, dto.TargetAccountIds);
+            if (membersToKick.Count == 0) return false;
+
+            _repo.DeleteChatRoomMembersRange(membersToKick);
+            await _repo.SaveChangesAsync();
+            return true;
+        }
     }
 }
