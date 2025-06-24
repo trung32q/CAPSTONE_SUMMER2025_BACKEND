@@ -349,5 +349,10 @@ namespace API.Repositories
         {
             _context.ChatRoomMembers.RemoveRange(members);
         }
+        public async Task AddPermissionAsync(PermissionInStartup permission)
+        {
+            _context.PermissionInStartups.Add(permission);
+            await _context.SaveChangesAsync();
+        }
     }
 }
