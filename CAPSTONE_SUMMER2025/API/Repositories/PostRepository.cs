@@ -143,26 +143,7 @@ namespace API.Repositories
             return await _context.PostLikes.AnyAsync(pl => pl.PostId == postId && pl.AccountId == accountId);
         }
 
-        // hàm lấy ra danh sách thông tin của người like bài post
-        public async Task<PagedResult<PostLike>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize)
-        {
-            if (!await IsPostExistsAsync(postId))
-                return null;
-
-            var query = _context.PostLikes
-                .Where(pl => pl.PostId == postId)
-                .Include(pl => pl.Account)
-                    .ThenInclude(a => a.AccountProfile);
-
-            var totalCount = await query.CountAsync();
-
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<PostLike>(items, totalCount, pageNumber, pageSize);
-        }
+      
 
         // hàm lấy ra danh sách các comment theo postid
         public async Task<PagedResult<PostComment>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
@@ -770,6 +751,27 @@ namespace API.Repositories
                     PositionRequirement = cv.Internship.Position.Title
                 })
                 .ToListAsync();
+        }
+
+        // hàm lấy ra danh sách thông tin của người like bài post
+        public async Task<PagedResult<PostLike>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize)
+        {
+            if (!await IsPostExistsAsync(postId))
+                return null;
+
+            var query = _context.PostLikes
+                .Where(pl => pl.PostId == postId)
+                .Include(pl => pl.Account)
+                    .ThenInclude(a => a.AccountProfile);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<PostLike>(items, totalCount, pageNumber, pageSize);
         }
     }
 }

@@ -44,6 +44,10 @@ namespace API.Repositories.Interfaces
         Task<bool> RemoveMemberAsync(StartupMember member);
         Task<StartupMember?> GetMemberByAccountAsync(int accountId);
         Task<bool> UpdateMemberRoleAsync(int startupId, int accountId, int newRoleId);
-        Task AddPermissionAsync(PermissionInStartup permission);
+        Task<bool> IsAdminChatRoomAsync(int chatRoomId, int accountId);
+        Task<List<ChatRoomMember>> GetChatRoomMembersAsync(int chatRoomId, List<int> accountIds);
+        void DeleteChatRoomMembersRange(List<ChatRoomMember> members);
+
+
     }
 }

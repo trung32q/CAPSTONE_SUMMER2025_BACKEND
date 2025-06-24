@@ -26,6 +26,7 @@ namespace API.Repositories
             return member;
         }
 
+
         public async Task<RoleInStartup> AddRoleAsync(RoleInStartup role)
         {
             _context.RoleInStartups.Add(role);
@@ -325,11 +326,28 @@ namespace API.Repositories
             _context.StartupMembers.Update(member);
             return await _context.SaveChangesAsync() > 0;
         }
-        public async Task AddPermissionAsync(PermissionInStartup permission)
+
+        //check quyền của của account trong chatroom
+        public async Task<bool> IsAdminChatRoomAsync(int chatRoomId, int accountId)
         {
-            _context.PermissionInStartups.Add(permission);
-            await _context.SaveChangesAsync();
+            return await _context.ChatRoomMembers.AnyAsync(m =>
+                m.ChatRoomId == chatRoomId &&
+                m.AccountId == accountId &&
+                (bool)m.CanAdministerChannel);
         }
 
+        //lấy ra chatroom member
+        public async Task<List<ChatRoomMember>> GetChatRoomMembersAsync(int chatRoomId, List<int> accountIds)
+        {
+            return await _context.ChatRoomMembers
+                .Where(m => m.ChatRoomId == chatRoomId && accountIds.Contains((int) m.AccountId))
+                .ToListAsync();
+        }
+
+        // xóa chatroom members
+        public void DeleteChatRoomMembersRange(List<ChatRoomMember> members)
+        {
+            _context.ChatRoomMembers.RemoveRange(members);
+        }
     }
 }
