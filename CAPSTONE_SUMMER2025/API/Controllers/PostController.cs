@@ -415,11 +415,11 @@ namespace API.Controllers
 
         // lấy ra cv theo statupid
         [HttpGet("candidateCv/{startupId}")]
-        public async Task<IActionResult> GetCVsByStartup(int startupId)
+        public async Task<IActionResult> GetCVsByStartup(int startupId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var cvs = await _postService.GetCVsOfStartupAsync(startupId);
+            var cvs = await _postService.GetCVsOfStartupAsync(startupId, page, pageSize);
 
-            if (cvs == null || cvs.Count == 0)
+            if (cvs == null || cvs.Items.Count == 0)
                 return NotFound("No CVs found for this startup");
 
             return Ok(cvs);

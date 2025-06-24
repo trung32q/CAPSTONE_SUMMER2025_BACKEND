@@ -53,6 +53,8 @@ namespace API.Service
                 Title = post.Title,
                 CreateAt = post.CreateAt,
                 Schedule = post.Schedule,
+                FullName = post.Account.AccountProfile.FirstName + " " + post.Account.AccountProfile.LastName,
+                AvatarUrl = post.Account.AccountProfile.AvatarUrl,
                 PostMedia = post.PostMedia.Select(m => new PostMediaDTO
                 {
                     MediaUrl = m.MediaUrl,
@@ -641,9 +643,9 @@ namespace API.Service
             return true;
         }
 
-        public async Task<List<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId)
+        public async Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId, int page, int pageSize)
         {
-            return await _repository.GetCandidateCVsByStartupIdAsync(startupId);
+            return await _repository.GetCandidateCVsByStartupIdAsync(startupId, page, pageSize);
         }
     }
 }

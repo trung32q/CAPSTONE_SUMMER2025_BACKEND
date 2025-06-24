@@ -70,7 +70,7 @@ namespace API.Repositories
         //hàm tìm bài post theo id
         public async Task<Post> GetPostByPostIdAsync(int id)
         {
-            return await _context.Posts.Include(p => p.PostMedia).FirstOrDefaultAsync(x => x.PostId == id);
+            return await _context.Posts.Include(p => p.PostMedia).Include(p => p.Account).ThenInclude(a => a.AccountProfile).FirstOrDefaultAsync(x => x.PostId == id);
         }
 
 
@@ -306,6 +306,8 @@ namespace API.Repositories
             // Bước 1: Lọc post có nội dung, KHÔNG bị ẩn
             var filteredPosts = _context.Posts
                 .Include(p => p.PostMedia)
+                .Include(p => p.Account)
+                .ThenInclude(a => a.AccountProfile)
                 .Where(p =>
                     (!string.IsNullOrEmpty(p.Title) || !string.IsNullOrEmpty(p.Content)) &&
                     !hiddenPostIds.Contains(p.PostId) // loại post bị ẩn
@@ -326,6 +328,8 @@ namespace API.Repositories
                     Content = p.Content,
                     CreateAt = p.CreateAt,
                     LikeCount = _context.PostLikes.Count(l => l.PostId == p.PostId),
+                    FullName = p.Account.AccountProfile.FirstName + " " + p.Account.AccountProfile.LastName,
+                    AvatarUrl = p.Account.AccountProfile.AvatarUrl,
                     PostMedia = p.PostMedia.Select(m => new PostMediaDTO
                     {
                         MediaUrl = m.MediaUrl,
@@ -732,9 +736,10 @@ namespace API.Repositories
         }
 
         // lấy ra các candidate cv theo statup
-        public async Task<List<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(int startupId)
+        public async Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
+      int startupId, int pageNumber, int pageSize)
         {
-            return await _context.CandidateCvs
+            var query = _context.CandidateCvs
                 .Where(cv => cv.Internship.StartupId == startupId)
                 .Include(cv => cv.Account)
                     .ThenInclude(a => a.AccountProfile)
@@ -749,8 +754,16 @@ namespace API.Repositories
                     Email = cv.Account.Email,
                     FullName = cv.Account.AccountProfile.FirstName + " " + cv.Account.AccountProfile.LastName,
                     PositionRequirement = cv.Internship.Position.Title
-                })
+                });
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return new PagedResult<CandidateCVResponseDTO>(items, totalCount, pageNumber, pageSize);
         }
 
         // hàm lấy ra danh sách thông tin của người like bài post

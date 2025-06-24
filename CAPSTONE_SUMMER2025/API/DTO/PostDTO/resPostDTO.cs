@@ -11,5 +11,8 @@
         public int LikeCount { get; set; }
         public int? PostShareId { get; set; }
         public DateTime? Schedule { get; set; }
+        public string? FullName {  get; set; }
+        public string? AvatarUrl {  get; set; }
+
     }
 }
