@@ -306,7 +306,8 @@ namespace API.Service
                     AccountId = request.AccountId,
                     MessageContent = request.MessageContent,
                     SentAt = DateTime.Now,
-                    IsDeleted = false
+                    IsDeleted = false,
+                    TypeMessage = request.TypeMessage,
                 };
 
                 int messageId = await _repo.AddMessageAsync(message);
@@ -346,6 +347,7 @@ namespace API.Service
                         AvatarUrl = m.Account.AccountProfile.AvatarUrl,
                         MessageId = m.ChatMessageId,
                         ChatRoomId = chatRoomId,
+                        MessageType = m.TypeMessage
                     })
                     .ToListAsync();
 
@@ -407,6 +409,7 @@ namespace API.Service
                         AvatarUrl = m.Account.AccountProfile.AvatarUrl,
                         MessageId = m.ChatMessageId,
                         ChatRoomId = chatRoomId,
+                        MessageType = m.TypeMessage
                     })
                     .ToList();
 
@@ -445,7 +448,8 @@ namespace API.Service
                 IsDeleted = (bool)entity.IsDeleted,
                 DeletedAt = entity.DeletedAt,
                 AvatarUrl = entity.Account?.AccountProfile?.AvatarUrl ?? "",
-                MemberTitle = member?.MemberTitle ?? ""
+                MemberTitle = member?.MemberTitle ?? "",
+                MessageType = entity.TypeMessage
             };
 
             return dto;

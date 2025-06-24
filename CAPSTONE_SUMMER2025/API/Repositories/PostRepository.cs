@@ -188,7 +188,7 @@ namespace API.Repositories
 
             // Lấy các bài post của accountId, loại các bài đã bị ẩn với currentAccountId
             var query = _context.Posts
-                .Where(p => (p.Schedule == null || p.Schedule == p.CreateAt) && p.AccountId == accountId && !hiddenPostIds.Contains(p.PostId))
+                .Where(p => p.AccountId == accountId && !hiddenPostIds.Contains(p.PostId))
                 .Include(p => p.PostMedia)
                 .OrderByDescending(p => p.CreateAt);
 

@@ -11,5 +11,6 @@
         public string AvatarUrl { get; set; }
         public int MessageId {  get; set; }
         public int ChatRoomId {  get; set; }
+        public string MessageType {  get; set; }
     }
 }
