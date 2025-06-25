@@ -574,6 +574,25 @@ namespace API.Service
             };
 
             await _repository.ShareAsync(sharedPost);
+            var targetUrl = $"/post/{request.OriginalPostId}";
+            var Account = await _accountRepository.GetAccountByAccountIDAsync((int)request.AccountId);
+                // Gửi thông báo tới người được share
+                var Accountid = await _repository.GetAccountIdByPostIDAsync(request.OriginalPostId);
+                if (Accountid != null)
+                {
+                    var message = $"{Account.AccountProfile?.FirstName} has share your post.";
+                    await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                    {
+                        UserId = (int)request.AccountId,
+                        Message = message,
+                        CreatedAt = DateTime.Now,
+                        IsRead = false,
+                        senderid = Account.AccountId,
+                        NotificationType = NotiConst.Share,
+                        TargetURL = targetUrl
+                    });
+                }
+            
             return sharedPost;
         }
         // lấy ra số lượng tương tác với bài viết của starup trong 7 ngày

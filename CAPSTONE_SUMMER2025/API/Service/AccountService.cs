@@ -8,7 +8,9 @@ using API.DTO.ProfileDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
+using API.Utils.Constants;
 using AutoMapper;
+using CloudinaryDotNet;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -155,7 +157,7 @@ namespace API.Service
             {
                 throw new ArgumentException("Cannot follow yourself.");
             }
-
+            var targetUrl = $"/account/{followerAccountId}";
             var success = await _accountRepository.FollowAsync(followerAccountId, followingAccountId);
             if (success)
             {
@@ -168,8 +170,11 @@ namespace API.Service
                     {
                         UserId = followingAccountId,
                         Message = message,
-                        CreatedAt = DateTime.UtcNow,
-                        IsRead = false
+                        CreatedAt = DateTime.Now,
+                        IsRead = false,
+                        senderid = followerAccountId,
+                        NotificationType = NotiConst.LIKE,
+                        TargetURL = targetUrl
                     });
                 }
             }
