@@ -34,7 +34,7 @@ namespace API.Service
                 AccountId = dto.UserId,
                 Content = dto.Message,
                 IsRead = false,
-                SendAt = DateTime.UtcNow,
+                SendAt = DateTime.Now,
                 SenderId=dto.senderid,
                 TargetUrl=dto.TargetURL,
                 NotificationType = dto.NotificationType

@@ -51,8 +51,10 @@ namespace API.Repositories
         public async Task<PagedResult<Startup>> GetAllStartupsAsync(int pageNumber, int pageSize)
         {
             var query = _context.Startups
+                  .Include(s => s.Stage)
          .Include(s => s.StartupCategories)
              .ThenInclude(sc => sc.Category)
+           
          .Select(s => new
          {
              Startup = s,

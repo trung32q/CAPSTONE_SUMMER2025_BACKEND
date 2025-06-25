@@ -173,7 +173,7 @@ namespace API.Service
                     {
                         UserId = accountID.Value,
                         Message = message,
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.Now,
                         IsRead = false,
                         senderid = dto.AccountId,
                         NotificationType = NotiConst.LIKE,
