@@ -246,6 +246,9 @@ namespace API.Controllers
             {
                 return BadRequest("Account da nam trong 1 startup!");
             }
+            bool canInvite = await _service.CanInviteAgainAsync(dto.Account_ID, dto.Startup_ID);
+            if (!canInvite)
+                return BadRequest("Không thể mời lại: đã có invite chờ xử lý!");
             var invite = await _service.CreateInviteAsync(dto);
             return Ok(invite);
         }
@@ -337,9 +340,26 @@ namespace API.Controllers
 
             return Ok("Members kicked successfully");
         }
+        [HttpGet("startup/{startupId}/invites")]
+        public async Task<IActionResult> GetInvitesByStartupPaged(int startupId, int pageNumber = 1, int pageSize = 10)
+        {
+            if (startupId <= 0)
+                return BadRequest("StartupId is required and must be greater than 0.");
+            var pagedResult = await _service.GetInvitesByStartupIdPagedAsync(startupId, pageNumber, pageSize);
+            return Ok(pagedResult);
+        }
+        [HttpGet("invite/{inviteId}")]
+        public async Task<IActionResult> GetInviteById(int inviteId)
+        {
+            if (inviteId <= 0)
+                return BadRequest("InviteId must be greater than 0.");
 
+            var invite = await _service.GetInviteByIdAsync(inviteId);
+            if (invite == null)
+                return NotFound("Invite not found.");
 
-
+            return Ok(invite);
+        }
     }
 }
 

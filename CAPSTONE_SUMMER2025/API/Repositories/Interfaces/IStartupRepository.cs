@@ -48,5 +48,8 @@ namespace API.Repositories.Interfaces
         Task<List<ChatRoomMember>> GetChatRoomMembersAsync(int chatRoomId, List<int> accountIds);
         void DeleteChatRoomMembersRange(List<ChatRoomMember> members);
         Task AddPermissionAsync(PermissionInStartup permission);
-    }
+        Task<(List<Invite>, int)> GetInvitesByStartupIdPagedAsync(int startupId, int pageNumber, int pageSize);
+        Task<bool> ExistsPendingInviteAsync(int accountId, int startupId);
+        Task<Invite?> GetInviteByIdAsync(int inviteId);
+        }
 }

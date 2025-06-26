@@ -3,6 +3,7 @@ using System.Text;
 using API.DTO.AccountDTO;
 using API.DTO.PostDTO;
 using API.Repositories.Interfaces;
+using API.Utils.Constants;
 using AutoMapper;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
@@ -356,5 +357,39 @@ namespace API.Repositories
             _context.PermissionInStartups.Add(permission);
             await _context.SaveChangesAsync();
         }
+        public async Task<(List<Invite>, int)> GetInvitesByStartupIdPagedAsync(int startupId, int pageNumber, int pageSize)
+        {
+            var query = _context.Invites
+                .Include(i => i.SenderAccount)
+                .Include(i => i.ReceiverAccount)
+                .Include(i => i.Role)
+                .Where(i => i.StartupId == startupId);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(i => i.InviteSentAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+        public async Task<bool> ExistsPendingInviteAsync(int accountId, int startupId)
+        {
+            return await _context.Invites
+                .AnyAsync(i => i.ReceiverAccountId == accountId
+                            && i.StartupId == startupId
+                            && i.InviteStatus == InviteStatus.PENDING);
+        }
+        public async Task<Invite?> GetInviteByIdAsync(int inviteId)
+        {
+            return await _context.Invites
+                .Include(i => i.SenderAccount)
+                .Include(i => i.ReceiverAccount)
+                .Include(i => i.Role)
+                .FirstOrDefaultAsync(i => i.InviteId == inviteId);
+        }
+
     }
 }

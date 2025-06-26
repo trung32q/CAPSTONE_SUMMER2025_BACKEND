@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 using API.DTO.AccountDTO;
+using API.DTO.NotificationDTO;
 using API.DTO.PostDTO;
 using API.DTO.StartupDTO;
 using API.Repositories;
@@ -469,7 +470,7 @@ namespace API.Service
             await _repo.UpdateMemberTitleAsync(member);
             return true;
         }
-        public async Task<Invite> CreateInviteAsync(CreateInviteDTO dto)
+        public async Task<ResInviteDto> CreateInviteAsync(CreateInviteDTO dto)
         {
             var invite = new Invite
             {
@@ -483,8 +484,37 @@ namespace API.Service
             var result = await _repo.AddInviteAsync(invite);
 
             // Send notification to invited user
-            //await _notificationService.CreateAndSendAsync(invite);
-            return result;
+            var targetUrl = $"/invite/{invite.InviteId}";
+            var AccountInvite = await _accountRepository.GetAccountByAccountIDAsync((int)dto.InviteBy);
+            var AccountReceive = await _accountRepository.GetAccountByAccountIDAsync((int)dto.Account_ID);
+            // Gửi thông báo tới người được mời          
+            if (AccountInvite != null)
+            {
+                var message = $"{AccountInvite.AccountProfile?.FirstName} invite you to startup.";
+                await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                {
+                    UserId = (int)dto.Account_ID,
+                    Message = message,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false,
+                    senderid = dto.InviteBy,
+                    NotificationType = NotiConst.Invite,
+                    TargetURL = targetUrl
+                });
+            }
+            // Map sang DTO trước khi trả về
+            var resultDto = new ResInviteDto
+            {
+                InviteId = invite.InviteId,
+                Receiveravatar = AccountReceive.AccountProfile.AvatarUrl,
+                SenderAvatar = AccountInvite.AccountProfile.AvatarUrl,
+                StartupId = invite.StartupId,
+                RoleId = invite.RoleId,
+                InviteSentAt = invite.InviteSentAt,
+                InviteStatus = invite.InviteStatus
+            };
+
+            return resultDto;
         }
         public async Task<int?> GetStartupIdByAccountIdAsync(int accountId)
         {
@@ -571,5 +601,69 @@ namespace API.Service
             await _repo.SaveChangesAsync();
             return true;
         }
+        public async Task<PagedResult<ResInviteDto>> GetInvitesByStartupIdPagedAsync(int startupId, int pageNumber, int pageSize)
+        {
+            var (invites, totalCount) = await _repo.GetInvitesByStartupIdPagedAsync(startupId, pageNumber, pageSize);
+
+            var dtos = new List<ResInviteDto>();
+            foreach (var i in invites)
+            {
+                // Lấy avatar của sender
+                string? senderAvatar = null;
+                string? reciverAvatar = null;
+                if (i.SenderAccountId.HasValue)
+                {
+                    var senderAccount = await _accountRepository.GetAccountByAccountIDAsync(i.SenderAccountId.Value);
+                    senderAvatar = senderAccount?.AccountProfile?.AvatarUrl;
+                    var reciverAccount = await _accountRepository.GetAccountByAccountIDAsync(i.ReceiverAccountId.Value);
+                    reciverAvatar = reciverAccount?.AccountProfile?.AvatarUrl;
+                }
+
+                dtos.Add(new ResInviteDto
+                {
+                    InviteId = i.InviteId,
+                    SenderAvatar = senderAvatar,
+                    SenderEmail = i.SenderAccount?.Email, // Có thể null nếu không include
+                    Receiveravatar = reciverAvatar,
+                    ReceiverEmail = i.ReceiverAccount?.Email, // Có thể null nếu không include
+                    RoleId = i.RoleId,
+                    RoleName = i.Role?.RoleName,
+                    StartupId = i.StartupId,
+                    InviteSentAt = i.InviteSentAt,
+                    InviteStatus = i.InviteStatus
+                });
+            }
+
+            return new PagedResult<ResInviteDto>(dtos, totalCount, pageNumber, pageSize);
+        }
+
+        public async Task<bool> CanInviteAgainAsync(int accountId, int startupId)
+        {        
+            // Đang có lời mời chờ xử lý
+            bool hasPendingInvite = await _repo.ExistsPendingInviteAsync(accountId, startupId);
+            if (hasPendingInvite) return false;
+            return true;
+        }
+        public async Task<ResInviteDto?> GetInviteByIdAsync(int inviteId)
+        {
+            var invite = await _repo.GetInviteByIdAsync(inviteId);
+            if (invite == null) return null;
+            var AccountInvite = await _accountRepository.GetAccountByAccountIDAsync((int)invite.SenderAccountId);
+            var AccountReceive = await _accountRepository.GetAccountByAccountIDAsync((int)invite.ReceiverAccountId);
+            return new ResInviteDto
+            {
+                InviteId = invite.InviteId,
+                SenderAvatar = AccountInvite.AccountProfile.AvatarUrl,
+                SenderEmail = invite.SenderAccount?.Email,
+                Receiveravatar = AccountReceive.AccountProfile.AvatarUrl,
+                ReceiverEmail = invite.ReceiverAccount?.Email,
+                RoleId = invite.RoleId,
+                RoleName = invite.Role?.RoleName,
+                StartupId = invite.StartupId,
+                InviteSentAt = invite.InviteSentAt,
+                InviteStatus = invite.InviteStatus
+            };
+        }
+
     }
 }
