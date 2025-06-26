@@ -301,15 +301,36 @@ namespace API.Service
         {
             try
             {
-                var message = new ChatMessage
+                var message = new ChatMessage();
+
+                if(request.TypeMessage == Utils.Constants.MessageTypeConst.IMAGE 
+                    || request.TypeMessage == Utils.Constants.MessageTypeConst.VIDEO
+                    || request.TypeMessage == Utils.Constants.MessageTypeConst.FILE) 
                 {
-                    ChatRoomId = request.ChatRoomId,
-                    AccountId = request.AccountId,
-                    MessageContent = request.MessageContent,
-                    SentAt = DateTime.Now,
-                    IsDeleted = false,
-                    TypeMessage = request.TypeMessage,
-                };
+                    var content = await _filebaseHandler.UploadMediaFile(request.File);
+
+                    message = new ChatMessage
+                    {
+                        ChatRoomId = request.ChatRoomId,
+                        AccountId = request.AccountId,
+                        MessageContent = content,
+                        SentAt = DateTime.Now,
+                        IsDeleted = false,
+                        TypeMessage = request.TypeMessage,
+                    };
+                }
+                else
+                {
+                    message = new ChatMessage
+                    {
+                        ChatRoomId = request.ChatRoomId,
+                        AccountId = request.AccountId,
+                        MessageContent = request.MessageContent,
+                        SentAt = DateTime.Now,
+                        IsDeleted = false,
+                        TypeMessage = request.TypeMessage,
+                    };
+                }
 
                 int messageId = await _repo.AddMessageAsync(message);
 

@@ -133,7 +133,7 @@ namespace API.Controllers
 
         // gửi message
          [HttpPost("message")]
-        public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
+        public async Task<IActionResult> SendMessage([FromForm] SendMessageRequest request)
         {
             try
             {
