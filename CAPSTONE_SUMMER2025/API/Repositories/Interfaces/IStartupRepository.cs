@@ -51,5 +51,6 @@ namespace API.Repositories.Interfaces
         Task<(List<Invite>, int)> GetInvitesByStartupIdPagedAsync(int startupId, int pageNumber, int pageSize);
         Task<bool> ExistsPendingInviteAsync(int accountId, int startupId);
         Task<Invite?> GetInviteByIdAsync(int inviteId);
+        Task UpdateInviteAsync(Invite invite);
         }
 }

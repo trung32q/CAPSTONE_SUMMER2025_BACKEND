@@ -390,6 +390,10 @@ namespace API.Repositories
                 .Include(i => i.Role)
                 .FirstOrDefaultAsync(i => i.InviteId == inviteId);
         }
-
+        public async Task UpdateInviteAsync(Invite invite)
+        {
+            _context.Invites.Update(invite);
+            await _context.SaveChangesAsync();
+        }
     }
 }

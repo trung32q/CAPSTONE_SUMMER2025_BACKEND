@@ -37,5 +37,6 @@ namespace API.Service.Interface
         Task<PagedResult<ResInviteDto>> GetInvitesByStartupIdPagedAsync(int startupId, int pageNumber, int pageSize);
         Task<bool> CanInviteAgainAsync(int accountId, int startupId);
         Task<ResInviteDto?> GetInviteByIdAsync(int inviteId);
+        Task<bool> UpdateInviteAsync(int inviteId, string response);
     }
 }

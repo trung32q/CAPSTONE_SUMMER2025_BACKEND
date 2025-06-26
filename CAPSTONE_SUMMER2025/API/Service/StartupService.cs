@@ -664,6 +664,38 @@ namespace API.Service
                 InviteStatus = invite.InviteStatus
             };
         }
+        public async Task<bool> UpdateInviteAsync(int inviteId, string response) // response: "accept" hoặc "reject"
+        {
+            var invite = await _repo.GetInviteByIdAsync(inviteId);
+            if (invite == null || invite.InviteStatus != InviteStatus.PENDING)
+                return false;
+
+            if (response == "Approved")
+            {
+                invite.InviteStatus = InviteStatus.ACCEPTED;
+             
+                    var member = new StartupMember
+                    {
+                        AccountId = invite.ReceiverAccountId.Value,
+                        StartupId = invite.StartupId.Value,
+                        RoleId = invite.RoleId.Value,
+                        JoinedAt = DateTime.Now
+                    };
+                    await _repo.AddMemberAsync(member);
+                
+            }
+            else if (response == "Rejected")
+            {
+                invite.InviteStatus = InviteStatus.REJECTED;
+            }
+            else
+            {
+                return false;
+            }
+
+            await _repo.UpdateInviteAsync(invite);
+            return true;
+        }
 
     }
 }
