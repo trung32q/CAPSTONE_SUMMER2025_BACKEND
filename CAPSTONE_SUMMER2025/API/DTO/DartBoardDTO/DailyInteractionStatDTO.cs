@@ -1,4 +1,4 @@
-﻿namespace API.DTO.PostDTO
+﻿namespace API.DTO.DartBoardDTO
 {
     public class DailyInteractionStatDTO
     {

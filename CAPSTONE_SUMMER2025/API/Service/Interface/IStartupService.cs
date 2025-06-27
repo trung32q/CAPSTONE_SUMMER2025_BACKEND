@@ -38,5 +38,11 @@ namespace API.Service.Interface
         Task<bool> CanInviteAgainAsync(int accountId, int startupId);
         Task<ResInviteDto?> GetInviteByIdAsync(int inviteId);
         Task<bool> UpdateInviteAsync(int inviteId, string response);
+
+        Task<PositionRequirementResponseDto> GetPositionRequirementByIdAsync(int id);
+        Task<PagedResult<PositionRequirementResponseDto>> GetPositionRequirementPagedAsync(int startupId, int pageNumber, int pageSize);
+        Task<PositionRequirementResponseDto> AddPositionRequirementAsync(PositionRequirementCreateDto dto); 
+        Task<bool> UpdatePositionRequirementAsync(int id, PositionRequirementUpdateDto dto); 
+        Task<bool> DeletePositionRequirementAsync(int id); 
     }
 }

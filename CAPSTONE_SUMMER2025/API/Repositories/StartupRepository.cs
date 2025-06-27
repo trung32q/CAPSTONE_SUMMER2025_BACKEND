@@ -395,5 +395,52 @@ namespace API.Repositories
             _context.Invites.Update(invite);
             await _context.SaveChangesAsync();
         }
+
+
+        //lấy position requirment theo id
+        public async Task<PositionRequirement> GetPositionRequirementByIdAsync(int id)
+        {
+            return await _context.PositionRequirements.FindAsync(id);
+        }
+
+        //lấy ra position requirment theo startupId
+        public async Task<List<PositionRequirement>> GetPositionRequirementPagedAsync(int startupId,int pageNumber, int pageSize)
+        {
+            return await _context.PositionRequirements
+                .Where(p => p.StartupId == startupId)
+                .OrderBy(x => x.PositionId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        //lấy ra số lượng position requirment
+        public async Task<int> GetTotalPositionRequirementCountAsync(int startupId)
+        {
+            return await _context.PositionRequirements.Where(p => p.StartupId == startupId).CountAsync();
+        }
+
+        // thêm position requirment
+        public async Task AddPositionRequirementAsync(PositionRequirement entity)
+        {
+            _context.PositionRequirements.Add(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        //cập nhật position requirment
+        public async Task UpdatePositionRequirementAsync(PositionRequirement entity)
+        {
+            _context.PositionRequirements.Update(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        // xóa position requirment
+        public async Task DeletePositionRequirementAsync(PositionRequirement entity)
+        {
+            _context.PositionRequirements.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+
+       
     }
 }

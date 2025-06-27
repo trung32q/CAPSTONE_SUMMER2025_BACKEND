@@ -124,6 +124,7 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository> ();
 builder.Services.AddScoped<IFptAIRepository, FptAIRepository> ();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository> ();
 builder.Services.AddScoped<IStartupRepository, StartupRepository> ();
+builder.Services.AddScoped<IDartboardRepository, DartboardRepository> ();
 
 builder.Services.AddScoped<IStartupService, StartupService> ();
 builder.Services.AddScoped<ICategoryService, CategoryService> ();
@@ -135,6 +136,7 @@ builder.Services.AddScoped<IPolicyService, PolicyService> ();
 builder.Services.AddScoped<IAuthSevice, AuthService> ();
 builder.Services.AddScoped<IAccountService, AccountService> ();
 builder.Services.AddScoped<IEmailService, EmailService> ();
+builder.Services.AddScoped<IDartboardService, DartboardService> ();
 builder.Services.AddScoped<JwtService> ();
 builder.Services.AddScoped<GoogleService> ();
 

@@ -1,4 +1,5 @@
-﻿using API.DTO.StartupDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.StartupDTO;
 using API.Hubs;
 using API.Service;
 using API.Service.Interface;
@@ -367,6 +368,58 @@ namespace API.Controllers
             if (!success)
                 return BadRequest("Invalid invite or invite not in pending status.");
             return Ok(new { message = $"Invite has been {dto.Response}ed." });
+        }
+
+        //lấy position requirment theo startupId
+        [HttpGet("position-requirment")]
+        public async Task<ActionResult<PagedResult<PositionRequirementResponseDto>>> GetPositionRequirementAll(
+        [FromQuery] int startupId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+        {
+            var result = await _service.GetPositionRequirementPagedAsync(startupId, pageNumber, pageSize);
+            return Ok(result);
+        }
+
+        //lấy ra position requirment theo id
+        [HttpGet("position-requirment/{id}")]
+        public async Task<ActionResult<PositionRequirementResponseDto>> GetPositionRequirementById(int id)
+        {
+            var dto = await _service.GetPositionRequirementByIdAsync(id);
+            if (dto == null)
+                return NotFound();
+
+            return Ok(dto);
+        }
+
+        //tạo mới position requirment
+        [HttpPost("position-requirment")]
+        public async Task<ActionResult<PositionRequirementResponseDto>> CreatePositionRequirement([FromBody] PositionRequirementCreateDto model)
+        {
+            var createdDto = await _service.AddPositionRequirementAsync(model);
+            return CreatedAtAction(nameof(GetPositionRequirementById), new { id = createdDto.PositionId }, createdDto);
+        }
+
+        //update position requirment theo id
+        [HttpPut("position-requirment/{id}")]
+        public async Task<IActionResult> UpdatePositionRequirement(int id, [FromBody] PositionRequirementUpdateDto model)
+        {
+            var success = await _service.UpdatePositionRequirementAsync(id, model);
+            if (!success)
+                return NotFound();
+
+            return Ok("Update successfully");
+        }
+
+        //xóa position requirment
+        [HttpDelete("position-requirment/{id}")]
+        public async Task<IActionResult> DeletePositionRequirement(int id)
+        {
+            var success = await _service.DeletePositionRequirementAsync(id);
+            if (!success)
+                return NotFound();
+
+            return Ok("delete successfully");
         }
 
     }

@@ -443,8 +443,22 @@ namespace API.Repositories
 
             var pagedItems = combined.Skip(skip).Take(take).ToList();
 
+            await IncreaseStartupClick(startupId);
+
             return (pagedItems, combined.Count);
         }
+
+        // tăng lượt tiếp cận khi startup được gọi
+        private async Task IncreaseStartupClick(int startupId)
+        {
+            _context.StartupClicks.Add(new StartupClick
+            {
+                StartupId = startupId,
+            });
+            await SaveChangesAsync();
+        }
+
+
         public async Task<List<FeedItemDTO>> GetRecommendedFeedAsync(int userId, int page, int pageSize)
         {          
             // Lấy danh sách ID của các tài khoản mà người dùng đang theo dõi
@@ -660,44 +674,7 @@ namespace API.Repositories
 
         }
 
-        // lấy ra số lượng tương tác với bài viết của starup trong 7 ngày
-        public async Task<List<DailyInteractionStatDTO>> GetStartupInteractionsByDayLast7DaysAsync(int startupId)
-        {
-            DateTime today = DateTime.Now.Date;
-            DateTime sevenDaysAgo = today.AddDays(-6); // Bao gồm hôm nay và 6 ngày trước
-
-            var interactions = await _context.Posts
-                .Where(p => p.StartupId == startupId)
-                .SelectMany(p => p.PostComments
-                        .Where(c => c.CommentAt.HasValue && c.CommentAt.Value.Date >= sevenDaysAgo)
-                        .Select(c => new { Date = c.CommentAt.Value.Date })
-                    .Concat(
-                        p.PostLikes
-                        .Where(l => l.LikedAt.HasValue && l.LikedAt.Value.Date >= sevenDaysAgo)
-                        .Select(l => new { Date = l.LikedAt.Value.Date })
-                    )
-                )
-                .GroupBy(x => x.Date)
-                .Select(g => new DailyInteractionStatDTO
-                {
-                    Date = g.Key,
-                    InteractionCount = g.Count()
-                })
-                .ToListAsync();
-
-            // Đảm bảo có đủ 7 ngày
-            var full7Days = Enumerable.Range(0, 7)
-                .Select(i => sevenDaysAgo.AddDays(i))
-                .Select(date => new DailyInteractionStatDTO
-                {
-                    Date = date,
-                    InteractionCount = interactions.FirstOrDefault(x => x.Date == date)?.InteractionCount ?? 0
-                })
-                .OrderBy(x => x.Date)
-                .ToList();
-
-            return full7Days;
-        }
+        
 
         // lấy ra những bài post được hẹn nhưng chưa đăng
         public async Task<List<Post>> GetScheduledPostsAsync()
