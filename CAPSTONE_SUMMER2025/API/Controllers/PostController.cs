@@ -365,13 +365,7 @@ namespace API.Controllers
 
             return Ok(post);
         }
-        // lấy ra số lượng tương tác với bài viết của starup trong 7 ngày
-        [HttpGet("startup/{startupId}/interactions/daily")]
-        public async Task<IActionResult> GetDailyInteractionsByStartup(int startupId)
-        {
-            var result = await _postService.GetStartupDailyStatsAsync(startupId);
-            return Ok(result);
-        }
+     
 
         //lấy ra những bài post được hẹn nhưng chưa đăng
         [HttpGet("scheduled")]

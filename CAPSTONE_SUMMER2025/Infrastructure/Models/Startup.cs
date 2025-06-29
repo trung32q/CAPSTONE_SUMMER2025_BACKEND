@@ -15,6 +15,7 @@ namespace Infrastructure.Models
             Posts = new HashSet<Post>();
             RoleInStartups = new HashSet<RoleInStartup>();
             StartupCategories = new HashSet<StartupCategory>();
+            StartupClicks = new HashSet<StartupClick>();
             StartupLicenses = new HashSet<StartupLicense>();
             StartupMembers = new HashSet<StartupMember>();
             Subcribes = new HashSet<Subcribe>();
@@ -44,6 +45,7 @@ namespace Infrastructure.Models
         public virtual ICollection<Post> Posts { get; set; }
         public virtual ICollection<RoleInStartup> RoleInStartups { get; set; }
         public virtual ICollection<StartupCategory> StartupCategories { get; set; }
+        public virtual ICollection<StartupClick> StartupClicks { get; set; }
         public virtual ICollection<StartupLicense> StartupLicenses { get; set; }
         public virtual ICollection<StartupMember> StartupMembers { get; set; }
         public virtual ICollection<Subcribe> Subcribes { get; set; }

@@ -52,5 +52,12 @@ namespace API.Repositories.Interfaces
         Task<bool> ExistsPendingInviteAsync(int accountId, int startupId);
         Task<Invite?> GetInviteByIdAsync(int inviteId);
         Task UpdateInviteAsync(Invite invite);
-        }
+
+        Task<PositionRequirement> GetPositionRequirementByIdAsync(int id);
+        Task<List<PositionRequirement>> GetPositionRequirementPagedAsync(int startupId, int pageNumber, int pageSize);
+        Task<int> GetTotalPositionRequirementCountAsync(int startupId);
+        Task AddPositionRequirementAsync(PositionRequirement entity);
+        Task UpdatePositionRequirementAsync(PositionRequirement entity);
+        Task DeletePositionRequirementAsync(PositionRequirement entity);
+    }
 }

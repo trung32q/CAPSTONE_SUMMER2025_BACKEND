@@ -38,7 +38,6 @@ namespace API.Repositories.Interfaces
         Task AddInternshipPostAsync(InternshipPost post);
         Task<(List<FeedItemDTO> Items, int TotalCount)> GetStartupFeedItemsAsync(int startupId, int skip, int take);
         Task ShareAsync(Post post);
-        Task<List<DailyInteractionStatDTO>> GetStartupInteractionsByDayLast7DaysAsync(int startupId);
         Task<List<Post>> GetScheduledPostsAsync();
         Task<InternshipPost> GetInternshipPostByIdAsync(int id);
         Task UpdateInternshipPostAsync(InternshipPost post);

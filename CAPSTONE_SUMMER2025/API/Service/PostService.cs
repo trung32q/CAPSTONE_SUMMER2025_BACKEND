@@ -595,11 +595,7 @@ namespace API.Service
             
             return sharedPost;
         }
-        // lấy ra số lượng tương tác với bài viết của starup trong 7 ngày
-        public async Task<List<DailyInteractionStatDTO>> GetStartupDailyStatsAsync(int startupId)
-        {
-            return await _repository.GetStartupInteractionsByDayLast7DaysAsync(startupId);
-        }
+       
         //lấy ra những bài post được hẹn nhưng chưa đăng
         public async Task<List<PostScheduleDTO>> GetScheduledPostsAsync()
         {

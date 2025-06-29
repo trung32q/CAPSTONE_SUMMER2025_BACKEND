@@ -53,6 +53,7 @@ namespace Infrastructure.Models
         public virtual DbSet<RoleInStartup> RoleInStartups { get; set; } = null!;
         public virtual DbSet<Startup> Startups { get; set; } = null!;
         public virtual DbSet<StartupCategory> StartupCategories { get; set; } = null!;
+        public virtual DbSet<StartupClick> StartupClicks { get; set; } = null!;
         public virtual DbSet<StartupLicense> StartupLicenses { get; set; } = null!;
         public virtual DbSet<StartupMember> StartupMembers { get; set; } = null!;
         public virtual DbSet<StartupStage> StartupStages { get; set; } = null!;
@@ -64,8 +65,8 @@ namespace Infrastructure.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                                .SetBasePath(Directory.GetCurrentDirectory())
-                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                               .SetBasePath(Directory.GetCurrentDirectory())
+                               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -1021,6 +1022,24 @@ namespace Infrastructure.Models
                     .WithMany(p => p.StartupCategories)
                     .HasForeignKey(d => d.StartupId)
                     .HasConstraintName("FK__StartupCa__Start__440B1D61");
+            });
+
+            modelBuilder.Entity<StartupClick>(entity =>
+            {
+                entity.ToTable("StartupClick");
+
+                entity.Property(e => e.StartupClickId).HasColumnName("StartupClick_ID");
+
+                entity.Property(e => e.DateClick)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.StartupId).HasColumnName("Startup_ID");
+
+                entity.HasOne(d => d.Startup)
+                    .WithMany(p => p.StartupClicks)
+                    .HasForeignKey(d => d.StartupId)
+                    .HasConstraintName("FK_StartupId");
             });
 
             modelBuilder.Entity<StartupLicense>(entity =>

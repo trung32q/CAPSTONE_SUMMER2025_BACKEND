@@ -303,9 +303,7 @@ namespace API.Service
             {
                 var message = new ChatMessage();
 
-                if(request.TypeMessage == Utils.Constants.MessageTypeConst.IMAGE 
-                    || request.TypeMessage == Utils.Constants.MessageTypeConst.VIDEO
-                    || request.TypeMessage == Utils.Constants.MessageTypeConst.FILE) 
+                if(request.TypeMessage == Utils.Constants.MessageTypeConst.FILE) 
                 {
                     var content = await _filebaseHandler.UploadMediaFile(request.File);
 
@@ -716,6 +714,81 @@ namespace API.Service
 
             await _repo.UpdateInviteAsync(invite);
             return true;
+        }
+
+        //lấy position requirment theo id
+        public async Task<PositionRequirementResponseDto?> GetPositionRequirementByIdAsync(int id)
+        {
+            var entity = await _repo.GetPositionRequirementByIdAsync(id);
+            if (entity == null)
+                return null;
+
+            return MapToResponseDto(entity);
+        }
+
+        //lấy ra position requirment theo startupId
+        public async Task<PagedResult<PositionRequirementResponseDto>> GetPositionRequirementPagedAsync(int startupId, int pageNumber, int pageSize)
+        {
+            var totalCount = await _repo.GetTotalPositionRequirementCountAsync(startupId);
+            var items = await _repo.GetPositionRequirementPagedAsync(startupId, pageNumber, pageSize);
+
+            var dtoItems = items.Select(MapToResponseDto).ToList();
+
+            return new PagedResult<PositionRequirementResponseDto>(dtoItems, totalCount, pageNumber, pageSize);
+        }
+
+        //thêm position requirment
+        public async Task<PositionRequirementResponseDto> AddPositionRequirementAsync(PositionRequirementCreateDto dto)
+        {
+            var entity = new PositionRequirement
+            {
+                StartupId = dto.StartupId,
+                Title = dto.Title,
+                Description = dto.Description,
+                Requirement = dto.Requirement
+            };
+
+            await _repo.AddPositionRequirementAsync(entity);
+
+            return MapToResponseDto(entity);
+        }
+
+        //update position requirment
+        public async Task<bool> UpdatePositionRequirementAsync(int id, PositionRequirementUpdateDto dto)
+        {
+            var entity = await _repo.GetPositionRequirementByIdAsync(id);
+            if (entity == null)
+                return false;
+
+            entity.Title = dto.Title;
+            entity.Description = dto.Description;
+            entity.Requirement = dto.Requirement;
+
+            await _repo.UpdatePositionRequirementAsync(entity);
+            return true;
+        }
+
+        // xóa position requirment
+        public async Task<bool> DeletePositionRequirementAsync(int id)
+        {
+            var entity = await _repo.GetPositionRequirementByIdAsync(id);
+            if (entity == null)
+                return false;
+
+            await _repo.DeletePositionRequirementAsync(entity);
+            return true;
+        }
+        //mapping chay
+        private PositionRequirementResponseDto MapToResponseDto(PositionRequirement entity)
+        {
+            return new PositionRequirementResponseDto
+            {
+                PositionId = entity.PositionId,
+                StartupId = entity.StartupId,
+                Title = entity.Title,
+                Description = entity.Description,
+                Requirement = entity.Requirement
+            };
         }
 
     }
