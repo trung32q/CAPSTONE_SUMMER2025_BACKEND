@@ -43,6 +43,8 @@ namespace API.Service.Interface
         Task<PagedResult<PositionRequirementResponseDto>> GetPositionRequirementPagedAsync(int startupId, int pageNumber, int pageSize);
         Task<PositionRequirementResponseDto> AddPositionRequirementAsync(PositionRequirementCreateDto dto); 
         Task<bool> UpdatePositionRequirementAsync(int id, PositionRequirementUpdateDto dto); 
-        Task<bool> DeletePositionRequirementAsync(int id); 
+        Task<bool> DeletePositionRequirementAsync(int id);
+        Task<bool> SubscribeAsync(int accountId, int startupId);
+        Task<bool> UnsubscribeAsync(int accountId, int startupId);
     }
 }

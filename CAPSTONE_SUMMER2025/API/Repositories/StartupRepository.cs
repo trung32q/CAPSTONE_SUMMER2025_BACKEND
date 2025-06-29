@@ -440,7 +440,29 @@ namespace API.Repositories
             _context.PositionRequirements.Remove(entity);
             await _context.SaveChangesAsync();
         }
+        public async Task<bool> IsSubscribedAsync(int accountId, int startupId)
+        {
+            return await _context.Subcribes.AnyAsync(s =>
+                s.FollowerAccountId == accountId && s.FollowingStartUpId == startupId);
+        }
 
-       
+        public async Task<Subcribe?> GetSubcribeAsync(int accountId, int startupId)
+        {
+            return await _context.Subcribes.FirstOrDefaultAsync(s =>
+                s.FollowerAccountId == accountId && s.FollowingStartUpId == startupId);
+        }
+
+        public async Task AddSubcribeAsync(Subcribe subcribe)
+        {
+            _context.Subcribes.Add(subcribe);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveSubcribeAsync(Subcribe subcribe)
+        {
+            _context.Subcribes.Remove(subcribe);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

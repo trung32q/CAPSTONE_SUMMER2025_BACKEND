@@ -790,6 +790,29 @@ namespace API.Service
                 Requirement = entity.Requirement
             };
         }
+        public async Task<bool> SubscribeAsync(int accountId, int startupId)
+        {
+            if (await _repo.IsSubscribedAsync(accountId, startupId))
+                return false;
 
+            var sub = new Subcribe
+            {
+                FollowerAccountId = accountId,
+                FollowingStartUpId = startupId,
+                FollowDate = DateTime.UtcNow
+            };
+            await _repo.AddSubcribeAsync(sub);
+            return true;
+        }
+
+        public async Task<bool> UnsubscribeAsync(int accountId, int startupId)
+        {
+            var sub = await _repo.GetSubcribeAsync(accountId, startupId);
+            if (sub == null)
+                return false;
+
+            await _repo.RemoveSubcribeAsync(sub);
+            return true;
+        }
     }
 }

@@ -421,6 +421,25 @@ namespace API.Controllers
 
             return Ok("delete successfully");
         }
+        [HttpPost("subscribe")]
+        public async Task<IActionResult> Subscribe([FromQuery] int accountId, [FromQuery] int startupId)
+        {
+            var result = await _service.SubscribeAsync(accountId, startupId);
+            if (result)
+                return Ok(new { success = true, message = "Subscribe thành công!" });
+            else
+                return BadRequest(new { success = false, message = "Bạn đã subscribe startup này!" });
+        }
+
+        [HttpPost("unsubscribe")]
+        public async Task<IActionResult> Unsubscribe([FromQuery] int accountId, [FromQuery] int startupId)
+        {
+            var result = await _service.UnsubscribeAsync(accountId, startupId);
+            if (result)
+                return Ok(new { success = true, message = "Unsubscribe thành công!" });
+            else
+                return NotFound(new { success = false, message = "Bạn chưa subscribe startup này!" });
+        }
 
     }
 }

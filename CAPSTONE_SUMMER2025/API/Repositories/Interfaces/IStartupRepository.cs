@@ -59,5 +59,9 @@ namespace API.Repositories.Interfaces
         Task AddPositionRequirementAsync(PositionRequirement entity);
         Task UpdatePositionRequirementAsync(PositionRequirement entity);
         Task DeletePositionRequirementAsync(PositionRequirement entity);
+        Task<bool> IsSubscribedAsync(int accountId, int startupId);
+        Task<Subcribe?> GetSubcribeAsync(int accountId, int startupId);
+        Task AddSubcribeAsync(Subcribe subcribe);
+        Task RemoveSubcribeAsync(Subcribe subcribe);
     }
 }
