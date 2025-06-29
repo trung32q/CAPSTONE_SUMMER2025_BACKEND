@@ -6,6 +6,9 @@ namespace API.Repositories.Interfaces
     {
         Task<Milestone> AddMilestoneAsync(Milestone milestone);
         Task AddMilestoneAssignmentAsync(MilestoneAssignment assignment);
-        Task<List<int?>> AssignmentsExistAsync(int milestoneId, List<int> memberIds);
+        Task<bool> AssignmentExistsAsync(int milestoneId, int memberId);
+        Task AddColumnStatusAsync(ColumnnStatus column);
+        Task<int> GetMaxSortOrderAsync(int milestoneId);
+        Task<List<ColumnnStatus>> GetColumnsByMilestoneIdAsync(int milestoneId);
     }
 }

@@ -25,14 +25,31 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
             return milestone;
         }
-        public async Task<List<int?>> AssignmentsExistAsync(int milestoneId, List<int> memberIds)
+        public async Task<bool> AssignmentExistsAsync(int milestoneId, int memberId)
         {
             return await _context.MilestoneAssignments
-                .Where(x => x.MilestoneId == milestoneId && memberIds.Contains((int)x.MemberId))
-                .Select(x => x.MemberId)
+                .AnyAsync(x => x.MilestoneId == milestoneId && x.MemberId == memberId);
+        }
+        public async Task AddColumnStatusAsync(ColumnnStatus column)
+        {
+            _context.ColumnnStatuses.Add(column);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<int> GetMaxSortOrderAsync(int milestoneId)
+        {
+            var max = await _context.ColumnnStatuses
+                .Where(c => c.MilestoneId == milestoneId)
+                .MaxAsync(c => (int?)c.SortOrder);
+
+            return max ?? 0; 
+        }
+        public async Task<List<ColumnnStatus>> GetColumnsByMilestoneIdAsync(int milestoneId)
+        {
+            return await _context.ColumnnStatuses
+                .Where(c => c.MilestoneId == milestoneId)
+                .OrderBy(c => c.SortOrder)
                 .ToListAsync();
         }
-
 
     }
 }
