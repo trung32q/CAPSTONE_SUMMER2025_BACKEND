@@ -333,13 +333,17 @@ namespace API.Service
                         var commenter = await _accountRepository.GetAccountByIdAsync(accountID.Value);
                         if (commenter != null)
                         {
+                            var targetUrl = $"/post/{reqPostCommentDTO.PostId}";
                             var message = $"{commenter.AccountProfile?.FirstName} has comment on your post.";
                             await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                             {
                                 UserId = accountID.Value,
                                 Message = message,
-                                CreatedAt = DateTime.UtcNow,
-                                IsRead = false
+                                CreatedAt = DateTime.Now,
+                                IsRead = false,
+                                senderid = reqPostCommentDTO.AccountId,
+                                NotificationType = NotiConst.COMMENT,
+                                TargetURL = targetUrl
                             });
                         }
                     }
@@ -352,18 +356,21 @@ namespace API.Service
                         var commenter = await _accountRepository.GetAccountByIdAsync(accountID.Value);
                         if (commenter != null)
                         {
+                            var targetUrl = $"/post/{reqPostCommentDTO.PostId}";
                             var message = $"{commenter.AccountProfile?.FirstName} has comment on your comment.";
                             await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                             {
                                 UserId = accountID.Value,
                                 Message = message,
-                                CreatedAt = DateTime.UtcNow,
-                                IsRead = false
+                                CreatedAt = DateTime.Now,
+                                IsRead = false,
+                                senderid = reqPostCommentDTO.AccountId,
+                                NotificationType = NotiConst.COMMENT,
+                                TargetURL = targetUrl
                             });
                         }
                     }
                 }
-
                 if (!success)
                     return "Account hoặc Post không tồn tại";
 

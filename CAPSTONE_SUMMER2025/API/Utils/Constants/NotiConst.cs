@@ -5,5 +5,6 @@
         public const string LIKE = "like";
         public const string Share = "share";
         public const string Invite = "invite";
+        public const string COMMENT = "comment";
     }
 }

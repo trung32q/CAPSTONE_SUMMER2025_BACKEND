@@ -14,23 +14,23 @@ namespace API.Mapping
     {
         public MappingPost()
         {
-            CreateMap<Post, resPostDTO>();
+            CreateMap<Post, resPostDTO>().ForAllOtherMembers(opt => opt.Ignore());
             //CreateMap<resPostDTO, Post>();
 
-            CreateMap<PostComment, PostCommentDTO>();
-            CreateMap<PostCommentDTO, PostComment>();
+            CreateMap<PostComment, PostCommentDTO>().ForAllOtherMembers(opt => opt.Ignore());
+            CreateMap<PostCommentDTO, PostComment>().ForAllOtherMembers(opt => opt.Ignore()); 
 
             CreateMap<PostLike, PostLikeDTO>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src =>
                     src.Account.AccountProfile.FirstName + " " + src.Account.AccountProfile.LastName))
-                        .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Account.AccountProfile.AvatarUrl));
+                        .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.Account.AccountProfile.AvatarUrl)).ForAllOtherMembers(opt => opt.Ignore()); 
 
-            CreateMap<PostLikeDTO, PostLike>();
+            CreateMap<PostLikeDTO, PostLike>().ForAllOtherMembers(opt => opt.Ignore());
 
 
 
             CreateMap<PostMedium, PostMediaDTO>();
-            CreateMap<PostMediaDTO, PostMedium>();
+            CreateMap<PostMediaDTO, PostMedium>().ForAllOtherMembers(opt => opt.Ignore());
 
         }
     }
