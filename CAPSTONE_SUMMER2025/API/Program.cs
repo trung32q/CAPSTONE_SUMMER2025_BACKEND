@@ -124,7 +124,9 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository> ();
 builder.Services.AddScoped<IFptAIRepository, FptAIRepository> ();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository> ();
 builder.Services.AddScoped<IStartupRepository, StartupRepository> ();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
+builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IStartupService, StartupService> ();
 builder.Services.AddScoped<ICategoryService, CategoryService> ();
 builder.Services.AddScoped<ICCCDService, CCCDService> ();
