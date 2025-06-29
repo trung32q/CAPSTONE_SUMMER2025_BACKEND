@@ -157,7 +157,7 @@ namespace API.Service
             {
                 throw new ArgumentException("Cannot follow yourself.");
             }
-            var targetUrl = $"/account/{followerAccountId}";
+            var targetUrl = $"/profile/{followerAccountId}";
             var success = await _accountRepository.FollowAsync(followerAccountId, followingAccountId);
             if (success)
             {
@@ -173,7 +173,7 @@ namespace API.Service
                         CreatedAt = DateTime.Now,
                         IsRead = false,
                         senderid = followerAccountId,
-                        NotificationType = NotiConst.LIKE,
+                        NotificationType = NotiConst.Follow,
                         TargetURL = targetUrl
                     });
                 }
