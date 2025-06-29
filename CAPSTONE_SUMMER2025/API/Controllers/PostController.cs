@@ -418,5 +418,27 @@ namespace API.Controllers
 
             return Ok(cvs);
         }
+        [HttpGet("GetPostsByStartupId")]
+        public async Task<IActionResult> GetPostsByStartupId(int startupId, int pageNumber = 1, int pageSize = 10)
+        {
+            var result = await _postService.GetPostsByStartupIdAsync(startupId, pageNumber, pageSize);
+
+            if (result == null || result.Items.Count == 0)
+            {
+                return NotFound(new { error = "No posts found or startup does not exist" });
+            }
+
+            return Ok(result);
+        }
+        [HttpGet("GetAllInternshipPosts")]
+        public async Task<IActionResult> GetAllInternshipPosts(int startupid, int pageNumber = 1, int pageSize = 10)
+        {
+            var result = await _postService.GetAllInternshipPostsAsync(pageNumber, pageSize, startupid);
+
+            if (result == null || result.Items.Count == 0)
+                return NotFound(new { error = "No internship posts found" });
+
+            return Ok(result);
+        }
     }
 }

@@ -702,5 +702,60 @@ namespace API.Service
         {
             return await _repository.GetCandidateCVsByStartupIdAsync(startupId, page, pageSize);
         }
+        public async Task<PagedResult<resPostDTO>> GetPostsByStartupIdAsync(int startupId, int pageNumber, int pageSize)
+        {
+            var pagedPosts = await _repository.GetPostsByStartupId(startupId, pageNumber, pageSize);
+            var startup = await _repository.GetStartupByIdAsync(startupId);
+             if (pagedPosts == null)
+                return null;
+
+            // Map thủ công từng Post sang resPostDTO như hướng dẫn ở trên, ví dụ:
+            var postDTOs = pagedPosts.Items.Select(post => new resPostDTO
+            {
+                PostId = post.PostId,
+                AccountId = post.AccountId,
+                Content = post.Content,
+                Title = post.Title,
+                CreateAt = post.CreateAt,
+                PostShareId = post.PostShareId,
+                Schedule = post.Schedule,
+                LikeCount = post.PostLikes?.Count ?? 0,
+                FullName = startup.StartupName,
+                AvatarUrl = startup.Logo,
+                PostMedia = post.PostMedia != null
+                    ? post.PostMedia.Select(pm => new PostMediaDTO
+                    {
+                        MediaUrl = pm.MediaUrl,
+                    }).ToList()
+                    : new List<PostMediaDTO>()
+            }).ToList();
+
+            return new PagedResult<resPostDTO>(
+                postDTOs,
+                pagedPosts.TotalCount,
+                pagedPosts.PageNumber,
+                pagedPosts.PageSize
+            );
+        }
+        public async Task<PagedResult<InternshipPostDTO>> GetAllInternshipPostsAsync(int pageNumber, int pageSize,int startupid)
+        {
+            var paged = await _repository.GetInternshipPostsAsync(pageNumber, pageSize,startupid);
+            var dtos = paged.Items.Select(x => new InternshipPostDTO
+            {
+                InternshipId = x.InternshipId,
+                StartupId = (int)x.StartupId,
+                Position = x.Position.Title,
+                Description = x.Description,
+                Requirement = x.Requirement,
+                Benefits = x.Benefits,
+                CreateAt = x.CreateAt,
+                Deadline = x.Deadline,
+                Status = x.Status,
+                Address = x.Address,
+                Salary = x.Salary
+            }).ToList();
+
+            return new PagedResult<InternshipPostDTO>(dtos, paged.TotalCount, paged.PageNumber, paged.PageSize);
+        }
     }
 }

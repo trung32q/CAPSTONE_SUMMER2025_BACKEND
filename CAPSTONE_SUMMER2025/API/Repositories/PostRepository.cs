@@ -763,5 +763,41 @@ namespace API.Repositories
 
             return new PagedResult<PostLike>(items, totalCount, pageNumber, pageSize);
         }
+        public async Task<PagedResult<Post>> GetPostsByStartupId(int startupId, int pageNumber, int pageSize)
+        {
+            var query = _context.Posts
+                .Include(p => p.Account).ThenInclude(a => a.AccountProfile)
+                .Include(p => p.PostMedia)
+                .Include(p => p.PostLikes)
+                .Where(p => p.StartupId == startupId);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(p => p.CreateAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Post>(items, totalCount, pageNumber, pageSize);
+        }
+        public async Task<Startup?> GetStartupByIdAsync(int startupId)
+        {
+            return await _context.Startups
+                .FirstOrDefaultAsync(s => s.StartupId == startupId);
+        }
+        public async Task<PagedResult<InternshipPost>> GetInternshipPostsAsync(int pageNumber, int pageSize,int startupid)
+        {
+            var query = _context.InternshipPosts.Include(x=>x.Position).Where(x=>x.StartupId==startupid).AsQueryable();
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(x => x.CreateAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<InternshipPost>(items, totalCount, pageNumber, pageSize);
+        }
+
     }
 }

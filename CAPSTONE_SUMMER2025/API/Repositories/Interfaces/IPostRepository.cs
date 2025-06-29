@@ -45,5 +45,8 @@ namespace API.Repositories.Interfaces
         Task AddCandidateCvAsync(CandidateCv cv);
         Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
               int startupId, int pageNumber, int pageSize);
+        Task<PagedResult<Post>> GetPostsByStartupId(int startupId, int pageNumber, int pageSize);
+        Task<Startup?> GetStartupByIdAsync(int startupId);
+        Task<PagedResult<InternshipPost>> GetInternshipPostsAsync(int pageNumber, int pageSize,int startupid);
     }
 }
