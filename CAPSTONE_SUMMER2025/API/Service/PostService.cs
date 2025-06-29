@@ -70,27 +70,52 @@ namespace API.Service
         public async Task<PagedResult<resPostDTO>> GetPostsByAccountIdAsync(int accountId, int pageNumber, int pageSize, int currentAccountId)
         {
             var pagedPosts = await _repository.GetPostsByAccountId(accountId, pageNumber, pageSize, currentAccountId);
-
+            var account = await _accountRepository.GetAccountByAccountIDAsync(accountId);
+            string fullName = account?.AccountProfile != null
+    ? account.AccountProfile.FirstName + " " + account.AccountProfile.LastName
+    : "";
+            string avatarUrl = account?.AccountProfile?.AvatarUrl;
             if (pagedPosts == null)
                 return null;
 
-            var postDTOs = _mapper.Map<List<resPostDTO>>(pagedPosts.Items);
+            // Map thủ công từng Post sang resPostDTO
+            var postDTOs = pagedPosts.Items.Select(post => new resPostDTO
+            {
+                PostId = post.PostId,
+                AccountId = post.AccountId,
+                Content = post.Content,
+                Title = post.Title,
+                CreateAt = post.CreateAt,
+                PostShareId = post.PostShareId,
+                Schedule = post.Schedule,
+                LikeCount = post.PostLikes?.Count ?? 0,
+                FullName = fullName,
+                AvatarUrl = avatarUrl,
+                PostMedia = post.PostMedia != null
+                    ? post.PostMedia.Select(pm => new PostMediaDTO
+                    {
+                        MediaUrl = pm.MediaUrl,
+                        DisplayOrder = pm.DisplayOrder
+                    }).ToList()
+                    : new List<PostMediaDTO>()
+            }).ToList();
+
+            // Xử lý media url như trước
             foreach (var dto in postDTOs)
             {
-                foreach (var media in dto.PostMedia)
+                if (dto.PostMedia != null)
                 {
-                    if (!string.IsNullOrEmpty(media.MediaUrl))
+                    foreach (var media in dto.PostMedia)
                     {
-                        // Nếu MediaUrl không chứa resourceType (không có dấu "/"), thêm tiền tố mặc định "image/"
-                        var publicIdWithType = media.MediaUrl.Contains("/")
-                            ? media.MediaUrl
-                            : $"image/{media.MediaUrl}";
+                        if (!string.IsNullOrEmpty(media.MediaUrl))
+                        {
+                            var publicIdWithType = media.MediaUrl.Contains("/")
+                                ? media.MediaUrl
+                                : $"image/{media.MediaUrl}";
 
-                        // Ghi log để debug
-                        Console.WriteLine($"Generating URL for publicIdWithType: {publicIdWithType}");
-
-                        // Tạo URL bằng GeneratePreSignedUrl
-                        media.MediaUrl = _filebase.GeneratePreSignedUrl(publicIdWithType);
+                            Console.WriteLine($"Generating URL for publicIdWithType: {publicIdWithType}");
+                            media.MediaUrl = _filebase.GeneratePreSignedUrl(publicIdWithType);
+                        }
                     }
                 }
             }
@@ -102,6 +127,7 @@ namespace API.Service
                 pagedPosts.PageSize
             );
         }
+
 
         // hàm lấy ra comment theo postid
         public async Task<PagedResult<PostCommentDTO>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
