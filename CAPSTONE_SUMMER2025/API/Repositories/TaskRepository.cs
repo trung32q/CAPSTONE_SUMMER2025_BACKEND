@@ -83,6 +83,15 @@ namespace API.Repositories
 
             return await query.ToListAsync();
         }
+        public async Task<bool> UpdateTaskColumnAsync(int taskId, int newColumnStatusId)
+        {
+            var task = await _context.StartupTasks.FindAsync(taskId);
+            if (task == null) return false;
+
+            task.ColumnnStatusId = newColumnStatusId;
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
     }
 }

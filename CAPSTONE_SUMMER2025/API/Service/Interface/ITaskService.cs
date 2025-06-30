@@ -13,5 +13,6 @@ namespace API.Service.Interface
         Task<StartupTask> CreateTaskAsync(CreateStartupTaskDTO dto);
         Task<List<ColumnWithTasksDto>> GetBoardAsync(int milestoneId);
         Task<List<ResMilestoneDto>> GetAllMilestonesAsync(int startupId );
+        Task<bool> UpdateTaskColumnAsync(UpdateTaskColumnDto dto);
     }
 }

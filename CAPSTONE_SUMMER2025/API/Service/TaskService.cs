@@ -190,6 +190,10 @@ namespace API.Service
                 }).ToList() ?? new List<MemberInMilestoneDto>()
             }).ToList();
         }
+        public async Task<bool> UpdateTaskColumnAsync(UpdateTaskColumnDto dto)
+        {
+            return await _repo.UpdateTaskColumnAsync(dto.TaskId, dto.NewColumnStatusId);
+        }
 
     }
 }

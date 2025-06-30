@@ -1,4 +1,5 @@
 ﻿using API.DTO.TaskDTO;
+using API.Service;
 using API.Service.Interface;
 using Google.Api;
 using Microsoft.AspNetCore.Http;
@@ -87,5 +88,15 @@ namespace API.Controllers
                 return NotFound(new { message = "Không có milestone nào!" });
             return Ok(result);
         }
+        [HttpPut("Change-task-column")]
+        public async Task<IActionResult> UpdateTaskColumn([FromBody] UpdateTaskColumnDto dto)
+        {
+            var success = await _Service.UpdateTaskColumnAsync(dto);
+            if (!success)
+                return NotFound(new { message = "Task không tồn tại!" });
+
+            return Ok(new { success = true, message = "Cập nhật status thành công!" });
+        }
     }
 }
+ 

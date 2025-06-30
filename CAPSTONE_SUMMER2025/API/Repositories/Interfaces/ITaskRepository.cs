@@ -14,5 +14,7 @@ namespace API.Repositories.Interfaces
         Task AddTaskAssignmentsAsync(List<TaskAssignment> assignments);
         Task<List<StartupTask>> GetTasksByMilestoneAsync(int milestoneId);
         Task<List<Milestone>> GetAllMilestonesWithMembersAsync(int startupId);
+        Task<bool> UpdateTaskColumnAsync(int taskId, int newColumnStatusId);
+
     }
 }
