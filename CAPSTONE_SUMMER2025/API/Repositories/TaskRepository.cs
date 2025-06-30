@@ -50,6 +50,39 @@ namespace API.Repositories
                 .OrderBy(c => c.SortOrder)
                 .ToListAsync();
         }
+        public async Task<StartupTask> AddStartupTaskAsync(StartupTask task)
+        {
+            _context.StartupTasks.Add(task);
+            await _context.SaveChangesAsync(); 
+            return task;
+        }
+
+        // Thêm nhiều assignment cho 1 task
+        public async Task AddTaskAssignmentsAsync(List<TaskAssignment> assignments)
+        {
+            _context.TaskAssignments.AddRange(assignments);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<List<StartupTask>> GetTasksByMilestoneAsync(int milestoneId)
+        {
+            return await _context.StartupTasks.Include(x=>x.TaskAssignments)
+                .ThenInclude(x=>x.AssignToAccount)
+                .ThenInclude(x=>x.AccountProfile)
+                .Where(t => t.MilestoneId == milestoneId)
+                .ToListAsync();
+        }
+        public async Task<List<Milestone>> GetAllMilestonesWithMembersAsync(int startupId )
+        {
+            var query = _context.Milestones
+                .Include(m => m.MilestoneAssignments)
+                    .ThenInclude(a => a.Member)
+                        .ThenInclude(sm => sm.Account)
+                            .ThenInclude(a => a.AccountProfile)
+                .AsQueryable();          
+                query = query.Where(m => m.StartupId == startupId);
+
+            return await query.ToListAsync();
+        }
 
     }
 }

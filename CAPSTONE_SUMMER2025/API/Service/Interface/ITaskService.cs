@@ -1,4 +1,5 @@
 ﻿using API.DTO.TaskDTO;
+using Infrastructure.Models;
 
 namespace API.Service.Interface
 {
@@ -9,5 +10,8 @@ namespace API.Service.Interface
         Task<bool> AssignmentExistsAsync(int milestoneId, int memberId);
         Task<bool> CreateNewColumnAsync(CreateColumnDto dto);
         Task<List<ColumnStatusDto>> GetColumnsByMilestoneIdAsync(int milestoneId);
+        Task<StartupTask> CreateTaskAsync(CreateStartupTaskDTO dto);
+        Task<List<ColumnWithTasksDto>> GetBoardAsync(int milestoneId);
+        Task<List<ResMilestoneDto>> GetAllMilestonesAsync(int startupId );
     }
 }

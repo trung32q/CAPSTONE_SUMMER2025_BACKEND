@@ -10,5 +10,9 @@ namespace API.Repositories.Interfaces
         Task AddColumnStatusAsync(ColumnnStatus column);
         Task<int> GetMaxSortOrderAsync(int milestoneId);
         Task<List<ColumnnStatus>> GetColumnsByMilestoneIdAsync(int milestoneId);
+        Task<StartupTask> AddStartupTaskAsync(StartupTask task);
+        Task AddTaskAssignmentsAsync(List<TaskAssignment> assignments);
+        Task<List<StartupTask>> GetTasksByMilestoneAsync(int milestoneId);
+        Task<List<Milestone>> GetAllMilestonesWithMembersAsync(int startupId);
     }
 }

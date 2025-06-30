@@ -108,5 +108,88 @@ namespace API.Service
                 Description = c.Description
             }).ToList();
         }
+        public async Task<StartupTask> CreateTaskAsync(CreateStartupTaskDTO dto)
+        {
+            var task = new StartupTask
+            {
+                MilestoneId = dto.Milestoneid,
+                Title = dto.Title,
+                Priority = dto.Priority,
+                Description = dto.Description,
+                Duedate = dto.DueDate,
+                ColumnnStatusId = dto.ColumnnStatusId,
+                Note = dto.Note,
+                Progress = 0
+            };
+
+            // Thêm task, lấy TaskId sau khi save
+            var createdTask = await _repo.AddStartupTaskAsync(task);
+
+            if (dto.AssignToAccountIds != null && dto.AssignToAccountIds.Any())
+            {
+                var assignments = dto.AssignToAccountIds.Select(assignToId => new TaskAssignment
+                {
+                    TaskId = createdTask.TaskId,
+                    AssignToAccountId = assignToId,
+                    AssignedByAccountId = dto.AssignedByAccountId,
+                    AssignAt = DateTime.Now
+                }).ToList();
+
+                await _repo.AddTaskAssignmentsAsync(assignments);
+            }
+            return createdTask;
+        }
+        public async Task<List<ColumnWithTasksDto>> GetBoardAsync(int milestoneId)
+        {
+            var columns = await _repo.GetColumnsByMilestoneIdAsync(milestoneId);
+            var tasks = await _repo.GetTasksByMilestoneAsync(milestoneId);
+
+            return columns.Select(c => new ColumnWithTasksDto
+            {
+                ColumnStatusId = c.ColumnnStatusId,
+                ColumnName = c.ColumnName,
+                Tasks = tasks
+                    .Where(t => t.ColumnnStatusId == c.ColumnnStatusId)
+                    .Select(t => new TaskDto
+                    {
+                        TaskId = t.TaskId,
+                        Title = t.Title,
+                        Description=t.Description,
+                        Priority =t.Priority,
+                        DueDate=t.Duedate,
+                        AvatarURL= t.TaskAssignments
+                    .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                    .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
+                    .Where(url => !string.IsNullOrEmpty(url))
+                    .ToList()
+                    }).ToList()
+            }).ToList();
+        }
+
+        public async Task<List<ResMilestoneDto>> GetAllMilestonesAsync(int startupId)
+        {
+            var milestones = await _repo.GetAllMilestonesWithMembersAsync(startupId);
+
+            return milestones.Select(m => new ResMilestoneDto
+            {
+                MilestoneId = m.MilestoneId,
+                StartupId = (int)m.StartupId,
+                Name = m.Name,
+                Description = m.Description,
+                StartDate = m.StartDate ?? DateTime.MinValue,
+                EndDate = m.EndDate ?? DateTime.MinValue,
+                Status = m.Status,
+                Members = m.MilestoneAssignments?.Select(a => new MemberInMilestoneDto
+                {
+                    MemberId = a.MemberId ?? 0,
+                    AccountId = a.Member?.AccountId ?? 0,
+                    FullName = a.Member?.Account?.AccountProfile != null
+                        ? a.Member.Account.AccountProfile.FirstName + " " + a.Member.Account.AccountProfile.LastName
+                        : null,
+                    AvatarUrl = a.Member?.Account?.AccountProfile?.AvatarUrl
+                }).ToList() ?? new List<MemberInMilestoneDto>()
+            }).ToList();
+        }
+
     }
 }
