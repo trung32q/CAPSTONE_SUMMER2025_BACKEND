@@ -46,5 +46,6 @@ namespace API.Service.Interface
         Task<bool> DeletePositionRequirementAsync(int id);
         Task<bool> SubscribeAsync(int accountId, int startupId);
         Task<bool> UnsubscribeAsync(int accountId, int startupId);
+        Task<StartupDetailDTO?> GetStartupByIdAsync(int startupId);
     }
 }

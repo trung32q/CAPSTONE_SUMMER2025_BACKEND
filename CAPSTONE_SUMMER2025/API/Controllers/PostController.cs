@@ -234,6 +234,42 @@ namespace API.Controllers
                 return Unauthorized(new { message = ex.Message });
             }
         }
+
+
+        //serch post của startupId
+        [HttpGet("search-startup-posts")]
+        public async Task<IActionResult> SearchStatupPosts(
+        [FromQuery] int startupId,
+        [FromQuery] string? keyword,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+        {
+            var result = await _postService.GetSearchPostsByStartup(startupId, keyword, pageNumber, pageSize);
+
+            return Ok(new
+            {
+                message = "Search posts successfully",
+                data = result
+            });
+        }
+
+        [HttpGet("search-startup-internship-post")]
+        public async Task<IActionResult> SearchInternshipPosts(
+     [FromQuery] int startupId,
+     [FromQuery] string? keyword,
+     [FromQuery] int pageNumber = 1,
+     [FromQuery] int pageSize = 10)
+        {
+            var result = await _postService.GetSearchStartupInternshipPost(startupId, keyword, pageNumber, pageSize);
+
+            return Ok(new
+            {
+                message = "Search internship posts successfully",
+                data = result
+            });
+        }
+
+
         [HttpGet("NewFeed")]
         public async Task<IActionResult> GetNewFeed(int userId, int page = 1, int pageSize = 10)
         {

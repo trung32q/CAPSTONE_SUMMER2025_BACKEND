@@ -78,7 +78,6 @@ namespace API.Service
             if (pagedPosts == null)
                 return null;
 
-            // Map thủ công từng Post sang resPostDTO
             var postDTOs = pagedPosts.Items.Select(post => new resPostDTO
             {
                 PostId = post.PostId,
@@ -100,7 +99,6 @@ namespace API.Service
                     : new List<PostMediaDTO>()
             }).ToList();
 
-            // Xử lý media url như trước
             foreach (var dto in postDTOs)
             {
                 if (dto.PostMedia != null)
@@ -128,6 +126,67 @@ namespace API.Service
             );
         }
 
+        //tìm kiếm internshippost của startup
+        public async Task<PagedResult<InternshipPostDTO>> GetSearchStartupInternshipPost(int startupId, string? keyword, int pageNumber, int pageSize)
+        {
+            var query = _repository.GetStartupInternshipPost(startupId);
+
+            // Lọc sơ bộ nếu có keyword
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(p =>
+                    p.Description.Contains(keyword) ||
+                    p.Requirement.Contains(keyword) ||
+                    p.Benefits.Contains(keyword));
+            }
+
+            // Tải dữ liệu về bộ nhớ
+            var allItems = await query
+                .Select(p => new
+                {
+                    Post = p,
+                    StartupName = p.Startup.StartupName,
+                    StartupLogo = p.Startup.Logo
+                })
+                .ToListAsync();
+
+            // Lọc không dấu
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var normKeyword = RemoveDiacritics(keyword);
+                allItems = allItems.Where(x =>
+                    RemoveDiacritics(x.Post.Description ?? "").Contains(normKeyword) ||
+                    RemoveDiacritics(x.Post.Requirement ?? "").Contains(normKeyword) ||
+                    RemoveDiacritics(x.Post.Benefits ?? "").Contains(normKeyword))
+                    .ToList();
+            }
+
+            var totalCount = allItems.Count;
+
+            var items = allItems
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new InternshipPostDTO
+                {
+                    InternshipId = x.Post.InternshipId,
+                    StartupId = (int)x.Post.StartupId,
+                    PositionId = (int) x.Post.PositionId,
+                    Position = x.Post.Position.Title,
+                    Description = x.Post.Description,
+                    Requirement = x.Post.Requirement,
+                    Benefits = x.Post.Benefits,
+                    CreateAt = x.Post.CreateAt,
+                    Deadline = x.Post.Deadline,
+                    Status = x.Post.Status,
+                    Address = x.Post.Address,
+                    Salary = x.Post.Salary,
+                    StartupName = x.StartupName,
+                    StartupLogo = x.StartupLogo
+                })
+                .ToList();
+
+            return new PagedResult<InternshipPostDTO>(items, totalCount, pageNumber, pageSize);
+        }
 
         // hàm lấy ra comment theo postid
         public async Task<PagedResult<PostCommentDTO>> GetPostCommentByPostId(int postId, int pageNumber, int pageSize)
@@ -452,6 +511,65 @@ namespace API.Service
                 .ToList(); // hoặc ToListAsync nếu IQueryable EF vẫn dùng
 
             return new PagedResult<resPostDTO>(pagedItems, totalCount, pageNumber, pageSize);
+        }
+
+        // tìm kiếm bài post theo startupId
+        public async Task<PagedResult<PostSearchDTO>> GetSearchPostsByStartup(int startupId, string? keyword, int pageNumber, int pageSize)
+        {
+            var query = _repository.GetSearchPostsByStartup(startupId);
+
+            // Nếu có keyword, lọc sơ bộ Contains để giảm dữ liệu tải về
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(p =>
+                    p.Title.Contains(keyword) ||
+                    p.Content.Contains(keyword));
+            }
+
+            // Lấy toàn bộ danh sách sau khi lọc sơ bộ
+            var allItems = await query
+                .Select(p => new
+                {
+                    Post = p,
+                    Medias = p.PostMedia.OrderBy(m => m.DisplayOrder).ToList(),
+                    StartupName = p.Startup.StartupName,
+                    StartupLogo = p.Startup.Logo
+                })
+                .ToListAsync();
+
+            // Nếu có keyword, lọc không dấu trong C#
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var normKeyword = RemoveDiacritics(keyword);
+                allItems = allItems.Where(x =>
+                    RemoveDiacritics(x.Post.Title ?? "").Contains(normKeyword) ||
+                     RemoveDiacritics(x.Post.Content ?? "").Contains(normKeyword))
+                    .ToList();
+            }
+
+            var totalCount = allItems.Count;
+
+            // Phân trang dữ liệu
+            var items = allItems
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new PostSearchDTO
+                {
+                    PostID = x.Post.PostId,
+                    Title = x.Post.Title,
+                    CreateAt = (DateTime)x.Post.CreateAt,
+                    Content = x.Post.Content,
+                    StartupName = x.StartupName,
+                    StartupLogo = x.StartupLogo,
+                    Media = x.Medias.Select(m => new PostMediaDTO
+                    {
+                        MediaUrl = m.MediaUrl,
+                        DisplayOrder = m.DisplayOrder
+                    }).ToList()
+                })
+                .ToList();
+
+            return new PagedResult<PostSearchDTO>(items, totalCount, pageNumber, pageSize);
         }
 
         private string RemoveDiacritics(string text)

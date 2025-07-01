@@ -814,5 +814,30 @@ namespace API.Service
             await _repo.RemoveSubcribeAsync(sub);
             return true;
         }
+
+        //lấy ra thông tin của startup
+        public async Task<StartupDetailDTO?> GetStartupByIdAsync(int startupId)
+        {
+            var startup = await _postRepo.GetStartupByIdAsync(startupId);
+            if (startup == null)
+                return null;
+
+            return new StartupDetailDTO
+            {
+                StartupId = startup.StartupId,
+                StartupName = startup.StartupName,
+                AbbreviationName = startup.AbbreviationName,
+                Description = startup.Description,
+                Vision = startup.Vision,
+                Mission = startup.Mission,
+                Logo = startup.Logo,
+                BackgroundURL = startup.BackgroundUrl,
+                WebsiteURL = startup.WebsiteUrl,
+                Email = startup.Email,
+                Status = startup.Status,
+                StageId = startup.StageId,
+                CreateAt = (DateTime)startup.CreateAt
+            };
+        }
     }
 }

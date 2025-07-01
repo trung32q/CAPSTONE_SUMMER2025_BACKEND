@@ -441,6 +441,26 @@ namespace API.Controllers
                 return NotFound(new { success = false, message = "Bạn chưa subscribe startup này!" });
         }
 
+        //lấy ra chi tiết startup
+        [HttpGet("{startupId}")]
+        public async Task<IActionResult> GetStartupById(int startupId)
+        {
+            var result = await _service.GetStartupByIdAsync(startupId);
+
+            if (result == null)
+            {
+                return NotFound(new
+                {
+                    message = "Startup not found"
+                });
+            }
+
+            return Ok(new
+            {
+                message = "Get startup successfully",
+                data = result
+            });
+        }
     }
 }
 

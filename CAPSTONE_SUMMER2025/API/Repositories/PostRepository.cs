@@ -340,6 +340,26 @@ namespace API.Repositories
             return result;
         }
 
+        // tìm kiếm post của startup
+        public IQueryable<Post> GetSearchPostsByStartup(int startupId)
+        {
+            return _context.Posts
+                .Include(p => p.Startup)
+                .Include(p => p.PostMedia)
+                .Where(p => p.StartupId == startupId)
+                .OrderByDescending(p => p.CreateAt);
+        }
+
+        // lấy internshippost của startup
+        public IQueryable<InternshipPost> GetStartupInternshipPost(int startupId)
+        {
+            return _context.InternshipPosts
+                .Include(p => p.Startup)
+                .Include(p => p.Position)
+                .Where(p => p.StartupId == startupId)
+                .OrderByDescending(p => p.CreateAt);
+        }
+
         // hàm xóa dấu
         private string RemoveDiacritics(string text)
         {
