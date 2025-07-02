@@ -453,7 +453,9 @@ namespace API.Repositories
                 CreatedAt = i.CreateAt ?? DateTime.MinValue,
                 PostMedia = new List<PostMediaDTO>(),
                 InteractionCount = 0,
-                Priority = 2
+                Priority = 2,
+                Address = i.Address,
+                DueDate = i.Deadline
             }).ToListAsync();
 
             var combined = postItems
@@ -573,7 +575,9 @@ namespace API.Repositories
                     Title = i.Position.Title,
                     Content = i.Description,
                     CreatedAt = (DateTime)i.CreateAt,
-                    Priority=3
+                    Priority=3,
+                    Address = i.Address,
+                    DueDate = i.Deadline
                 })
                 .ToListAsync();
 

@@ -16,6 +16,9 @@
         public int Priority { get; set; }
         public int InteractionCount { get; set; }
         public int? PostShareId {  get; set; }
+
+        public DateTime? DueDate { get; set; }
+        public string? Address {  get; set; }
         
     }
 }
