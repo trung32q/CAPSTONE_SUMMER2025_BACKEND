@@ -415,6 +415,11 @@ namespace API.Service
                     var accountID = await _repository.GetAccountIdByPostIDAsync(reqPostCommentDTO.PostId);
                     if (success)
                     {
+                        if(accountID == null)
+                        {
+                            return "Successfully";
+                        }
+
                         var commenter = await _accountRepository.GetAccountByIdAsync(accountID.Value);
                         if (commenter != null)
                         {

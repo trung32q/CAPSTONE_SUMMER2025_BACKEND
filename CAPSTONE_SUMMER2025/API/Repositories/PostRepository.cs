@@ -449,7 +449,7 @@ namespace API.Repositories
                 AvatarURL = i.Startup.Logo,
                 Type = "Internship",
                 Title = i.Position.Title,
-                Content = $"{i.Description}\n{i.Requirement}\n{i.Benefits}",
+                Content = $"{i.Description}",
                 CreatedAt = i.CreateAt ?? DateTime.MinValue,
                 PostMedia = new List<PostMediaDTO>(),
                 InteractionCount = 0,
@@ -570,8 +570,8 @@ namespace API.Repositories
                     name=i.Startup.StartupName,
                     AvatarURL =i.Startup.Logo,
                     Type = "Internship",
-                    Title = "Internship",
-                    Content = i.Position.Title + i.Description + i.Requirement + i.Benefits,
+                    Title = i.Position.Title,
+                    Content = i.Description,
                     CreatedAt = (DateTime)i.CreateAt,
                     Priority=3
                 })
