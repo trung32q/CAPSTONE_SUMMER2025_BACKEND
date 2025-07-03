@@ -8,7 +8,6 @@ namespace Infrastructure.Models
         public Milestone()
         {
             ColumnnStatuses = new HashSet<ColumnnStatus>();
-            Labels = new HashSet<Label>();
             MilestoneAssignments = new HashSet<MilestoneAssignment>();
             StartupTasks = new HashSet<StartupTask>();
         }
@@ -23,7 +22,6 @@ namespace Infrastructure.Models
 
         public virtual Startup? Startup { get; set; }
         public virtual ICollection<ColumnnStatus> ColumnnStatuses { get; set; }
-        public virtual ICollection<Label> Labels { get; set; }
         public virtual ICollection<MilestoneAssignment> MilestoneAssignments { get; set; }
         public virtual ICollection<StartupTask> StartupTasks { get; set; }
     }

@@ -93,5 +93,25 @@ namespace API.Repositories
             return true;
         }
 
+
+        public async Task<bool> AssignLabelToTaskAsync(int taskId, int labelId)
+        {
+            // Kiểm tra tồn tại
+            bool exists = await _context.StartupTaskLabels
+                .AnyAsync(x => x.TaskId == taskId && x.LabelId == labelId);
+            if (exists)
+                return false; // đã gán rồi
+
+            var entity = new StartupTaskLabel
+            {
+                TaskId = taskId,
+                LabelId = labelId
+            };
+            _context.StartupTaskLabels.Add(entity);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+
     }
 }

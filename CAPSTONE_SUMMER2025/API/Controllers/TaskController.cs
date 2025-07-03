@@ -97,6 +97,27 @@ namespace API.Controllers
 
             return Ok(new { success = true, message = "Cập nhật status thành công!" });
         }
+
+        [HttpPost("startup-task/assign-label")]
+        public async Task<IActionResult> AssignLabelToTask([FromBody] AssignLabelToTaskDTO dto)
+        {
+            var success = await _Service.AssignLabelToTaskAsync(dto.StartupTaskId, dto.LabelId);
+            if (!success)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Label đã được gán hoặc không hợp lệ"
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "Gán label thành công"
+            });
+        }
+
     }
 }
  

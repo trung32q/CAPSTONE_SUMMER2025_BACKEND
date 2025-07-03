@@ -195,5 +195,11 @@ namespace API.Service
             return await _repo.UpdateTaskColumnAsync(dto.TaskId, dto.NewColumnStatusId);
         }
 
+        public async Task<bool> AssignLabelToTaskAsync(int taskId, int labelId)
+        {
+            return await _repo.AssignLabelToTaskAsync(taskId, labelId);
+        }
+
+
     }
 }

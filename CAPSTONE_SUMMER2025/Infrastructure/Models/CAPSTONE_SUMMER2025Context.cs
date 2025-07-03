@@ -58,6 +58,7 @@ namespace Infrastructure.Models
         public virtual DbSet<StartupMember> StartupMembers { get; set; } = null!;
         public virtual DbSet<StartupStage> StartupStages { get; set; } = null!;
         public virtual DbSet<StartupTask> StartupTasks { get; set; } = null!;
+        public virtual DbSet<StartupTaskLabel> StartupTaskLabels { get; set; } = null!;
         public virtual DbSet<Subcribe> Subcribes { get; set; } = null!;
         public virtual DbSet<TaskAssignment> TaskAssignments { get; set; } = null!;
         public virtual DbSet<UserOtp> UserOtps { get; set; } = null!;
@@ -65,8 +66,8 @@ namespace Infrastructure.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                               .SetBasePath(Directory.GetCurrentDirectory())
-                               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                                 .SetBasePath(Directory.GetCurrentDirectory())
+                                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -595,13 +596,6 @@ namespace Infrastructure.Models
                 entity.Property(e => e.Color).HasMaxLength(50);
 
                 entity.Property(e => e.LabelName).HasMaxLength(100);
-
-                entity.Property(e => e.MilestoneId).HasColumnName("Milestone_ID");
-
-                entity.HasOne(d => d.Milestone)
-                    .WithMany(p => p.Labels)
-                    .HasForeignKey(d => d.MilestoneId)
-                    .HasConstraintName("FK__Label__Color__6E01572D");
             });
 
             modelBuilder.Entity<Milestone>(entity =>
@@ -1149,23 +1143,34 @@ namespace Infrastructure.Models
                     .WithMany(p => p.StartupTasks)
                     .HasForeignKey(d => d.MilestoneId)
                     .HasConstraintName("FK__StartupTa__Miles__6B24EA82");
+            });
 
-                entity.HasMany(d => d.Labels)
-                    .WithMany(p => p.Tasks)
-                    .UsingEntity<Dictionary<string, object>>(
-                        "StartupTaskLabel",
-                        l => l.HasOne<Label>().WithMany().HasForeignKey("LabelId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__StartupTa__Label__71D1E811"),
-                        r => r.HasOne<StartupTask>().WithMany().HasForeignKey("TaskId").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__StartupTa__Task___70DDC3D8"),
-                        j =>
-                        {
-                            j.HasKey("TaskId", "LabelId").HasName("PK__StartupT__42BD0FAF0D7B4724");
+            modelBuilder.Entity<StartupTaskLabel>(entity =>
+            {
+                entity.HasKey(e => new { e.TaskId, e.LabelId })
+                    .HasName("PK__StartupT__42BD0FAF0D7B4724");
 
-                            j.ToTable("StartupTask_Label");
+                entity.ToTable("StartupTask_Label");
 
-                            j.IndexerProperty<int>("TaskId").HasColumnName("Task_ID");
+                entity.Property(e => e.TaskId).HasColumnName("Task_ID");
 
-                            j.IndexerProperty<int>("LabelId").HasColumnName("Label_ID");
-                        });
+                entity.Property(e => e.LabelId).HasColumnName("Label_ID");
+
+                entity.Property(e => e.StartupTaskLabelId)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnName("StartupTask_LabelId");
+
+                entity.HasOne(d => d.Label)
+                    .WithMany(p => p.StartupTaskLabels)
+                    .HasForeignKey(d => d.LabelId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__StartupTa__Label__71D1E811");
+
+                entity.HasOne(d => d.Task)
+                    .WithMany(p => p.StartupTaskLabels)
+                    .HasForeignKey(d => d.TaskId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__StartupTa__Task___70DDC3D8");
             });
 
             modelBuilder.Entity<Subcribe>(entity =>

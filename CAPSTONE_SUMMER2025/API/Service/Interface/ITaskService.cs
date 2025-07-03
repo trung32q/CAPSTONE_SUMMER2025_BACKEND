@@ -14,5 +14,6 @@ namespace API.Service.Interface
         Task<List<ColumnWithTasksDto>> GetBoardAsync(int milestoneId);
         Task<List<ResMilestoneDto>> GetAllMilestonesAsync(int startupId );
         Task<bool> UpdateTaskColumnAsync(UpdateTaskColumnDto dto);
+        Task<bool> AssignLabelToTaskAsync(int taskId, int labelId);
     }
 }

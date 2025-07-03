@@ -880,5 +880,32 @@ namespace API.Service
 
             return new PagedResult<InternshipPostDTO>(dtos, paged.TotalCount, paged.PageNumber, paged.PageSize);
         }
+
+        //lấy ra internship post theo id
+        public async Task<InternshipPostDetailDTO?> GetInternshipPostDetailAsync(int internshipPostId)
+        {
+            var entity = await _repository.GetInternshipPostWithNavigationAsync(internshipPostId);
+            if (entity == null)
+                return null;
+
+            return new InternshipPostDetailDTO
+            {
+                InternshipId = entity.InternshipId,
+                StartupId = (int) entity.StartupId,
+                PositionId = (int) entity.PositionId,
+                Description = entity.Description,
+                Requirement = entity.Requirement,
+                Benefits = entity.Benefits,
+                CreateAt = entity.CreateAt,
+                Deadline = entity.Deadline,
+                Status = entity.Status,
+                Address = entity.Address,
+                Salary = entity.Salary,
+                StartupName = entity.Startup?.StartupName,
+                Logo = entity.Startup?.Logo,
+                PositionTitle = entity.Position?.Title
+            };
+        }
+
     }
 }

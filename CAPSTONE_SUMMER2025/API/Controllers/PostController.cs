@@ -476,5 +476,16 @@ namespace API.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("internshippost/{internshipPostId}")]
+        public async Task<IActionResult> GetInternshipPostDetail(int internshipPostId)
+        {
+            var result = await _postService.GetInternshipPostDetailAsync(internshipPostId);
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
     }
 }

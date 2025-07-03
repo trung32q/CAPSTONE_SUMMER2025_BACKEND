@@ -44,5 +44,6 @@ namespace API.Service.Interface
         Task<PagedResult<InternshipPostDTO>> GetAllInternshipPostsAsync(int pageNumber, int pageSize,int startupid);
         Task<PagedResult<PostSearchDTO>> GetSearchPostsByStartup(int startupId, string? keyword, int pageNumber, int pageSize);
         Task<PagedResult<InternshipPostDTO>> GetSearchStartupInternshipPost(int startupId, string? keyword, int pageNumber, int pageSize);
+        Task<InternshipPostDetailDTO?> GetInternshipPostDetailAsync(int internshipPostId);
     }
 }

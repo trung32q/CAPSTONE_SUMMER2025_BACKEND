@@ -823,5 +823,16 @@ namespace API.Repositories
             return new PagedResult<InternshipPost>(items, totalCount, pageNumber, pageSize);
         }
 
+        //lấy ra internshippost theo id
+        public async Task<InternshipPost?> GetInternshipPostWithNavigationAsync(int internshipPostId)
+        {
+            return await _context.InternshipPosts
+                .Include(p => p.Startup)
+                .Include(p => p.Position)
+                .FirstOrDefaultAsync(p => p.InternshipId == internshipPostId);
+        }
+
+
+
     }
 }
