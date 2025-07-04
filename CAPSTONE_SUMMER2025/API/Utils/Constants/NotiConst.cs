@@ -7,5 +7,6 @@
         public const string Invite = "invite";
         public const string COMMENT = "comment";
         public const string Follow = "follow";
+        public const string Task = "task";
     }
 }

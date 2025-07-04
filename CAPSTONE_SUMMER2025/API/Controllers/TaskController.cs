@@ -117,6 +117,23 @@ namespace API.Controllers
                 message = "Gán label thành công"
             });
         }
+        [HttpPut("update-task")]
+        public async Task<IActionResult> UpdateTask([FromBody] UpdateTaskDto dto)
+        {
+            var result = await _Service.UpdateTaskAsync(dto);
+            if (!result)
+                return NotFound(new { success = false, message = "Task không tồn tại!" });
+            return Ok(new { success = true, message = "Cập nhật task thành công!" });
+        }
+        [HttpPost("comment-task")]
+        public async Task<IActionResult> AddComment([FromBody] CreateCommentTaskDto dto)
+        {
+            var result = await _Service.AddCommentAsync(dto);
+            if (result)
+                return Ok(new { success = true, message = "Thêm comment thành công!" });
+            else
+                return BadRequest(new { success = false, message = "Thêm comment thất bại!" });
+        }
 
     }
 }

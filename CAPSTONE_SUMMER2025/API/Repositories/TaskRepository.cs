@@ -1,4 +1,5 @@
-﻿using API.Repositories.Interfaces;
+﻿using API.DTO.TaskDTO;
+using API.Repositories.Interfaces;
 using AutoMapper;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
@@ -112,6 +113,41 @@ namespace API.Repositories
             return true;
         }
 
+        public async Task<bool> UpdateTaskAsync(UpdateTaskDto dto)
+        {
+            var task = await _context.StartupTasks.FindAsync(dto.TaskId);
+            if (task == null) return false;
 
+            if (!string.IsNullOrEmpty(dto.Title)) task.Title = dto.Title;
+            if (!string.IsNullOrEmpty(dto.Priority)) task.Priority = dto.Priority;
+            if (!string.IsNullOrEmpty(dto.Description)) task.Description = dto.Description;
+            if (dto.DueDate.HasValue) task.Duedate = dto.DueDate;
+            if (dto.Progress.HasValue) task.Progress = dto.Progress;
+            if (dto.ColumnnStatusId.HasValue) task.ColumnnStatusId = dto.ColumnnStatusId;
+            if (!string.IsNullOrEmpty(dto.Note)) task.Note = dto.Note;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> AddCommentAsync(CreateCommentTaskDto dto)
+        {
+            var comment = new CommentTask
+            {
+                TaskId = dto.TaskId,
+                AccountId = dto.AccountId,
+                Comment = dto.Comment,
+                CreateAt = DateTime.UtcNow
+            };
+            _context.CommentTasks.Add(comment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<List<int>> GetAccountIdsByTaskIdAsync(int taskId)
+        {
+            return await _context.TaskAssignments
+                .Where(a => a.TaskId == taskId)
+                .Select(a => a.AssignToAccountId.Value)
+                .ToListAsync();
+        }
     }
 }

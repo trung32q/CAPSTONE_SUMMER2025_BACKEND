@@ -1,4 +1,5 @@
-﻿using Infrastructure.Models;
+﻿using API.DTO.TaskDTO;
+using Infrastructure.Models;
 
 namespace API.Repositories.Interfaces
 {
@@ -16,6 +17,8 @@ namespace API.Repositories.Interfaces
         Task<List<Milestone>> GetAllMilestonesWithMembersAsync(int startupId);
         Task<bool> UpdateTaskColumnAsync(int taskId, int newColumnStatusId);
         Task<bool> AssignLabelToTaskAsync(int taskId, int labelId);
-
+        Task<bool> UpdateTaskAsync(UpdateTaskDto dto);
+        Task<bool> AddCommentAsync(CreateCommentTaskDto dto);
+        Task<List<int>> GetAccountIdsByTaskIdAsync(int taskId);
     }
 }

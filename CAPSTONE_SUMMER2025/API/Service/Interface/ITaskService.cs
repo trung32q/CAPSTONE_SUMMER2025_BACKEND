@@ -15,5 +15,7 @@ namespace API.Service.Interface
         Task<List<ResMilestoneDto>> GetAllMilestonesAsync(int startupId );
         Task<bool> UpdateTaskColumnAsync(UpdateTaskColumnDto dto);
         Task<bool> AssignLabelToTaskAsync(int taskId, int labelId);
+        Task<bool> UpdateTaskAsync(UpdateTaskDto dto);
+        Task<bool> AddCommentAsync(CreateCommentTaskDto dto);
     }
 }

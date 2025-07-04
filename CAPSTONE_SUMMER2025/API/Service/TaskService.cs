@@ -1,4 +1,5 @@
-﻿using API.DTO.TaskDTO;
+﻿using API.DTO.NotificationDTO;
+using API.DTO.TaskDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
@@ -6,6 +7,7 @@ using API.Utils.Constants;
 using AutoMapper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
+using MimeKit;
 
 namespace API.Service
 {
@@ -199,7 +201,34 @@ namespace API.Service
         {
             return await _repo.AssignLabelToTaskAsync(taskId, labelId);
         }
+        public async Task<bool> UpdateTaskAsync(UpdateTaskDto dto)
+        {
+            return await _repo.UpdateTaskAsync(dto);
+        }
+        public async Task<bool> AddCommentAsync(CreateCommentTaskDto dto)
+        {
+            var comment = await _repo.AddCommentAsync(dto);
+            var accountids= await _repo.GetAccountIdsByTaskIdAsync(dto.TaskId);
+            var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AccountId);
+            var targetUrl = $"/task/{dto.TaskId}";
+            foreach (var accountId in accountids)
+            {
+                // Không gửi noti cho người tạo sự kiện
+                if (accountId == dto.AccountId) return comment; 
 
+                await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                {
+                    UserId = accountId,
+                    Message = accountsender.AccountProfile.FirstName+accountsender.AccountProfile.LastName+"has comment on your task.",
+                    CreatedAt = DateTime.Now,
+                    IsRead = false,
+                    senderid = dto.AccountId,
+                    NotificationType = NotiConst.Task,
+                    TargetURL = targetUrl
+                });
+            }
+            return comment;
+        }
 
     }
 }
