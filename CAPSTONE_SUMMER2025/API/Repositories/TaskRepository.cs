@@ -149,5 +149,16 @@ namespace API.Repositories
                 .Select(a => a.AssignToAccountId.Value)
                 .ToListAsync();
         }
+        public async Task<bool> AddTaskAssignmentAsync(TaskAssignment entity)
+        {
+            _context.TaskAssignments.Add(entity);
+            return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<bool> TaskAssignmentExistsAsync(int taskId, int assignToAccountId)
+        {
+            return await _context.TaskAssignments
+                .AnyAsync(x => x.TaskId == taskId && x.AssignToAccountId == assignToAccountId);
+        }
+
     }
 }

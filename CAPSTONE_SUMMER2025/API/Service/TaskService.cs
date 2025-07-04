@@ -229,6 +229,25 @@ namespace API.Service
             }
             return comment;
         }
+        public async Task<bool> AssignTaskAsync(TaskAssignmentDto dto)
+        {
+            bool exists = await _repo.TaskAssignmentExistsAsync(dto.TaskId, dto.AssignToAccountId);
+            if (exists)
+                return false; 
+            var entity = new TaskAssignment
+            {
+                TaskId = dto.TaskId,
+                AssignedByAccountId = dto.AssignedByAccountId,
+                AssignToAccountId = dto.AssignToAccountId,
+                AssignAt = DateTime.Now
+            };
+
+           var assign = await _repo.AddTaskAssignmentAsync(entity);
+            var targetUrl = $"/task/{dto.TaskId}";
+            var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AssignedByAccountId);
+           
+            return assign;
+        }
 
     }
 }

@@ -17,5 +17,6 @@ namespace API.Service.Interface
         Task<bool> AssignLabelToTaskAsync(int taskId, int labelId);
         Task<bool> UpdateTaskAsync(UpdateTaskDto dto);
         Task<bool> AddCommentAsync(CreateCommentTaskDto dto);
+        Task<bool> AssignTaskAsync(TaskAssignmentDto dto);
     }
 }

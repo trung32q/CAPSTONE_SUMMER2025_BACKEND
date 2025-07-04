@@ -134,6 +134,15 @@ namespace API.Controllers
             else
                 return BadRequest(new { success = false, message = "Thêm comment thất bại!" });
         }
+        [HttpPost("assign-task")]
+        public async Task<IActionResult> AssignTask([FromBody] TaskAssignmentDto dto)
+        {
+            var result = await _Service.AssignTaskAsync(dto);
+            if (result)
+                return Ok(new { success = true, message = "Assigned successfully!" });
+            return BadRequest(new { success = false, message = "User is already assigned to this task!" });
+        }
+
 
     }
 }
