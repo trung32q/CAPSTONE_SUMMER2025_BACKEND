@@ -740,6 +740,7 @@ namespace API.Repositories
         public async Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
       int startupId, int pageNumber, int pageSize)
         {
+            
             var query = _context.CandidateCvs
                 .Where(cv => cv.Internship.StartupId == startupId)
                 .Include(cv => cv.Account)
@@ -749,7 +750,7 @@ namespace API.Repositories
                 .Select(cv => new CandidateCVResponseDTO
                 {
                     CandidateCV_ID = cv.CandidateCvId,
-                    CVURL = cv.Cvurl,
+                    CVURL = _filebaseHandler.GeneratePresignedPDFUrl(cv.Cvurl, 2),
                     CreateAt = (DateTime)cv.CreateAt,
                     Status = cv.Status,
                     Email = cv.Account.Email,

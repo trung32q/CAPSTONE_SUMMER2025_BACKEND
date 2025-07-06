@@ -63,5 +63,7 @@ namespace API.Repositories.Interfaces
         Task<Subcribe?> GetSubcribeAsync(int accountId, int startupId);
         Task AddSubcribeAsync(Subcribe subcribe);
         Task RemoveSubcribeAsync(Subcribe subcribe);
+        Task<Startup> GetStartupByIdAsync(int id);
+        Task UpdateStartupAsync(Startup startup);
     }
 }

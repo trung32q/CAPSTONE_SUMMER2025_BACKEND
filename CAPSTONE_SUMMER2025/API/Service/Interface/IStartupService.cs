@@ -47,5 +47,6 @@ namespace API.Service.Interface
         Task<bool> SubscribeAsync(int accountId, int startupId);
         Task<bool> UnsubscribeAsync(int accountId, int startupId);
         Task<StartupDetailDTO?> GetStartupByIdAsync(int startupId);
+        Task<bool> UpdateStartupAsync(int id, UpdateStartupDto dto);
     }
 }

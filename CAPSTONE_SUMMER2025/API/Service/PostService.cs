@@ -805,7 +805,7 @@ namespace API.Service
         public async Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto)
         {
 
-            var cvURL = await _filebase.UploadMediaFile((IFormFile)dto.CVFile);
+            var cvURL = await _filebase.UploadPdfAsync((IFormFile)dto.CVFile);
 
             var cv = new CandidateCv
             {

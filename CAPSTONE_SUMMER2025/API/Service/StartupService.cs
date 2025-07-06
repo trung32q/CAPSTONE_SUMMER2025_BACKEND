@@ -839,5 +839,26 @@ namespace API.Service
                 CreateAt = (DateTime)startup.CreateAt
             };
         }
+
+
+        public async Task<bool> UpdateStartupAsync(int id, UpdateStartupDto dto)
+        {
+            var startup = await _repo.GetStartupByIdAsync(id);
+            if (startup == null)
+                return false;
+
+            startup.StartupName = dto.StartupName;
+            startup.AbbreviationName = dto.AbbreviationName;
+            startup.Description = dto.Description;
+            startup.Vision = dto.Vision;
+            startup.Mission = dto.Mission;
+            startup.Logo = dto.Logo;
+            startup.BackgroundUrl = dto.BackgroundURL;
+            startup.WebsiteUrl = dto.WebsiteURL;
+            startup.Email = dto.Email;
+
+            await _repo.UpdateStartupAsync(startup);
+            return true;
+        }
     }
 }

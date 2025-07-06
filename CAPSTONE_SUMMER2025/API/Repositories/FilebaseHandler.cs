@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Amazon.S3.Transfer;
+using Amazon.S3;
 
 namespace API.Repositories
 {
@@ -140,7 +142,7 @@ namespace API.Repositories
                 var deletionParams = new DeletionParams(publicId)
                 {
                     ResourceType = ResourceType.Auto,
-                    Invalidate = true 
+                    Invalidate = true
 
                 };
 
@@ -200,7 +202,179 @@ namespace API.Repositories
         }
 
 
+        public async Task<string> UploadAuthenticatedRawFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new Exception("File rỗng hoặc không tồn tại");
+
+            // Tạo tên file duy nhất
+            var extension = Path.GetExtension(file.FileName)?.ToLower();
+            if (string.IsNullOrWhiteSpace(extension))
+                extension = ".bin";
+
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+
+            Console.WriteLine("[UPLOAD AUTHENTICATED] File: " + file.FileName);
+            Console.WriteLine("[UPLOAD AUTHENTICATED] Extension: " + extension);
+
+            // Upload với chế độ authenticated
+            var uploadParams = new RawUploadParams
+            {
+                File = new FileDescription(uniqueFileName, file.OpenReadStream()),
+                Folder = "media",
+                Type = "authenticated" // Quan trọng!
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception($"Upload failed: {uploadResult.Error?.Message}");
+
+            Console.WriteLine("[UPLOAD AUTHENTICATED] PublicId: " + uploadResult.PublicId);
+            Console.WriteLine("[UPLOAD AUTHENTICATED] SecureUrl: " + uploadResult.SecureUrl);
+
+            return uploadResult.SecureUrl?.ToString();
+        }
+
+
+        public string GenerateSignedRawUrl(string originalUrl, TimeSpan validDuration)
+        {
+            if (string.IsNullOrWhiteSpace(originalUrl))
+                throw new ArgumentException("URL không hợp lệ.");
+
+            var uri = new Uri(originalUrl);
+            var segments = uri.AbsolutePath.Split('/');
+
+            // Tìm index của "upload" hoặc "authenticated"
+            var uploadIndex = Array.IndexOf(segments, "upload");
+            var authIndex = Array.IndexOf(segments, "authenticated");
+
+            int baseIndex = -1;
+            string resourceType;
+
+            if (uploadIndex >= 0)
+            {
+                baseIndex = uploadIndex;
+                resourceType = "raw";
+            }
+            else if (authIndex >= 0)
+            {
+                baseIndex = authIndex;
+                resourceType = "raw";
+            }
+            else
+            {
+                throw new Exception($"URL không chứa 'upload' hoặc 'authenticated': {originalUrl}");
+            }
+
+            // Skip thêm nếu có s--token-- sau authenticated
+            var parts = segments.Skip(baseIndex + 1).ToList();
+
+            if (parts.Count > 0 && parts[0].StartsWith("s--") && parts[0].EndsWith("--"))
+            {
+                // Bỏ token
+                parts.RemoveAt(0);
+            }
+
+            // Bỏ version
+            if (parts.Count > 0 && parts[0].StartsWith("v") && long.TryParse(parts[0].Substring(1), out _))
+            {
+                parts.RemoveAt(0);
+            }
+
+            if (parts.Count == 0)
+                throw new Exception($"URL không chứa public_id hợp lệ: {originalUrl}");
+
+            var lastPart = parts.Last();
+            var filenameNoExt = Path.GetFileNameWithoutExtension(lastPart);
+            parts[parts.Count - 1] = filenameNoExt;
+
+            var publicId = string.Join("/", parts);
+
+            var expiration = DateTimeOffset.UtcNow.Add(validDuration).ToUnixTimeSeconds();
+
+            Console.WriteLine("OriginalUrl: " + originalUrl);
+            Console.WriteLine("PublicId: " + publicId);
+            Console.WriteLine("Expiration: " + expiration);
+
+            var parametersToSign = new SortedDictionary<string, object>
+    {
+        { "public_id", publicId },
+        { "resource_type", "raw" },
+        { "timestamp", expiration.ToString() }
+    };
+
+            var signature = _cloudinary.Api.SignParameters(parametersToSign);
+
+            var signedUrl = $"https://res.cloudinary.com/{_cloudinary.Api.Account.Cloud}/raw/upload/ts_{expiration},sig_{signature}/{publicId}.pdf";
+
+            return signedUrl;
+        }
+
+
+        //upload rồi trả về key
+        public async Task<string> UploadPdfAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File không hợp lệ.");
+
+            var config = new AmazonS3Config
+            {
+                ServiceURL = "https://s3.filebase.com",
+                ForcePathStyle = true
+            };
+
+            // Tạo tên file ngẫu nhiên giữ nguyên đuôi mở rộng
+            var extension = Path.GetExtension(file.FileName);
+            var randomName = $"{Guid.NewGuid():N}{extension}";
+
+            using (var client = new AmazonS3Client(
+                "185323F8105191E3009D",
+                "MXoHSlXNV2UrElhlUVDUhpCFS0OVNsJlUebrZyC6",
+                config))
+            {
+                using (var stream = file.OpenReadStream())
+                {
+                    var uploadRequest = new Amazon.S3.Model.PutObjectRequest
+                    {
+                        BucketName = "media-file",
+                        Key = randomName,
+                        InputStream = stream,
+                        ContentType = file.ContentType ?? "application/pdf"
+                        // KHÔNG đặt CannedACL
+                    };
+
+                    await client.PutObjectAsync(uploadRequest);
+                }
+
+                // Trả về key lưu trong database
+                return randomName;
+            }
+        }
+        //lấy ra pre link của filebase
+        public string GeneratePresignedPDFUrl(string key, int expireHours = 2)
+        {
+            var config = new AmazonS3Config
+            {
+                ServiceURL = "https://s3.filebase.com",
+                ForcePathStyle = true
+            };
+
+            using (var client = new AmazonS3Client("185323F8105191E3009D",
+                "MXoHSlXNV2UrElhlUVDUhpCFS0OVNsJlUebrZyC6", config))
+            {
+                var urlRequest = new Amazon.S3.Model.GetPreSignedUrlRequest
+                {
+                    BucketName = "media-file",
+                    Key = key,
+                    Expires = DateTime.UtcNow.AddHours(expireHours)
+                };
+
+                return client.GetPreSignedURL(urlRequest);
+            }
+        }
 
 
     }
+
 }
