@@ -141,8 +141,31 @@ namespace API.Controllers
             if (result)
                 return Ok(new { success = true, message = "Assigned successfully!" });
             return BadRequest(new { success = false, message = "User is already assigned to this task!" });
-        }
+        }   
+        [HttpGet("tasks-list-by-milestone")]
+        public async Task<IActionResult> GetTasksByMilestone(
+    int milestoneId,
+    int pageNumber = 1,
+    int pageSize = 10,
+    string? search = null,          // search theo title/description
+    int? columnStatusId = null      // lọc theo cột
+    )
+        {
+            if (milestoneId <= 0)
+                return BadRequest(new { message = "MilestoneId không hợp lệ!" });
 
+            if (pageNumber < 1 || pageSize < 1)
+                return BadRequest(new { message = "PageNumber và PageSize phải lớn hơn 0!" });
+
+            var pagedTasks = await _Service.GetTaskByMilestoneIdPagedAsync(
+                milestoneId, pageNumber, pageSize, search, columnStatusId
+            );
+
+            if (pagedTasks == null || pagedTasks.Items.Count == 0)
+                return NotFound(new { message = "Không có task nào phù hợp!" });
+
+            return Ok(pagedTasks);
+        }
 
     }
 }

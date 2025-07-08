@@ -1,4 +1,5 @@
-﻿using API.DTO.TaskDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.TaskDTO;
 using Infrastructure.Models;
 
 namespace API.Service.Interface
@@ -18,5 +19,7 @@ namespace API.Service.Interface
         Task<bool> UpdateTaskAsync(UpdateTaskDto dto);
         Task<bool> AddCommentAsync(CreateCommentTaskDto dto);
         Task<bool> AssignTaskAsync(TaskAssignmentDto dto);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync( int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId);
     }
 }

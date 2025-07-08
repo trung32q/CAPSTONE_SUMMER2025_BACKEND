@@ -1,4 +1,5 @@
-﻿using API.DTO.NotificationDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.NotificationDTO;
 using API.DTO.TaskDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
@@ -247,6 +248,14 @@ namespace API.Service
             var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AssignedByAccountId);
            
             return assign;
+        }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize)
+        {
+            return await _repo.GetTaskByMilestoneIdPagedAsync(milestoneId, pageNumber, pageSize);
+        }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId)
+        {
+            return await _repo.GetTaskByMilestoneIdPagedAsync(milestoneId, pageNumber, pageSize, search, columnStatusId);
         }
 
     }

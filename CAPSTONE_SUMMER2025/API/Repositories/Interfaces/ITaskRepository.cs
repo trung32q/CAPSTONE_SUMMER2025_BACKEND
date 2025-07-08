@@ -1,4 +1,5 @@
-﻿using API.DTO.TaskDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.TaskDTO;
 using Infrastructure.Models;
 
 namespace API.Repositories.Interfaces
@@ -22,5 +23,7 @@ namespace API.Repositories.Interfaces
         Task<List<int>> GetAccountIdsByTaskIdAsync(int taskId);
         Task<bool> AddTaskAssignmentAsync(TaskAssignment entity);
         Task<bool> TaskAssignmentExistsAsync(int taskId, int assignToAccountId);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId);
     }
 }

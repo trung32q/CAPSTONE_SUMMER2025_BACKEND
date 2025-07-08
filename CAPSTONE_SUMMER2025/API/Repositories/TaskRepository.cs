@@ -1,4 +1,5 @@
-﻿using API.DTO.TaskDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.TaskDTO;
 using API.Repositories.Interfaces;
 using AutoMapper;
 using Infrastructure.Models;
@@ -159,6 +160,106 @@ namespace API.Repositories
             return await _context.TaskAssignments
                 .AnyAsync(x => x.TaskId == taskId && x.AssignToAccountId == assignToAccountId);
         }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize)
+        {
+            // Query gốc
+            var query = _context.StartupTasks
+                .Include(x => x.ColumnnStatus)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignedByAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignToAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Where(x => x.MilestoneId == milestoneId);
+
+            var totalCount = await query.CountAsync();
+
+            // Phân trang trước khi chuyển sang DTO
+            var items = await query
+                .OrderBy(x => x.TaskId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new TasklistDto
+                {
+                    TaskId = x.TaskId,
+                    Title = x.Title,
+                    Priority = x.Priority,
+                    Description = x.Description,
+                    DueDate = x.Duedate,
+                    Progress = x.Progress,
+                    ColumnStatus = x.ColumnnStatus.ColumnName,
+                    Note = x.Note,
+                    CreatedBy = x.TaskAssignments.FirstOrDefault() != null && x.TaskAssignments.FirstOrDefault().AssignedByAccount != null
+                        ? x.TaskAssignments.FirstOrDefault().AssignedByAccount.AccountProfile.AvatarUrl
+                        : null,
+                    AsignTo = x.TaskAssignments
+                        .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                        .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
+                        .Distinct()
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return new PagedResult<TasklistDto>(items, totalCount, pageNumber, pageSize);
+        }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(
+    int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId)
+        {
+            var query = _context.StartupTasks
+                .Include(x => x.ColumnnStatus)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignedByAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignToAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Where(x => x.MilestoneId == milestoneId);
+
+            // Lọc theo cột (status)
+            if (columnStatusId.HasValue)
+                query = query.Where(x => x.ColumnnStatusId == columnStatusId);
+
+            // Search (title/description)
+            if (!string.IsNullOrEmpty(search))
+            {
+                var lowered = search.Trim().ToLower();
+                query = query.Where(x =>
+                    (!string.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(lowered)) ||
+                    (!string.IsNullOrEmpty(x.Description) && x.Description.ToLower().Contains(lowered))
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(x => x.TaskId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new TasklistDto
+                {
+                    TaskId = x.TaskId,
+                    Title = x.Title,
+                    Priority = x.Priority,
+                    Description = x.Description,
+                    DueDate = x.Duedate,
+                    Progress = x.Progress,
+                    ColumnStatus = x.ColumnnStatus.ColumnName,
+                    Note = x.Note,
+                    CreatedBy = x.TaskAssignments.FirstOrDefault() != null && x.TaskAssignments.FirstOrDefault().AssignedByAccount != null
+                        ? x.TaskAssignments.FirstOrDefault().AssignedByAccount.AccountProfile.AvatarUrl
+                        : null,
+                    AsignTo = x.TaskAssignments
+                        .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                        .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
+                        .Distinct()
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return new PagedResult<TasklistDto>(items, totalCount, pageNumber, pageSize);
+        }
+
 
     }
 }
