@@ -25,5 +25,7 @@ namespace API.Repositories.Interfaces
         Task<bool> TaskAssignmentExistsAsync(int taskId, int assignToAccountId);
         Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize);
         Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId);
+        Task<bool> AddTaskAssignAsync(TaskAssignment entity);
+        Task<bool> RemoveTaskAssignmentAsync(int taskId, int accountId);
     }
 }

@@ -257,6 +257,22 @@ namespace API.Service
         {
             return await _repo.GetTaskByMilestoneIdPagedAsync(milestoneId, pageNumber, pageSize, search, columnStatusId);
         }
+        public async Task<bool> AssignAccountToTaskAsync(TaskAssignmentDto dto)
+        {
+            var entity = new TaskAssignment
+            {
+                TaskId = dto.TaskId,
+                AssignToAccountId = dto.AssignToAccountId,
+                AssignedByAccountId = dto.AssignedByAccountId,
+                AssignAt = DateTime.Now
+            };
+            return await _repo.AddTaskAssignmentAsync(entity);
+        }
+
+        public async Task<bool> UnassignAccountFromTaskAsync(int taskId, int accountId)
+        {
+            return await _repo.RemoveTaskAssignmentAsync(taskId, accountId);
+        }
 
     }
 }

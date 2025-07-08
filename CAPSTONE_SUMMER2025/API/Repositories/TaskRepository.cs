@@ -259,6 +259,30 @@ namespace API.Repositories
 
             return new PagedResult<TasklistDto>(items, totalCount, pageNumber, pageSize);
         }
+        // Thêm assignment
+        public async Task<bool> AddTaskAssignAsync(TaskAssignment entity)
+        {
+            // Kiểm tra đã gán chưa (tránh trùng)
+            var exists = await _context.TaskAssignments
+                .AnyAsync(x => x.TaskId == entity.TaskId && x.AssignToAccountId == entity.AssignToAccountId);
+            if (exists) return false;
+
+            _context.TaskAssignments.Add(entity);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Hủy assignment
+        public async Task<bool> RemoveTaskAssignmentAsync(int taskId, int accountId)
+        {
+            var assignment = await _context.TaskAssignments
+                .FirstOrDefaultAsync(x => x.TaskId == taskId && x.AssignToAccountId == accountId);
+            if (assignment == null) return false;
+
+            _context.TaskAssignments.Remove(assignment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
 
     }

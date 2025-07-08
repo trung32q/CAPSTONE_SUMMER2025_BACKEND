@@ -147,8 +147,8 @@ namespace API.Controllers
     int milestoneId,
     int pageNumber = 1,
     int pageSize = 10,
-    string? search = null,          // search theo title/description
-    int? columnStatusId = null      // lọc theo cột
+    string? search = null,          
+    int? columnStatusId = null      
     )
         {
             if (milestoneId <= 0)
@@ -165,8 +165,16 @@ namespace API.Controllers
                 return NotFound(new { message = "Không có task nào phù hợp!" });
 
             return Ok(pagedTasks);
-        }
+        }   
 
+        [HttpDelete("unassign-task")]
+        public async Task<IActionResult> UnassignAccountFromTask(int taskId, int accountId)
+        {
+            var result = await _Service.UnassignAccountFromTaskAsync(taskId, accountId);
+            if (!result)
+                return NotFound(new { message = "Không tìm thấy assignment!" });
+            return Ok(new { message = "Đã hủy gán account khỏi task!" });
+        }
     }
 }
  
