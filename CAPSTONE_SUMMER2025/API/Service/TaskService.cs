@@ -273,6 +273,9 @@ namespace API.Service
         {
             return await _repo.RemoveTaskAssignmentAsync(taskId, accountId);
         }
-
+        public async Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId)
+        {
+            return await _repo.GetCommentsByTaskIdAsync(taskId);
+        }
     }
 }

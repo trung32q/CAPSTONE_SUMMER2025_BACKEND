@@ -27,5 +27,6 @@ namespace API.Repositories.Interfaces
         Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId);
         Task<bool> AddTaskAssignAsync(TaskAssignment entity);
         Task<bool> RemoveTaskAssignmentAsync(int taskId, int accountId);
+        Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
     }
 }

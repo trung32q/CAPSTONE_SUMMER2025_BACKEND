@@ -175,6 +175,15 @@ namespace API.Controllers
                 return NotFound(new { message = "Không tìm thấy assignment!" });
             return Ok(new { message = "Đã hủy gán account khỏi task!" });
         }
+        [HttpGet("get-all-task-comment")]
+        public async Task<IActionResult> GetCommentsByTaskId(int taskId)
+        {
+            if (taskId <= 0)
+                return BadRequest(new { message = "TaskId không hợp lệ!" });
+
+            var comments = await _Service.GetCommentsByTaskIdAsync(taskId);
+            return Ok(comments);
+        }
     }
 }
  

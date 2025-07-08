@@ -23,5 +23,6 @@ namespace API.Service.Interface
         Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync( int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId);
         Task<bool> AssignAccountToTaskAsync(TaskAssignmentDto dto);
         Task<bool> UnassignAccountFromTaskAsync(int taskId, int accountId);
+        Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
     }
 }

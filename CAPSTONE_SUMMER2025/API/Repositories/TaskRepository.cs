@@ -283,6 +283,25 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId)
+        {
+            return await _context.CommentTasks
+                .Where(x => x.TaskId == taskId)
+                .OrderByDescending(x => x.CreateAt)
+                .Select(x => new CommentTaskDto
+                {
+                    CommentTaskId = x.CommentTaskId,
+                    TaskId = (int)x.TaskId,
+                    AccountId = (int)x.AccountId,
+                    Comment = x.Comment,
+                    CreateAt = x.CreateAt,
+                    FullName = x.Account != null
+                        ? x.Account.AccountProfile.FirstName + " " + x.Account.AccountProfile.LastName
+                        : null,
+                    AvatarUrl = x.Account != null && x.Account.AccountProfile != null? x.Account.AccountProfile.AvatarUrl: null
+                })
+                .ToListAsync();
+        }
 
 
     }
