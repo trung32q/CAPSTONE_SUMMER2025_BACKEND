@@ -461,6 +461,17 @@ namespace API.Controllers
                 data = result
             });
         }
+
+        //update startup
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStartup(int id, [FromBody] UpdateStartupDto dto)
+        {
+            var success = await _service.UpdateStartupAsync(id, dto);
+            if (!success)
+                return NotFound();
+
+            return Ok("update thành công");
+        }
     }
 }
 

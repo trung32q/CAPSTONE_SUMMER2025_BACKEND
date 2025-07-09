@@ -464,5 +464,17 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
         }
 
+
+        public async Task<Startup> GetStartupByIdAsync(int id)
+        {
+            return await _context.Startups.FindAsync(id);
+        }
+
+        public async Task UpdateStartupAsync(Startup startup)
+        {
+            _context.Startups.Update(startup);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
