@@ -184,6 +184,18 @@ namespace API.Controllers
             var comments = await _Service.GetCommentsByTaskIdAsync(taskId);
             return Ok(comments);
         }
+        [HttpGet("task-detail/{taskId}")]
+        public async Task<IActionResult> GetTaskDetail(int taskId)
+        {
+            if (taskId <= 0)
+                return BadRequest(new { message = "TaskId không hợp lệ!" });
+
+            var detail = await _Service.GetTaskDetailByIdAsync(taskId);
+            if (detail == null)
+                return NotFound(new { message = "Không tìm thấy task!" });
+
+            return Ok(detail);
+        }
     }
 }
  

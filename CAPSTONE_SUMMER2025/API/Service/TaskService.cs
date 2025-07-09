@@ -139,6 +139,28 @@ namespace API.Service
                 }).ToList();
 
                 await _repo.AddTaskAssignmentsAsync(assignments);
+
+                var sender = await _accountRepository.GetAccountByAccountIDAsync(dto.AssignedByAccountId);
+                var senderName = sender?.AccountProfile != null
+                    ? $"{sender.AccountProfile.FirstName} {sender.AccountProfile.LastName}"
+                    : "SomeOne";
+
+                var targetUrl = $"/task/{createdTask.TaskId}";
+
+                // Gửi thông báo cho từng người được gán vào task
+                foreach (var assignToId in dto.AssignToAccountIds)
+                {
+                    await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                    {
+                        UserId = assignToId,
+                        Message = $"{senderName} has assigned you a new task: {dto.Title}",
+                        CreatedAt = DateTime.Now,
+                        IsRead = false,
+                        senderid = dto.AssignedByAccountId,
+                        NotificationType = NotiConst.Task,
+                        TargetURL = targetUrl
+                    });
+                }
             }
             return createdTask;
         }
@@ -277,5 +299,36 @@ namespace API.Service
         {
             return await _repo.GetCommentsByTaskIdAsync(taskId);
         }
+        public async Task<TasklistDto?> GetTaskDetailByIdAsync(int taskId)
+        {
+            var task = await _repo.GetTaskByIdAsync(taskId);
+            if (task == null)
+                return null;
+
+            // Tìm người tạo (lấy bản ghi TaskAssignments đầu tiên hoặc null)
+            var createdBy = task.TaskAssignments
+                .FirstOrDefault()?.AssignedByAccount?.AccountProfile?.AvatarUrl;
+
+            // Lấy list người được gán
+            var asignTo = task.TaskAssignments
+                .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
+                .ToList();
+
+            return new TasklistDto
+            {
+                TaskId = task.TaskId,
+                Title = task.Title,
+                Priority = task.Priority,
+                Description = task.Description,
+                DueDate = task.Duedate,
+                Progress = task.Progress,
+                ColumnStatus = task.ColumnnStatus?.ColumnName,
+                Note = task.Note,
+                CreatedBy = createdBy,
+                AsignTo = asignTo
+            };
+        }
+
     }
 }

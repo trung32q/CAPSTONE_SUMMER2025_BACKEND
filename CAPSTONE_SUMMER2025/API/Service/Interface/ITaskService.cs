@@ -24,5 +24,6 @@ namespace API.Service.Interface
         Task<bool> AssignAccountToTaskAsync(TaskAssignmentDto dto);
         Task<bool> UnassignAccountFromTaskAsync(int taskId, int accountId);
         Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
+        Task<TasklistDto?> GetTaskDetailByIdAsync(int taskId);
     }
 }

@@ -28,5 +28,6 @@ namespace API.Repositories.Interfaces
         Task<bool> AddTaskAssignAsync(TaskAssignment entity);
         Task<bool> RemoveTaskAssignmentAsync(int taskId, int accountId);
         Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
+        Task<StartupTask?> GetTaskByIdAsync(int taskId);
     }
 }

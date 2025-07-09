@@ -302,7 +302,18 @@ namespace API.Repositories
                 })
                 .ToListAsync();
         }
-
+        public async Task<StartupTask?> GetTaskByIdAsync(int taskId)
+        {
+            return await _context.StartupTasks
+                .Include(x => x.ColumnnStatus)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(a => a.AssignToAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(a => a.AssignedByAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .FirstOrDefaultAsync(x => x.TaskId == taskId);
+        }
 
     }
 }
