@@ -44,7 +44,7 @@ namespace API.Service
                             await notificationService.CreateAndSendAsync(new reqNotificationDTO
                             {
                                 UserId = assign.AssignToAccountId.Value,
-                                Message = $"Nhiệm vụ '{task.Title}' sẽ hết hạn vào {task.Duedate:dd/MM/yyyy HH:mm}",
+                                Message = $"Task '{task.Title}' sẽ hết hạn vào {task.Duedate:dd/MM/yyyy HH:mm}",
                                 CreatedAt = DateTime.Now,
                                 IsRead = false,
                                 senderid = (int)assign.AssignedByAccountId, // chính là người giao task này cho user này!
