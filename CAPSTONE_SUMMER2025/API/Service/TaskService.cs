@@ -140,7 +140,7 @@ namespace API.Service
 
                 await _repo.AddTaskAssignmentsAsync(assignments);
 
-                var sender = await _accountRepository.GetAccountByAccountIDAsync(dto.AssignedByAccountId);
+                var sender = await _accountRepository.GetAccountByAccountIDAsync((int)dto.AssignedByAccountId);
                 var senderName = sender?.AccountProfile != null
                     ? $"{sender.AccountProfile.FirstName} {sender.AccountProfile.LastName}"
                     : "SomeOne";
@@ -156,7 +156,7 @@ namespace API.Service
                         Message = $"{senderName} has assigned you a new task: {dto.Title}",
                         CreatedAt = DateTime.Now,
                         IsRead = false,
-                        senderid = dto.AssignedByAccountId,
+                        senderid = (int)dto.AssignedByAccountId,
                         NotificationType = NotiConst.Task,
                         TargetURL = targetUrl
                     });
