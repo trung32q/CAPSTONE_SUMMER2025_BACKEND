@@ -8,6 +8,7 @@ namespace Infrastructure.Models
         public InternshipPost()
         {
             CandidateCvs = new HashSet<CandidateCv>();
+            CvrequirementEvaluations = new HashSet<CvrequirementEvaluation>();
         }
 
         public int InternshipId { get; set; }
@@ -25,5 +26,6 @@ namespace Infrastructure.Models
         public virtual PositionRequirement? Position { get; set; }
         public virtual Startup? Startup { get; set; }
         public virtual ICollection<CandidateCv> CandidateCvs { get; set; }
+        public virtual ICollection<CvrequirementEvaluation> CvrequirementEvaluations { get; set; }
     }
 }

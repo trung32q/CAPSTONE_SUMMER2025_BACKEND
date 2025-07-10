@@ -1,4 +1,6 @@
-﻿namespace API.DTO.PostDTO
+﻿using API.DTO.StartupDTO;
+
+namespace API.DTO.PostDTO
 {
     public class CandidateCVResponseDTO
     {
@@ -9,5 +11,8 @@
         public string Email { get; set; }
         public string FullName { get; set; }
         public string PositionRequirement { get; set; }
+        public int PositionId {  get; set; }
+
+        public CVRequirementEvaluationResultDto CVRequirementEvaluation {  get; set; }
     }
 }

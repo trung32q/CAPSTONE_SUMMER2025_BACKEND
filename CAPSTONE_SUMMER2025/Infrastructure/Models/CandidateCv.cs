@@ -5,6 +5,11 @@ namespace Infrastructure.Models
 {
     public partial class CandidateCv
     {
+        public CandidateCv()
+        {
+            CvrequirementEvaluations = new HashSet<CvrequirementEvaluation>();
+        }
+
         public int CandidateCvId { get; set; }
         public int? AccountId { get; set; }
         public int? InternshipId { get; set; }
@@ -14,5 +19,6 @@ namespace Infrastructure.Models
 
         public virtual Account? Account { get; set; }
         public virtual InternshipPost? Internship { get; set; }
+        public virtual ICollection<CvrequirementEvaluation> CvrequirementEvaluations { get; set; }
     }
 }

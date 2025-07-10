@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Amazon.S3.Transfer;
 using Amazon.S3;
+using System.Text;
 
 namespace API.Repositories
 {
@@ -373,7 +374,6 @@ namespace API.Repositories
                 return client.GetPreSignedURL(urlRequest);
             }
         }
-
 
     }
 

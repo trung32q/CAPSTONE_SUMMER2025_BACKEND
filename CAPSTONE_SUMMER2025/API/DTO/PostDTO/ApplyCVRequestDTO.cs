@@ -6,5 +6,7 @@
         public int Internship_ID { get; set; }
         public IFormFile CVFile { get; set; }
 
+        public int PositionId {  get; set; }
+
     }
 }

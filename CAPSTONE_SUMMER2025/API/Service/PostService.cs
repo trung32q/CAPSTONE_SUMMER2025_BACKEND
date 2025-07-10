@@ -25,12 +25,15 @@ namespace API.Service
         private readonly IFilebaseHandler _filebase;
         private readonly IMapper _mapper;
         private readonly IChatGPTService _chatGPTService;
+        private readonly IChatGPTRepository _chatGPTRepository;
+        private readonly IFileHandlerService _fileHandlerService;
         private readonly IPolicyService _policyService;
         private readonly IAccountRepository _accountRepository;
         private readonly INotificationService _notificationService;
+        private readonly IStartupService _startupService;
         private readonly CAPSTONE_SUMMER2025Context _context;
 
-        public PostService(IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService, IFilebaseHandler filebase, IAccountRepository accountRepository, INotificationService notificationService, CAPSTONE_SUMMER2025Context context)
+        public PostService(IStartupService startupService,IChatGPTRepository chatGPTRepository, IFileHandlerService fileHandlerService,IPostRepository repository, IMapper mapper, IChatGPTService chatGPTService, IPolicyService policyService, IFilebaseHandler filebase, IAccountRepository accountRepository, INotificationService notificationService, CAPSTONE_SUMMER2025Context context)
         {
             _repository = repository;
             _mapper = mapper;
@@ -40,6 +43,9 @@ namespace API.Service
             _accountRepository = accountRepository;
             _notificationService = notificationService;
             _context = context;
+            _fileHandlerService = fileHandlerService;
+            _chatGPTRepository = chatGPTRepository;
+            _startupService = startupService;
         }
 
         public async Task<resPostDTO> GetPostByPostId(int postId)
@@ -805,7 +811,13 @@ namespace API.Service
         public async Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto)
         {
 
+            var positionInfor = await _startupService.GetRequirementInfoAsync(dto.PositionId);
+
             var cvURL = await _filebase.UploadPdfAsync((IFormFile)dto.CVFile);
+            var cvText = await _fileHandlerService.GetTextFromPdfAsync(dto.CVFile);
+            var evaluationCV = await _chatGPTRepository.EvaluateCVAgainstPositionAsync(cvText, positionInfor.Description, positionInfor.Requirement);
+
+         
 
             var cv = new CandidateCv
             {
@@ -816,15 +828,23 @@ namespace API.Service
                 Status = Utils.Constants.CVStatus.PENDING
             };
 
-            await _repository.AddCandidateCvAsync(cv);
+            var candidateId = await _repository.AddCandidateCvAsync(cv);
+
+            await _startupService.AddEvaluationAsync(new DTO.StartupDTO.CVRequirementEvaluationResultDto
+            {
+                CandidateCVID = candidateId,
+                InternshipId = dto.Internship_ID,
+                Evaluation_Experience = evaluationCV.Evaluation_Experience,
+                Evaluation_SoftSkills = evaluationCV.Evaluation_SoftSkills,
+                Evaluation_TechSkills = evaluationCV.Evaluation_TechSkills,
+                Evaluation_OverallSummary = evaluationCV.Evaluation_OverallSummary
+            });
+
             await _repository.SaveChangesAsync();
             return true;
         }
 
-        public async Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId, int page, int pageSize)
-        {
-            return await _repository.GetCandidateCVsByStartupIdAsync(startupId, page, pageSize);
-        }
+      
         public async Task<PagedResult<resPostDTO>> GetPostsByStartupIdAsync(int startupId, int pageNumber, int pageSize)
         {
             var pagedPosts = await _repository.GetPostsByStartupId(startupId, pageNumber, pageSize);

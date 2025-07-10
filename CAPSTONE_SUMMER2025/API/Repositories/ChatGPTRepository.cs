@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using API.DTO.PolicyDTO;
+using API.DTO.StartupDTO;
 using API.Repositories.Interfaces;
 using API.Service;
 using Infrastructure.Models;
@@ -226,6 +227,124 @@ Bài viết:
 
             return "Hợp lệ";
         }
+
+
+        public async Task<CVRequirementEvaluationResultDto> EvaluateCVAgainstPositionAsync(string cvText, string positionDescription, string positionRequirement)
+        {
+            var systemPrompt = "Bạn là chuyên gia tuyển dụng.";
+
+            var userPrompt = $@"
+Bạn là chuyên gia tuyển dụng.
+
+Hãy đánh giá mức độ phù hợp của một ứng viên với một vị trí làm việc dựa trên CV và mô tả công việc sau.
+
+### CV của ứng viên:
+{cvText}
+
+### Mô tả công việc:
+{positionDescription}
+
+### Yêu cầu tuyển dụng:
+{positionRequirement}
+
+Dựa trên các thông tin trên, hãy đánh giá theo 4 tiêu chí sau. Với mỗi tiêu chí, trả về:
+
+- Score: điểm từ 0 đến 10  
+- Comment: nhận xét ngắn gọn vì sao cho điểm
+
+Các tiêu chí:
+
+1. Kỹ năng chuyên môn (Evaluation_TechSkills)  
+2. Kinh nghiệm liên quan (Evaluation_Experience)  
+3. Kỹ năng mềm (Evaluation_SoftSkills)  
+4. Tổng kết (Evaluation_OverallSummary): Nhận xét chung và khuyến nghị
+
+**Chỉ trả về JSON đúng theo định dạng sau (chấm điểm từng phần và thêm lời giải thích ngắn):**
+```json
+{{
+  ""Evaluation_TechSkills"": {{
+    ""Score"": 0,
+    ""Comment"": """"
+  }},
+  ""Evaluation_Experience"": {{
+    ""Score"": 0,
+    ""Comment"": """"
+  }},
+  ""Evaluation_SoftSkills"": {{
+    ""Score"": 0,
+    ""Comment"": """"
+  }},
+  ""Evaluation_OverallSummary"": {{
+    ""Score"": 0,
+    ""Comment"": """"
+  }}
+}}
+```";
+
+            var request = new
+            {
+                model = "gpt-4",
+                messages = new object[]
+                {
+            new { role = "system", content = systemPrompt },
+            new { role = "user", content = userPrompt }
+                },
+                temperature = 0.3,
+                max_tokens = 800
+            };
+
+            var reqContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _configuration["OpenAI:ApiKey"]);
+
+            var response = await _httpClient.PostAsync("https://api.openai.com/v1/chat/completions", reqContent);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException($"OpenAI API lỗi {(int)response.StatusCode} - {response.ReasonPhrase}:\n{result}");
+            }
+
+            var json = JsonDocument.Parse(result);
+            var content = json.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new Exception("GPT không trả về nội dung.");
+            }
+
+            try
+            {
+                // Xử lý khi GPT trả về có ```json ... ```
+                var cleaned = content.Trim();
+                if (cleaned.StartsWith("```"))
+                {
+                    var startIdx = cleaned.IndexOf("{");
+                    var endIdx = cleaned.LastIndexOf("}");
+                    if (startIdx >= 0 && endIdx > startIdx)
+                    {
+                        cleaned = cleaned.Substring(startIdx, endIdx - startIdx + 1);
+                    }
+                }
+
+                var parsed = JsonDocument.Parse(cleaned);
+                var dto = new CVRequirementEvaluationResultDto
+                {
+                    Evaluation_TechSkills = $"[{parsed.RootElement.GetProperty("Evaluation_TechSkills").GetProperty("Score").GetInt32()}] {parsed.RootElement.GetProperty("Evaluation_TechSkills").GetProperty("Comment").GetString()}",
+                    Evaluation_Experience = $"[{parsed.RootElement.GetProperty("Evaluation_Experience").GetProperty("Score").GetInt32()}] {parsed.RootElement.GetProperty("Evaluation_Experience").GetProperty("Comment").GetString()}",
+                    Evaluation_SoftSkills = $"[{parsed.RootElement.GetProperty("Evaluation_SoftSkills").GetProperty("Score").GetInt32()}] {parsed.RootElement.GetProperty("Evaluation_SoftSkills").GetProperty("Comment").GetString()}",
+                    Evaluation_OverallSummary = $"[{parsed.RootElement.GetProperty("Evaluation_OverallSummary").GetProperty("Score").GetInt32()}] {parsed.RootElement.GetProperty("Evaluation_OverallSummary").GetProperty("Comment").GetString()}"
+                };
+
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi parse JSON từ GPT: {ex.Message}\nNội dung GPT trả về:\n{content}");
+            }
+        }
+
+
 
 
     }

@@ -731,42 +731,15 @@ namespace API.Repositories
         }
 
         // apply cv
-        public async Task AddCandidateCvAsync(CandidateCv cv)
+        public async Task<int> AddCandidateCvAsync(CandidateCv cv)
         {
             await _context.CandidateCvs.AddAsync(cv);
+            await _context.SaveChangesAsync();
+            return cv.CandidateCvId; 
         }
 
-        // lấy ra các candidate cv theo statup
-        public async Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
-      int startupId, int pageNumber, int pageSize)
-        {
-            
-            var query = _context.CandidateCvs
-                .Where(cv => cv.Internship.StartupId == startupId)
-                .Include(cv => cv.Account)
-                    .ThenInclude(a => a.AccountProfile)
-                .Include(cv => cv.Internship)
-                    .ThenInclude(ip => ip.Position)
-                .Select(cv => new CandidateCVResponseDTO
-                {
-                    CandidateCV_ID = cv.CandidateCvId,
-                    CVURL = _filebaseHandler.GeneratePresignedPDFUrl(cv.Cvurl, 2),
-                    CreateAt = (DateTime)cv.CreateAt,
-                    Status = cv.Status,
-                    Email = cv.Account.Email,
-                    FullName = cv.Account.AccountProfile.FirstName + " " + cv.Account.AccountProfile.LastName,
-                    PositionRequirement = cv.Internship.Position.Title
-                });
 
-            var totalCount = await query.CountAsync();
 
-            var items = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return new PagedResult<CandidateCVResponseDTO>(items, totalCount, pageNumber, pageSize);
-        }
 
         // hàm lấy ra danh sách thông tin của người like bài post
         public async Task<PagedResult<PostLike>> GetPostLikeByPostId(int postId, int pageNumber, int pageSize)
