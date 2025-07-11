@@ -496,10 +496,11 @@ namespace API.Repositories
 
         // lấy ra các candidate cv theo statup
         public async Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
-     int startupId, int pageNumber, int pageSize)
+     int startupId, int positionId, int pageNumber, int pageSize)
         {
             var query = _context.CandidateCvs
-                .Where(cv => cv.Internship.StartupId == startupId)
+                .Where(cv => cv.Internship.StartupId == startupId &&
+                    (positionId == 0 || cv.Internship.Position.PositionId == positionId))
                 .Include(cv => cv.Account)
                     .ThenInclude(a => a.AccountProfile)
                 .Include(cv => cv.Internship)

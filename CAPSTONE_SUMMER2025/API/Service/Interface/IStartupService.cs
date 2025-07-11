@@ -48,7 +48,7 @@ namespace API.Service.Interface
         Task<bool> UnsubscribeAsync(int accountId, int startupId);
         Task<StartupDetailDTO?> GetStartupByIdAsync(int startupId);
         Task<bool> UpdateStartupAsync(int id, UpdateStartupDto dto);
-        Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId, int page, int pageSize);
+        Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId,int positionId, int page, int pageSize);
         Task<PositionRequirementDto?> GetRequirementInfoAsync(int positionId);
         Task AddEvaluationAsync(CVRequirementEvaluationResultDto evaluation);
 

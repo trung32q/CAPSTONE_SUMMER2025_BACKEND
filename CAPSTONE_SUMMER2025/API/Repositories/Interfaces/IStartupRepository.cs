@@ -66,7 +66,7 @@ namespace API.Repositories.Interfaces
         Task<Startup> GetStartupByIdAsync(int id);
         Task UpdateStartupAsync(Startup startup);
         Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
-      int startupId, int pageNumber, int pageSize);
+      int startupId,int positionId, int pageNumber, int pageSize);
         Task<PositionRequirement?> GetByIdAsync(int positionId);
         Task AddCVRequirementEvaluationAsync(CvrequirementEvaluation evaluation);
     }

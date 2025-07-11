@@ -480,11 +480,11 @@ namespace API.Controllers
             return Ok("update thành công");
         }
 
-        // lấy ra cv theo statupid
+        // lấy ra cv theo statupid cùng với lọc theo positionId
         [HttpGet("candidateCv/{startupId}")]
-        public async Task<IActionResult> GetCVsByStartup(int startupId, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+        public async Task<IActionResult> GetCVsByStartup(int startupId, int postionId = 0, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
-            var cvs = await _service.GetCVsOfStartupAsync(startupId, page, pageSize);
+            var cvs = await _service.GetCVsOfStartupAsync(startupId, postionId, page, pageSize);
 
             if (cvs == null || cvs.Items.Count == 0)
                 return NotFound("No CVs found for this startup");

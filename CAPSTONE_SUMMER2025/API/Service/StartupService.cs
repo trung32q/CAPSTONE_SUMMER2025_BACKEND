@@ -861,9 +861,9 @@ namespace API.Service
             return true;
         }
 
-        public async Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId, int page, int pageSize)
+        public async Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId,int positionId, int page, int pageSize)
         {
-            return await _repo.GetCandidateCVsByStartupIdAsync(startupId, page, pageSize);
+            return await _repo.GetCandidateCVsByStartupIdAsync(startupId, positionId, page, pageSize);
         }
 
         public async Task<PositionRequirementDto?> GetRequirementInfoAsync(int positionId)
