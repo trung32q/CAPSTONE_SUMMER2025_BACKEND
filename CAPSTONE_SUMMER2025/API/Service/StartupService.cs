@@ -234,6 +234,7 @@ namespace API.Service
             var result = entities.Select(sm => new StartupMemberDTO
             {
                 AccountId = (int)sm.AccountId,
+                Memberid =sm.StartupMemberId,
                 FullName = $"{sm.Account?.AccountProfile?.FirstName} {sm.Account?.AccountProfile?.LastName}",
                 RoleName = sm.Role?.RoleName,
                 AvatarUrl = sm.Account.AccountProfile.AvatarUrl,

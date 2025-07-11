@@ -25,18 +25,20 @@ namespace API.Service
                     var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
                     var now = DateTime.Now;
-                    var tomorrow = now.AddDays(1);
+                    var tomorrow = now.AddDays(1).Date;
+                    var today = now.Date;
 
-                    // Lấy các task sắp hết hạn trong 24h tới và chưa gửi nhắc hạn
-                    var tasks = await db.StartupTasks.Include
-                        (x=>x.TaskAssignments)
-                        .Where(t => t.Duedate >= now && t.Duedate < tomorrow /* && !t.IsDueSoonNotified*/)
+                    // Lấy tasks sắp hết hạn trong 24h tới (chưa DONE)
+                    var dueSoonTasks = await db.StartupTasks.Include(x => x.TaskAssignments)
+                        .Where(t => t.Duedate != null
+                            && t.Duedate.Value.Date == tomorrow // chỉ gửi khi còn đúng 1 ngày!
+                            && !t.ColumnnStatus.ColumnName.Equals("DONE"))
                         .ToListAsync();
 
-                    foreach (var task in tasks)
+                    foreach (var task in dueSoonTasks)
                     {
                         var assignments = await db.TaskAssignments
-                            .Where(a => a.TaskId == task.TaskId)                     
+                            .Where(a => a.TaskId == task.TaskId)
                             .ToListAsync();
 
                         foreach (var assign in assignments)
@@ -44,23 +46,56 @@ namespace API.Service
                             await notificationService.CreateAndSendAsync(new reqNotificationDTO
                             {
                                 UserId = assign.AssignToAccountId.Value,
-                                Message = $"Task '{task.Title}' sẽ hết hạn vào {task.Duedate:dd/MM/yyyy HH:mm}",
+                                Message = $"Task '{task.Title}' will be due at {task.Duedate:dd/MM/yyyy HH:mm}",
                                 CreatedAt = DateTime.Now,
                                 IsRead = false,
-                                senderid = (int)assign.AssignedByAccountId, // chính là người giao task này cho user này!
+                                senderid = (int)assign.AssignedByAccountId,
                                 NotificationType = NotiConst.Task,
                                 TargetURL = $"/task/{task.TaskId}"
                             });
                         }
-
-                        // Nếu cần: đánh dấu đã gửi
-                        // task.IsDueSoonNotified = true;
+                        // Nếu muốn: task.IsDueSoonNotified = true;
                     }
-                    // Nếu đã đánh dấu, nhớ db.SaveChangesAsync();
+
+                    // Lấy tasks quá hạn (chưa DONE)
+                    var overdueTasks = await db.StartupTasks.Include(x => x.TaskAssignments)
+                        .Where(t => t.Duedate != null
+                            && t.Duedate.Value.Date < today
+                            && !t.ColumnnStatus.ColumnName.Equals("DONE"))
+                        .ToListAsync();
+
+                    foreach (var task in overdueTasks)
+                    {
+                        int daysOverdue = (today - task.Duedate.Value.Date).Days;
+
+                        var assignments = await db.TaskAssignments
+                            .Where(a => a.TaskId == task.TaskId)
+                            .ToListAsync();
+
+                        foreach (var assign in assignments)
+                        {
+                            await notificationService.CreateAndSendAsync(new reqNotificationDTO
+                            {
+                                UserId = assign.AssignToAccountId.Value,
+                                Message = $"Task '{task.Title}' is overdue by {daysOverdue} day(s)!",
+                                CreatedAt = DateTime.Now,
+                                IsRead = false,
+                                senderid = (int)assign.AssignedByAccountId,
+                                NotificationType = NotiConst.Task,
+                                TargetURL = $"/task/{task.TaskId}"
+                            });
+                        }
+                        // Nếu muốn: task.IsOverdueNotified = true;
+                    }
+
+                    // Nếu đã set flag, nhớ db.SaveChangesAsync()
                 }
-                // Lặp lại mỗi tiếng/lần hoặc 1 ngày/lần tuỳ nhu cầu
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+
+                // Chạy lại sau 15 giây (test), thực tế nên để 1 giờ/lần
+                await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
             }
         }
+
     }
 }
+

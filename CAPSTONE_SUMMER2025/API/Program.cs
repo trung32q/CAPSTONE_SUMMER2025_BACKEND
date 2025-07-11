@@ -141,6 +141,7 @@ builder.Services.AddScoped<IAccountService, AccountService> ();
 builder.Services.AddScoped<IEmailService, EmailService> ();
 builder.Services.AddScoped<JwtService> ();
 builder.Services.AddScoped<GoogleService> ();
+builder.Services.AddHostedService<TaskDueDateReminderService>();
 
 
 builder.Services.AddHttpClient<IChatGPTRepository, ChatGPTRepository> ();
