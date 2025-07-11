@@ -314,6 +314,21 @@ namespace API.Repositories
                         .ThenInclude(acc => acc.AccountProfile)
                 .FirstOrDefaultAsync(x => x.TaskId == taskId);
         }
-
+        public async Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId)
+        {
+            return await _context.MilestoneAssignments
+                .Where(ma => ma.MilestoneId == milestoneId)
+                .Include(ma => ma.Member)
+                    .ThenInclude(sm => sm.Account)
+                        .ThenInclude(a => a.AccountProfile)
+                .Select(ma => new MemberInMilestoneDto
+                {
+                    MemberId = (int)ma.MemberId,
+                    AccountId = ma.Member.Account.AccountId,
+                    FullName = ma.Member.Account.AccountProfile.FirstName + " " + ma.Member.Account.AccountProfile.LastName,
+                    AvatarUrl = ma.Member.Account.AccountProfile.AvatarUrl
+                })
+                .ToListAsync();
+        }
     }
 }

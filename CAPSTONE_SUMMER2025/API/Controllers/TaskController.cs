@@ -196,6 +196,18 @@ namespace API.Controllers
 
             return Ok(detail);
         }
+        [HttpGet("members-in-milestone")]
+        public async Task<IActionResult> GetMembersInMilestone(int milestoneId)
+        {
+            if (milestoneId <= 0)
+                return BadRequest(new { message = "MilestoneId không hợp lệ!" });
+
+            var members = await _Service.GetMembersInMilestoneAsync(milestoneId);
+            if (members == null || members.Count == 0)
+                return NotFound(new { message = "Không tìm thấy thành viên nào trong milestone này!" });
+
+            return Ok(members);
+        }
     }
 }
  

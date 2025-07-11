@@ -329,6 +329,9 @@ namespace API.Service
                 AsignTo = asignTo
             };
         }
-
+        public async Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId)
+        {
+            return await _repo.GetMembersInMilestoneAsync(milestoneId);
+        }
     }
 }

@@ -29,5 +29,6 @@ namespace API.Repositories.Interfaces
         Task<bool> RemoveTaskAssignmentAsync(int taskId, int accountId);
         Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
         Task<StartupTask?> GetTaskByIdAsync(int taskId);
+        Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId);
     }
 }
