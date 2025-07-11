@@ -126,6 +126,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository> ();
 builder.Services.AddScoped<IStartupRepository, StartupRepository> ();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IDartboardRepository, DartboardRepository>();
+builder.Services.AddScoped<IFileHandlerRepository, FileHandlerRepository> ();
 
 builder.Services.AddScoped<IDartboardService, DartboardService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
@@ -139,6 +140,7 @@ builder.Services.AddScoped<IPolicyService, PolicyService> ();
 builder.Services.AddScoped<IAuthSevice, AuthService> ();
 builder.Services.AddScoped<IAccountService, AccountService> ();
 builder.Services.AddScoped<IEmailService, EmailService> ();
+builder.Services.AddScoped<IFileHandlerService, FileHandlerService> ();
 builder.Services.AddScoped<JwtService> ();
 builder.Services.AddScoped<GoogleService> ();
 builder.Services.AddHostedService<TaskDueDateReminderService>();

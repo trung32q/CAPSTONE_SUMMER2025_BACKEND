@@ -861,5 +861,39 @@ namespace API.Service
             await _repo.UpdateStartupAsync(startup);
             return true;
         }
+
+        public async Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId,int positionId, int page, int pageSize)
+        {
+            return await _repo.GetCandidateCVsByStartupIdAsync(startupId, positionId, page, pageSize);
+        }
+
+        public async Task<PositionRequirementDto?> GetRequirementInfoAsync(int positionId)
+        {
+            var entity = await _repo.GetByIdAsync(positionId);
+            if (entity == null)
+                return null;
+
+            return new PositionRequirementDto
+            {
+                Description = entity.Description,
+                Requirement = entity.Requirement
+            };
+        }
+
+        public async Task AddEvaluationAsync(CVRequirementEvaluationResultDto evaluation)
+        {
+            await _repo.AddCVRequirementEvaluationAsync(
+                new CvrequirementEvaluation
+                {
+                    CandidateCvId = (int)evaluation.CandidateCVID,
+                    InternshipId = (int)evaluation.InternshipId,
+                    EvaluationTechSkills = evaluation.Evaluation_TechSkills,
+                    EvaluationExperience = evaluation.Evaluation_Experience,
+                    EvaluationSoftSkills = evaluation.Evaluation_SoftSkills,
+                    EvaluationOverallSummary = evaluation.Evaluation_OverallSummary,
+
+                });
+            await _repo.SaveChangesAsync();
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Text;
 using API.DTO.AccountDTO;
 using API.DTO.PostDTO;
+using API.DTO.StartupDTO;
 using API.Repositories.Interfaces;
 using API.Utils.Constants;
 using AutoMapper;
@@ -14,11 +15,14 @@ namespace API.Repositories
     {
         private readonly IMapper _mapper;
         private readonly CAPSTONE_SUMMER2025Context _context;
+        private readonly IFilebaseHandler _filebaseHandler;
 
-        public StartupRepository(IMapper mapper, CAPSTONE_SUMMER2025Context context)
+
+        public StartupRepository(IMapper mapper, CAPSTONE_SUMMER2025Context context, IFilebaseHandler filebaseHandler)
         {
             _mapper = mapper;
             _context = context;
+            _filebaseHandler = filebaseHandler;
         }
         public async Task<StartupMember> AddMemberAsync(StartupMember member)
         {
@@ -476,5 +480,72 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<CVRequirementEvaluationResultDto> GetEvaluationByCandidateIdAsync(int candidateCvId, int internshipId)
+        {
+            var e = await _context.CvrequirementEvaluations
+                .FirstOrDefaultAsync(e => e.CandidateCvId == candidateCvId && e.InternshipId == internshipId);
+            return new CVRequirementEvaluationResultDto
+            {
+                Evaluation_Experience = e.EvaluationExperience,
+                Evaluation_SoftSkills = e.EvaluationSoftSkills,
+                Evaluation_TechSkills = e.EvaluationTechSkills,
+                Evaluation_OverallSummary = e.EvaluationOverallSummary
+            };
+        }
+
+
+        // lấy ra các candidate cv theo statup
+        public async Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
+     int startupId, int positionId, int pageNumber, int pageSize)
+        {
+            var query = _context.CandidateCvs
+                .Where(cv => cv.Internship.StartupId == startupId &&
+                    (positionId == 0 || cv.Internship.Position.PositionId == positionId))
+                .Include(cv => cv.Account)
+                    .ThenInclude(a => a.AccountProfile)
+                .Include(cv => cv.Internship)
+                    .ThenInclude(ip => ip.Position);
+
+            var totalCount = await query.CountAsync();
+
+            var candidateEntities = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var result = new List<CandidateCVResponseDTO>();
+
+            foreach (var cv in candidateEntities)
+            {
+                var evaluation = await GetEvaluationByCandidateIdAsync(cv.CandidateCvId, (int)cv.InternshipId);
+
+                result.Add(new CandidateCVResponseDTO
+                {
+                    CandidateCV_ID = cv.CandidateCvId,
+                    CVURL = _filebaseHandler.GeneratePresignedPDFUrl(cv.Cvurl, 2),
+                    CreateAt = (DateTime)cv.CreateAt,
+                    Status = cv.Status,
+                    Email = cv.Account.Email,
+                    FullName = $"{cv.Account.AccountProfile.FirstName} {cv.Account.AccountProfile.LastName}",
+                    PositionRequirement = cv.Internship.Position.Title,
+                    PositionId = cv.Internship.Position.PositionId,
+                    CVRequirementEvaluation = evaluation
+                });
+            }
+
+            return new PagedResult<CandidateCVResponseDTO>(result, totalCount, pageNumber, pageSize);
+        }
+
+        public async Task<PositionRequirement?> GetByIdAsync(int positionId)
+        {
+            return await _context.PositionRequirements
+                .FirstOrDefaultAsync(p => p.PositionId == positionId);
+        }
+
+
+        public async Task AddCVRequirementEvaluationAsync(CvrequirementEvaluation evaluation)
+        {
+            await _context.CvrequirementEvaluations.AddAsync(evaluation);
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using API.DTO.AccountDTO;
+﻿using System.Net;
+using System.Text;
+using API.DTO.AccountDTO;
 using API.DTO.StartupDTO;
 using API.Hubs;
 using API.Service;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Ocsp;
+using UglyToad.PdfPig;
 
 namespace API.Controllers
 {
@@ -23,14 +26,18 @@ namespace API.Controllers
         private readonly IHubContext<MessageHub> _hubContext;
         private readonly CAPSTONE_SUMMER2025Context _context;
 
+        private readonly IFileHandlerService _filehandler;
 
-        public StartupController(IStartupService service, ILogger<StartupService> logger, IAccountService accountservice, IHubContext<MessageHub> hubContext, CAPSTONE_SUMMER2025Context context)
+
+
+        public StartupController(IFileHandlerService fileHandler,IStartupService service, ILogger<StartupService> logger, IAccountService accountservice, IHubContext<MessageHub> hubContext, CAPSTONE_SUMMER2025Context context)
         {
             _service = service;
             _logger = logger;
             _accountservice = accountservice;
             _hubContext = hubContext;
             _context = context;
+            _filehandler = fileHandler;
         }
         [HttpPost("create")]
         public async Task<IActionResult> CreateStartup([FromForm] CreateStartupRequest req)
@@ -472,6 +479,21 @@ namespace API.Controllers
 
             return Ok("update thành công");
         }
+
+        // lấy ra cv theo statupid cùng với lọc theo positionId
+        [HttpGet("candidateCv/{startupId}")]
+        public async Task<IActionResult> GetCVsByStartup(int startupId, int postionId = 0, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+        {
+            var cvs = await _service.GetCVsOfStartupAsync(startupId, postionId, page, pageSize);
+
+            if (cvs == null || cvs.Items.Count == 0)
+                return NotFound("No CVs found for this startup");
+
+            return Ok(cvs);
+        }
+
+
+     
     }
 }
 

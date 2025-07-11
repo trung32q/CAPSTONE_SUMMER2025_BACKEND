@@ -443,17 +443,7 @@ namespace API.Controllers
             return Ok("CV submitted successfully");
         }
 
-        // lấy ra cv theo statupid
-        [HttpGet("candidateCv/{startupId}")]
-        public async Task<IActionResult> GetCVsByStartup(int startupId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            var cvs = await _postService.GetCVsOfStartupAsync(startupId, page, pageSize);
-
-            if (cvs == null || cvs.Items.Count == 0)
-                return NotFound("No CVs found for this startup");
-
-            return Ok(cvs);
-        }
+    
         [HttpGet("GetPostsByStartupId")]
         public async Task<IActionResult> GetPostsByStartupId(int startupId, int pageNumber = 1, int pageSize = 10)
         {

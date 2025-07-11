@@ -29,6 +29,7 @@ namespace Infrastructure.Models
         public virtual DbSet<ChatRoomMember> ChatRoomMembers { get; set; } = null!;
         public virtual DbSet<ColumnnStatus> ColumnnStatuses { get; set; } = null!;
         public virtual DbSet<CommentTask> CommentTasks { get; set; } = null!;
+        public virtual DbSet<CvrequirementEvaluation> CvrequirementEvaluations { get; set; } = null!;
         public virtual DbSet<Follow> Follows { get; set; } = null!;
         public virtual DbSet<InternshipPost> InternshipPosts { get; set; } = null!;
         public virtual DbSet<InvestmentEvent> InvestmentEvents { get; set; } = null!;
@@ -66,8 +67,8 @@ namespace Infrastructure.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                                 .SetBasePath(Directory.GetCurrentDirectory())
-                                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                              .SetBasePath(Directory.GetCurrentDirectory())
+                              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -403,6 +404,46 @@ namespace Infrastructure.Models
                     .WithMany(p => p.CommentTasks)
                     .HasForeignKey(d => d.TaskId)
                     .HasConstraintName("FK__CommentTa__Task___7B5B524B");
+            });
+
+            modelBuilder.Entity<CvrequirementEvaluation>(entity =>
+            {
+                entity.HasKey(e => e.EvaluationId)
+                    .HasName("PK__CVRequir__7EF3566EEB3B1856");
+
+                entity.ToTable("CVRequirementEvaluation");
+
+                entity.Property(e => e.EvaluationId).HasColumnName("Evaluation_ID");
+
+                entity.Property(e => e.CandidateCvId).HasColumnName("CandidateCV_ID");
+
+                entity.Property(e => e.EvaluationExperience)
+                    .HasMaxLength(200)
+                    .HasColumnName("Evaluation_Experience");
+
+                entity.Property(e => e.EvaluationOverallSummary)
+                    .HasMaxLength(200)
+                    .HasColumnName("Evaluation_OverallSummary");
+
+                entity.Property(e => e.EvaluationSoftSkills)
+                    .HasMaxLength(200)
+                    .HasColumnName("Evaluation_SoftSkills");
+
+                entity.Property(e => e.EvaluationTechSkills)
+                    .HasMaxLength(200)
+                    .HasColumnName("Evaluation_TechSkills");
+
+                entity.Property(e => e.InternshipId).HasColumnName("Internship_ID");
+
+                entity.HasOne(d => d.CandidateCv)
+                    .WithMany(p => p.CvrequirementEvaluations)
+                    .HasForeignKey(d => d.CandidateCvId)
+                    .HasConstraintName("FK_CVRequirementEvaluation_CandidateCV");
+
+                entity.HasOne(d => d.Internship)
+                    .WithMany(p => p.CvrequirementEvaluations)
+                    .HasForeignKey(d => d.InternshipId)
+                    .HasConstraintName("FK_CVRequirementEvaluation_InternshipPost");
             });
 
             modelBuilder.Entity<Follow>(entity =>
