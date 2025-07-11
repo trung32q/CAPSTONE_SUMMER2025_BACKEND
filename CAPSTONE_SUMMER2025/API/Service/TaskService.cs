@@ -179,14 +179,17 @@ namespace API.Service
                     {
                         TaskId = t.TaskId,
                         Title = t.Title,
-                        Description=t.Description,
-                        Priority =t.Priority,
-                        DueDate=t.Duedate,
-                        AvatarURL= t.TaskAssignments
-                    .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
-                    .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
-                    .Where(url => !string.IsNullOrEmpty(url))
-                    .ToList()
+                        Description = t.Description,
+                        Priority = t.Priority,
+                        DueDate = t.Duedate,
+                        assignto = t.TaskAssignments
+                            .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                            .Select(a => new AssignToDTO
+                            {
+                                Id = a.AssignToAccount.AccountId,
+                                Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                                AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                            }).ToList()
                     }).ToList()
             }).ToList();
         }
@@ -312,7 +315,12 @@ namespace API.Service
             // Lấy list người được gán
             var asignTo = task.TaskAssignments
                 .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
-                .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
+                .Select(a => new AssignToDTO
+                {
+                    Id = a.AssignToAccount.AccountId,
+                    Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                    AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                }).ToList()
                 .ToList();
 
             return new TasklistDto

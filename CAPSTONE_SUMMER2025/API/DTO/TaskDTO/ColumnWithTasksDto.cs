@@ -15,6 +15,13 @@
         public string Description { get; set; }
         public string Priority { get; set; }
         public DateTime? DueDate { get; set; }
-        public List<string> AvatarURL{ get; set; }
+        public List<AssignToDTO> assignto{ get; set; }
     }
+    public class AssignToDTO
+    {
+        public int Id { get; set; }
+        public string? Fullname { get; set; }
+        public string?  AvatarURL { get; set; }
+    }
+    
 }

@@ -194,10 +194,13 @@ namespace API.Repositories
                         ? x.TaskAssignments.FirstOrDefault().AssignedByAccount.AccountProfile.AvatarUrl
                         : null,
                     AsignTo = x.TaskAssignments
-                        .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
-                        .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
-                        .Distinct()
-                        .ToList()
+                            .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                            .Select(a => new AssignToDTO
+                            {
+                                Id = a.AssignToAccount.AccountId,
+                                Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                                AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                            }).ToList()
                 })
                 .ToListAsync();
 
@@ -250,10 +253,13 @@ namespace API.Repositories
                         ? x.TaskAssignments.FirstOrDefault().AssignedByAccount.AccountProfile.AvatarUrl
                         : null,
                     AsignTo = x.TaskAssignments
-                        .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
-                        .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
-                        .Distinct()
-                        .ToList()
+                            .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                            .Select(a => new AssignToDTO
+                            {
+                                Id = a.AssignToAccount.AccountId,
+                                Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                                AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                            }).ToList()
                 })
                 .ToListAsync();
 

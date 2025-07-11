@@ -11,7 +11,7 @@
         public string ColumnStatus { get; set; }
         public string? Note { get; set; }
         public string CreatedBy { get; set; }
-       public List<string> AsignTo { get; set; }
+       public List<AssignToDTO> AsignTo { get; set; }
         
     }
 }
