@@ -9,6 +9,7 @@ using AutoMapper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 using MimeKit;
+using System.Threading.Tasks;
 
 namespace API.Service
 {
@@ -340,6 +341,20 @@ namespace API.Service
         public async Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId)
         {
             return await _repo.GetMembersInMilestoneAsync(milestoneId);
+        }
+        public async Task<List<AssignToDTO>> GetMembersInTaskAsync(int taskId)
+        {
+            var task = await _repo.GetTaskByIdAsync(taskId);
+            var asignTo = task.TaskAssignments
+               .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+               .Select(a => new AssignToDTO
+               {
+                   Id = a.AssignToAccount.AccountId,
+                   Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                   AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+               }).ToList()
+               .ToList();
+            return asignTo;
         }
     }
 }

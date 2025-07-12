@@ -208,6 +208,18 @@ namespace API.Controllers
 
             return Ok(members);
         }
+        [HttpGet("members-in-task")]
+        public async Task<IActionResult> GetMembersInTask(int taskId)
+        {
+            if (taskId <= 0)
+                return BadRequest(new { message = "taskId không hợp lệ!" });
+
+            var members = await _Service.GetMembersInTaskAsync(taskId);
+            if (members == null || members.Count == 0)
+                return NotFound(new { message = "Không tìm thấy thành viên nào trong task này!" });
+
+            return Ok(members);
+        }
     }
 }
  

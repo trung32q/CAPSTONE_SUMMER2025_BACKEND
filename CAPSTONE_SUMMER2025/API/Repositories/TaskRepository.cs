@@ -336,5 +336,9 @@ namespace API.Repositories
                 })
                 .ToListAsync();
         }
+        public async Task<TaskAssignment?> GetAssignToByTaskIdAsync(int taskId)
+        {
+            return await _context.TaskAssignments.Include(a => a.AssignToAccount).ThenInclude(acc => acc.AccountProfile).FirstOrDefaultAsync(x => x.TaskId == taskId);
+        }
     }
 }

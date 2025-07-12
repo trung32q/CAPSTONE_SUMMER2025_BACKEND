@@ -26,5 +26,6 @@ namespace API.Service.Interface
         Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
         Task<TasklistDto?> GetTaskDetailByIdAsync(int taskId);
         Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId);
+        Task<List<AssignToDTO>> GetMembersInTaskAsync(int taskId);
     }
 }

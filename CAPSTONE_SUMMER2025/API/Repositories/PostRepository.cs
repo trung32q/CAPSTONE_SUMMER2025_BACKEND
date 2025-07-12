@@ -582,15 +582,14 @@ namespace API.Repositories
                 .ToListAsync();
 
             // Kết hợp các bài đăng và thông báo thực tập, sắp xếp theo ngày tạo giảm dần và áp dụng phân trang
-            var combined = posts.Concat(internships)
-                .OrderBy(x => x.Priority) // Bài ưu tiên nhỏ hơn sẽ lên trước
-                 .ThenByDescending(x => x.Priority == 4 ? x.InteractionCount : int.MinValue) // nếu Priority bằng 4 thì ưu tiên bài nhiều tương tác
-                 .ThenByDescending(x => x.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return combined;
+            var allFeedItems = posts.Concat(internships)
+            .OrderByDescending(x => x.CreatedAt) // Bài mới lên trước, bất kể loại gì
+            .ThenBy(x => x.Priority)             // Ưu tiên cao lên trước nếu cùng thời gian
+            .ThenByDescending(x => x.InteractionCount) // Bài có nhiều tương tác hơn ưu tiên
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+            return allFeedItems;
         }
 
         // hàm ẩn bài post
