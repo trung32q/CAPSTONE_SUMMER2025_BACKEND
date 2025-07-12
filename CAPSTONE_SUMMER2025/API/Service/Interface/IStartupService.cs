@@ -51,6 +51,7 @@ namespace API.Service.Interface
         Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId,int positionId, int page, int pageSize);
         Task<PositionRequirementDto?> GetRequirementInfoAsync(int positionId);
         Task AddEvaluationAsync(CVRequirementEvaluationResultDto evaluation);
-
+        Task<CandidateInfoDto?> GetCandidateInfoAsync(int candidateCvId);
+        Task<bool> ResponseCandidateCVAsync(int candidateCVId, string newStatus);
     }
 }

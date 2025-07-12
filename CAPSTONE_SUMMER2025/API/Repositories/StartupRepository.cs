@@ -547,5 +547,22 @@ namespace API.Repositories
         {
             await _context.CvrequirementEvaluations.AddAsync(evaluation);
         }
+
+        public async Task<CandidateCv?> GetCandidateCvWithRelationsAsync(int candidateCvId)
+        {
+            return await _context.CandidateCvs
+                .Include(cv => cv.Account)
+                    .ThenInclude(a => a.AccountProfile)
+                .Include(cv => cv.Internship)
+                    .ThenInclude(ip => ip.Position)
+                .Include(cv => cv.Internship)
+                    .ThenInclude(ip => ip.Startup)
+                .FirstOrDefaultAsync(cv => cv.CandidateCvId == candidateCvId);
+        }
+
+        public async Task<CandidateCv?> GetCandidateCVByIdAsync(int id)
+        {
+            return await _context.CandidateCvs.FindAsync(id);
+        }
     }
 }

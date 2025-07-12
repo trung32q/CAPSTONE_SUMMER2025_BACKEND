@@ -24,9 +24,12 @@ namespace API.Service
         private readonly IFilebaseHandler _filebaseHandler;
         private readonly ILogger<StartupService> _logger;
         private readonly INotificationService _notificationService;
+        private readonly IEmailService _emailService;
         private readonly CAPSTONE_SUMMER2025Context _context;
+        private readonly IConfiguration _config;
 
-        public StartupService(IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext, INotificationService notificationService, IPostRepository postRepo)
+
+        public StartupService(IConfiguration configuration,IEmailService emailService,IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext, INotificationService notificationService, IPostRepository postRepo)
         {
             _repo = repo;
             _mapper = mapper;
@@ -36,6 +39,8 @@ namespace API.Service
             _context = conntext;
             _notificationService = notificationService;
             _postRepo = postRepo;
+            _emailService = emailService;
+            _config = configuration;    
         }
         public async Task<int> CreateStartupAsync(CreateStartupRequest request)
         {
@@ -894,5 +899,54 @@ namespace API.Service
                 });
             await _repo.SaveChangesAsync();
         }
+
+        public async Task<CandidateInfoDto?> GetCandidateInfoAsync(int candidateCvId)
+        {
+            var cv = await _repo.GetCandidateCvWithRelationsAsync(candidateCvId);
+            if (cv == null) return null;
+
+            return new CandidateInfoDto
+            {
+                FullName = $"{cv.Account?.AccountProfile?.FirstName} {cv.Account?.AccountProfile?.LastName}",
+                PositionTitle = cv.Internship?.Position?.Title ?? "",
+                StartupName = cv.Internship?.Startup?.StartupName ?? "",
+                email = cv.Account?.Email
+               
+            };
+        }
+
+        public async Task<bool> ResponseCandidateCVAsync(int candidateCVId, string newStatus)
+        {
+            var cv = await _repo.GetCandidateCVByIdAsync(candidateCVId);
+            var infor = await GetCandidateInfoAsync(candidateCVId);
+            if (cv == null) return false;
+
+            string subject = "";
+            string htmlBody = "";
+
+            if (newStatus == Utils.Constants.CVStatus.ACCEPT)
+            {
+                subject = _config["EmailTemplates:AcceptSubject"];
+                htmlBody = _config["EmailTemplates:AcceptHtmlBody"]
+                    .Replace("{CandidateFullName}", infor.FullName)
+                    .Replace("{StartupName}", infor.StartupName)
+                    .Replace("{PositionTitle}", infor.PositionTitle);
+            }
+            else if (newStatus == Utils.Constants.CVStatus.REJECT)
+            {
+                subject = _config["EmailTemplates:RejectSubject"];
+                htmlBody = _config["EmailTemplates:RejectHtmlBody"]
+                    .Replace("{CandidateFullName}", infor.FullName)
+                    .Replace("{StartupName}", infor.StartupName)
+                    .Replace("{PositionTitle}", infor.PositionTitle);
+            }
+
+            await _emailService.SendEmailAsync(infor.email, subject, htmlBody);
+
+            cv.Status = newStatus;
+            await _repo.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

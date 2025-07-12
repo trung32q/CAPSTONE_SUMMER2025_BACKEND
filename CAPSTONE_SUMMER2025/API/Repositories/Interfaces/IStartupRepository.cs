@@ -69,5 +69,7 @@ namespace API.Repositories.Interfaces
       int startupId,int positionId, int pageNumber, int pageSize);
         Task<PositionRequirement?> GetByIdAsync(int positionId);
         Task AddCVRequirementEvaluationAsync(CvrequirementEvaluation evaluation);
+        Task<CandidateCv?> GetCandidateCvWithRelationsAsync(int candidateCvId);
+        Task<CandidateCv?> GetCandidateCVByIdAsync(int id);
     }
 }

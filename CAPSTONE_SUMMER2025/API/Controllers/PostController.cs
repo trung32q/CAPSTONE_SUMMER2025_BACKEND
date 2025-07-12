@@ -477,5 +477,17 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        //update internshipPost
+        [HttpPut("internShipPost/{id}")]
+        public async Task<IActionResult> UpdateInternshipPost(int id, [FromBody] UpdateInternshipPostDTO dto)
+        {
+            
+
+            var success = await _postService.UpdateInternshipPostAsync(id, dto);
+            if (!success)
+                return NotFound("Internship post not found.");
+
+            return Ok("update thành công");
+        }
     }
 }
