@@ -117,7 +117,97 @@ namespace API.Controllers
                 message = "Gán label thành công"
             });
         }
+        [HttpPut("update-task")]
+        public async Task<IActionResult> UpdateTask([FromBody] UpdateTaskDto dto)
+        {
+            var result = await _Service.UpdateTaskAsync(dto);
+            if (!result)
+                return NotFound(new { success = false, message = "Task không tồn tại!" });
+            return Ok(new { success = true, message = "Cập nhật task thành công!" });
+        }
+        [HttpPost("comment-task")]
+        public async Task<IActionResult> AddComment([FromBody] CreateCommentTaskDto dto)
+        {
+            var result = await _Service.AddCommentAsync(dto);
+            if (result)
+                return Ok(new { success = true, message = "Thêm comment thành công!" });
+            else
+                return BadRequest(new { success = false, message = "Thêm comment thất bại!" });
+        }
+        [HttpPost("assign-task")]
+        public async Task<IActionResult> AssignTask([FromBody] TaskAssignmentDto dto)
+        {
+            var result = await _Service.AssignTaskAsync(dto);
+            if (result)
+                return Ok(new { success = true, message = "Assigned successfully!" });
+            return BadRequest(new { success = false, message = "User is already assigned to this task!" });
+        }   
+        [HttpGet("tasks-list-by-milestone")]
+        public async Task<IActionResult> GetTasksByMilestone(
+    int milestoneId,
+    int pageNumber = 1,
+    int pageSize = 10,
+    string? search = null,          
+    int? columnStatusId = null      
+    )
+        {
+            if (milestoneId <= 0)
+                return BadRequest(new { message = "MilestoneId không hợp lệ!" });
 
+            if (pageNumber < 1 || pageSize < 1)
+                return BadRequest(new { message = "PageNumber và PageSize phải lớn hơn 0!" });
+
+            var pagedTasks = await _Service.GetTaskByMilestoneIdPagedAsync(
+                milestoneId, pageNumber, pageSize, search, columnStatusId
+            );
+
+            if (pagedTasks == null || pagedTasks.Items.Count == 0)
+                return NotFound(new { message = "Không có task nào phù hợp!" });
+
+            return Ok(pagedTasks);
+        }   
+
+        [HttpDelete("unassign-task")]
+        public async Task<IActionResult> UnassignAccountFromTask(int taskId, int accountId)
+        {
+            var result = await _Service.UnassignAccountFromTaskAsync(taskId, accountId);
+            if (!result)
+                return NotFound(new { message = "Không tìm thấy assignment!" });
+            return Ok(new { message = "Đã hủy gán account khỏi task!" });
+        }
+        [HttpGet("get-all-task-comment")]
+        public async Task<IActionResult> GetCommentsByTaskId(int taskId)
+        {
+            if (taskId <= 0)
+                return BadRequest(new { message = "TaskId không hợp lệ!" });
+
+            var comments = await _Service.GetCommentsByTaskIdAsync(taskId);
+            return Ok(comments);
+        }
+        [HttpGet("task-detail/{taskId}")]
+        public async Task<IActionResult> GetTaskDetail(int taskId)
+        {
+            if (taskId <= 0)
+                return BadRequest(new { message = "TaskId không hợp lệ!" });
+
+            var detail = await _Service.GetTaskDetailByIdAsync(taskId);
+            if (detail == null)
+                return NotFound(new { message = "Không tìm thấy task!" });
+
+            return Ok(detail);
+        }
+        [HttpGet("members-in-milestone")]
+        public async Task<IActionResult> GetMembersInMilestone(int milestoneId)
+        {
+            if (milestoneId <= 0)
+                return BadRequest(new { message = "MilestoneId không hợp lệ!" });
+
+            var members = await _Service.GetMembersInMilestoneAsync(milestoneId);
+            if (members == null || members.Count == 0)
+                return NotFound(new { message = "Không tìm thấy thành viên nào trong milestone này!" });
+
+            return Ok(members);
+        }
     }
 }
  

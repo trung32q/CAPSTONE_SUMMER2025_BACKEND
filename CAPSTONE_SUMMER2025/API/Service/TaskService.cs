@@ -1,4 +1,6 @@
-﻿using API.DTO.TaskDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.NotificationDTO;
+using API.DTO.TaskDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
@@ -6,6 +8,7 @@ using API.Utils.Constants;
 using AutoMapper;
 using Infrastructure.Models;
 using Infrastructure.Repository;
+using MimeKit;
 
 namespace API.Service
 {
@@ -136,6 +139,28 @@ namespace API.Service
                 }).ToList();
 
                 await _repo.AddTaskAssignmentsAsync(assignments);
+
+                var sender = await _accountRepository.GetAccountByAccountIDAsync((int)dto.AssignedByAccountId);
+                var senderName = sender?.AccountProfile != null
+                    ? $"{sender.AccountProfile.FirstName} {sender.AccountProfile.LastName}"
+                    : "SomeOne";
+
+                var targetUrl = $"/task/{createdTask.TaskId}";
+
+                // Gửi thông báo cho từng người được gán vào task
+                foreach (var assignToId in dto.AssignToAccountIds)
+                {
+                    await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                    {
+                        UserId = assignToId,
+                        Message = $"{senderName} has assigned you a new task: {dto.Title}",
+                        CreatedAt = DateTime.Now,
+                        IsRead = false,
+                        senderid = (int)dto.AssignedByAccountId,
+                        NotificationType = NotiConst.Task,
+                        TargetURL = targetUrl
+                    });
+                }
             }
             return createdTask;
         }
@@ -154,14 +179,17 @@ namespace API.Service
                     {
                         TaskId = t.TaskId,
                         Title = t.Title,
-                        Description=t.Description,
-                        Priority =t.Priority,
-                        DueDate=t.Duedate,
-                        AvatarURL= t.TaskAssignments
-                    .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
-                    .Select(a => a.AssignToAccount.AccountProfile.AvatarUrl)
-                    .Where(url => !string.IsNullOrEmpty(url))
-                    .ToList()
+                        Description = t.Description,
+                        Priority = t.Priority,
+                        DueDate = t.Duedate,
+                        assignto = t.TaskAssignments
+                            .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                            .Select(a => new AssignToDTO
+                            {
+                                Id = a.AssignToAccount.AccountId,
+                                Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                                AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                            }).ToList()
                     }).ToList()
             }).ToList();
         }
@@ -199,7 +227,119 @@ namespace API.Service
         {
             return await _repo.AssignLabelToTaskAsync(taskId, labelId);
         }
+        public async Task<bool> UpdateTaskAsync(UpdateTaskDto dto)
+        {
+            return await _repo.UpdateTaskAsync(dto);
+        }
+        public async Task<bool> AddCommentAsync(CreateCommentTaskDto dto)
+        {
+            var comment = await _repo.AddCommentAsync(dto);
+            var accountids= await _repo.GetAccountIdsByTaskIdAsync(dto.TaskId);
+            var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AccountId);
+            var targetUrl = $"/task/{dto.TaskId}";
+            foreach (var accountId in accountids)
+            {
+                // Không gửi noti cho người tạo sự kiện
+                if (accountId == dto.AccountId) return comment; 
 
+                await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                {
+                    UserId = accountId,
+                    Message = accountsender.AccountProfile.FirstName+accountsender.AccountProfile.LastName+"has comment on your task.",
+                    CreatedAt = DateTime.Now,
+                    IsRead = false,
+                    senderid = dto.AccountId,
+                    NotificationType = NotiConst.Task,
+                    TargetURL = targetUrl
+                });
+            }
+            return comment;
+        }
+        public async Task<bool> AssignTaskAsync(TaskAssignmentDto dto)
+        {
+            bool exists = await _repo.TaskAssignmentExistsAsync(dto.TaskId, dto.AssignToAccountId);
+            if (exists)
+                return false; 
+            var entity = new TaskAssignment
+            {
+                TaskId = dto.TaskId,
+                AssignedByAccountId = dto.AssignedByAccountId,
+                AssignToAccountId = dto.AssignToAccountId,
+                AssignAt = DateTime.Now
+            };
 
+           var assign = await _repo.AddTaskAssignmentAsync(entity);
+            var targetUrl = $"/task/{dto.TaskId}";
+            var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AssignedByAccountId);
+           
+            return assign;
+        }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize)
+        {
+            return await _repo.GetTaskByMilestoneIdPagedAsync(milestoneId, pageNumber, pageSize);
+        }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId)
+        {
+            return await _repo.GetTaskByMilestoneIdPagedAsync(milestoneId, pageNumber, pageSize, search, columnStatusId);
+        }
+        public async Task<bool> AssignAccountToTaskAsync(TaskAssignmentDto dto)
+        {
+            var entity = new TaskAssignment
+            {
+                TaskId = dto.TaskId,
+                AssignToAccountId = dto.AssignToAccountId,
+                AssignedByAccountId = dto.AssignedByAccountId,
+                AssignAt = DateTime.Now
+            };
+            return await _repo.AddTaskAssignmentAsync(entity);
+        }
+
+        public async Task<bool> UnassignAccountFromTaskAsync(int taskId, int accountId)
+        {
+            return await _repo.RemoveTaskAssignmentAsync(taskId, accountId);
+        }
+        public async Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId)
+        {
+            return await _repo.GetCommentsByTaskIdAsync(taskId);
+        }
+        public async Task<TasklistDto?> GetTaskDetailByIdAsync(int taskId)
+        {
+            var task = await _repo.GetTaskByIdAsync(taskId);
+            if (task == null)
+                return null;
+
+            // Tìm người tạo (lấy bản ghi TaskAssignments đầu tiên hoặc null)
+            var createdBy = task.TaskAssignments
+                .FirstOrDefault()?.AssignedByAccount?.AccountProfile?.AvatarUrl;
+
+            // Lấy list người được gán
+            var asignTo = task.TaskAssignments
+                .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                .Select(a => new AssignToDTO
+                {
+                    Id = a.AssignToAccount.AccountId,
+                    Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                    AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                }).ToList()
+                .ToList();
+
+            return new TasklistDto
+            {
+                TaskId = task.TaskId,
+                Title = task.Title,
+                Priority = task.Priority,
+                Description = task.Description,
+                DueDate = task.Duedate,
+                Progress = task.Progress,
+                ColumnStatus = task.ColumnnStatus?.ColumnName,
+                Note = task.Note,
+                CreatedBy = createdBy,
+                AsignTo = asignTo
+            };
+        }
+        public async Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId)
+        {
+            return await _repo.GetMembersInMilestoneAsync(milestoneId);
+        }
     }
 }

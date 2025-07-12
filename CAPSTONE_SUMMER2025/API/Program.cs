@@ -143,6 +143,7 @@ builder.Services.AddScoped<IEmailService, EmailService> ();
 builder.Services.AddScoped<IFileHandlerService, FileHandlerService> ();
 builder.Services.AddScoped<JwtService> ();
 builder.Services.AddScoped<GoogleService> ();
+builder.Services.AddHostedService<TaskDueDateReminderService>();
 
 
 builder.Services.AddHttpClient<IChatGPTRepository, ChatGPTRepository> ();

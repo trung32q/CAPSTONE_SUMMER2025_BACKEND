@@ -1,4 +1,5 @@
-﻿using API.DTO.TaskDTO;
+﻿using API.DTO.AccountDTO;
+using API.DTO.TaskDTO;
 using Infrastructure.Models;
 
 namespace API.Service.Interface
@@ -15,5 +16,15 @@ namespace API.Service.Interface
         Task<List<ResMilestoneDto>> GetAllMilestonesAsync(int startupId );
         Task<bool> UpdateTaskColumnAsync(UpdateTaskColumnDto dto);
         Task<bool> AssignLabelToTaskAsync(int taskId, int labelId);
+        Task<bool> UpdateTaskAsync(UpdateTaskDto dto);
+        Task<bool> AddCommentAsync(CreateCommentTaskDto dto);
+        Task<bool> AssignTaskAsync(TaskAssignmentDto dto);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync( int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId);
+        Task<bool> AssignAccountToTaskAsync(TaskAssignmentDto dto);
+        Task<bool> UnassignAccountFromTaskAsync(int taskId, int accountId);
+        Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
+        Task<TasklistDto?> GetTaskDetailByIdAsync(int taskId);
+        Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId);
     }
 }

@@ -1,4 +1,6 @@
-﻿using Infrastructure.Models;
+﻿using API.DTO.AccountDTO;
+using API.DTO.TaskDTO;
+using Infrastructure.Models;
 
 namespace API.Repositories.Interfaces
 {
@@ -16,6 +18,17 @@ namespace API.Repositories.Interfaces
         Task<List<Milestone>> GetAllMilestonesWithMembersAsync(int startupId);
         Task<bool> UpdateTaskColumnAsync(int taskId, int newColumnStatusId);
         Task<bool> AssignLabelToTaskAsync(int taskId, int labelId);
-
+        Task<bool> UpdateTaskAsync(UpdateTaskDto dto);
+        Task<bool> AddCommentAsync(CreateCommentTaskDto dto);
+        Task<List<int>> GetAccountIdsByTaskIdAsync(int taskId);
+        Task<bool> AddTaskAssignmentAsync(TaskAssignment entity);
+        Task<bool> TaskAssignmentExistsAsync(int taskId, int assignToAccountId);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize);
+        Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId);
+        Task<bool> AddTaskAssignAsync(TaskAssignment entity);
+        Task<bool> RemoveTaskAssignmentAsync(int taskId, int accountId);
+        Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
+        Task<StartupTask?> GetTaskByIdAsync(int taskId);
+        Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId);
     }
 }

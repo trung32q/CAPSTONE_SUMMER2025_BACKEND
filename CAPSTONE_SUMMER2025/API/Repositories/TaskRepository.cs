@@ -1,4 +1,6 @@
-﻿using API.Repositories.Interfaces;
+﻿using API.DTO.AccountDTO;
+using API.DTO.TaskDTO;
+using API.Repositories.Interfaces;
 using AutoMapper;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
@@ -112,6 +114,227 @@ namespace API.Repositories
             return true;
         }
 
+        public async Task<bool> UpdateTaskAsync(UpdateTaskDto dto)
+        {
+            var task = await _context.StartupTasks.FindAsync(dto.TaskId);
+            if (task == null) return false;
 
+            if (!string.IsNullOrEmpty(dto.Title)) task.Title = dto.Title;
+            if (!string.IsNullOrEmpty(dto.Priority)) task.Priority = dto.Priority;
+            if (!string.IsNullOrEmpty(dto.Description)) task.Description = dto.Description;
+            if (dto.DueDate.HasValue) task.Duedate = dto.DueDate;
+            if (dto.Progress.HasValue) task.Progress = dto.Progress;
+            if (dto.ColumnnStatusId.HasValue) task.ColumnnStatusId = dto.ColumnnStatusId;
+            if (!string.IsNullOrEmpty(dto.Note)) task.Note = dto.Note;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> AddCommentAsync(CreateCommentTaskDto dto)
+        {
+            var comment = new CommentTask
+            {
+                TaskId = dto.TaskId,
+                AccountId = dto.AccountId,
+                Comment = dto.Comment,
+                CreateAt = DateTime.UtcNow
+            };
+            _context.CommentTasks.Add(comment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<List<int>> GetAccountIdsByTaskIdAsync(int taskId)
+        {
+            return await _context.TaskAssignments
+                .Where(a => a.TaskId == taskId)
+                .Select(a => a.AssignToAccountId.Value)
+                .ToListAsync();
+        }
+        public async Task<bool> AddTaskAssignmentAsync(TaskAssignment entity)
+        {
+            _context.TaskAssignments.Add(entity);
+            return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<bool> TaskAssignmentExistsAsync(int taskId, int assignToAccountId)
+        {
+            return await _context.TaskAssignments
+                .AnyAsync(x => x.TaskId == taskId && x.AssignToAccountId == assignToAccountId);
+        }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize)
+        {
+            // Query gốc
+            var query = _context.StartupTasks
+                .Include(x => x.ColumnnStatus)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignedByAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignToAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Where(x => x.MilestoneId == milestoneId);
+
+            var totalCount = await query.CountAsync();
+
+            // Phân trang trước khi chuyển sang DTO
+            var items = await query
+                .OrderBy(x => x.TaskId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new TasklistDto
+                {
+                    TaskId = x.TaskId,
+                    Title = x.Title,
+                    Priority = x.Priority,
+                    Description = x.Description,
+                    DueDate = x.Duedate,
+                    Progress = x.Progress,
+                    ColumnStatus = x.ColumnnStatus.ColumnName,
+                    Note = x.Note,
+                    CreatedBy = x.TaskAssignments.FirstOrDefault() != null && x.TaskAssignments.FirstOrDefault().AssignedByAccount != null
+                        ? x.TaskAssignments.FirstOrDefault().AssignedByAccount.AccountProfile.AvatarUrl
+                        : null,
+                    AsignTo = x.TaskAssignments
+                            .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                            .Select(a => new AssignToDTO
+                            {
+                                Id = a.AssignToAccount.AccountId,
+                                Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                                AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                            }).ToList()
+                })
+                .ToListAsync();
+
+            return new PagedResult<TasklistDto>(items, totalCount, pageNumber, pageSize);
+        }
+        public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(
+    int milestoneId, int pageNumber, int pageSize, string? search, int? columnStatusId)
+        {
+            var query = _context.StartupTasks
+                .Include(x => x.ColumnnStatus)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignedByAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignToAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Where(x => x.MilestoneId == milestoneId);
+
+            // Lọc theo cột (status)
+            if (columnStatusId.HasValue)
+                query = query.Where(x => x.ColumnnStatusId == columnStatusId);
+
+            // Search (title/description)
+            if (!string.IsNullOrEmpty(search))
+            {
+                var lowered = search.Trim().ToLower();
+                query = query.Where(x =>
+                    (!string.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(lowered)) ||
+                    (!string.IsNullOrEmpty(x.Description) && x.Description.ToLower().Contains(lowered))
+                );
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(x => x.TaskId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new TasklistDto
+                {
+                    TaskId = x.TaskId,
+                    Title = x.Title,
+                    Priority = x.Priority,
+                    Description = x.Description,
+                    DueDate = x.Duedate,
+                    Progress = x.Progress,
+                    ColumnStatus = x.ColumnnStatus.ColumnName,
+                    Note = x.Note,
+                    CreatedBy = x.TaskAssignments.FirstOrDefault() != null && x.TaskAssignments.FirstOrDefault().AssignedByAccount != null
+                        ? x.TaskAssignments.FirstOrDefault().AssignedByAccount.AccountProfile.AvatarUrl
+                        : null,
+                    AsignTo = x.TaskAssignments
+                            .Where(a => a.AssignToAccount != null && a.AssignToAccount.AccountProfile != null)
+                            .Select(a => new AssignToDTO
+                            {
+                                Id = a.AssignToAccount.AccountId,
+                                Fullname = a.AssignToAccount.AccountProfile.FirstName + " " + a.AssignToAccount.AccountProfile.LastName,
+                                AvatarURL = a.AssignToAccount.AccountProfile.AvatarUrl
+                            }).ToList()
+                })
+                .ToListAsync();
+
+            return new PagedResult<TasklistDto>(items, totalCount, pageNumber, pageSize);
+        }
+        // Thêm assignment
+        public async Task<bool> AddTaskAssignAsync(TaskAssignment entity)
+        {
+            // Kiểm tra đã gán chưa (tránh trùng)
+            var exists = await _context.TaskAssignments
+                .AnyAsync(x => x.TaskId == entity.TaskId && x.AssignToAccountId == entity.AssignToAccountId);
+            if (exists) return false;
+
+            _context.TaskAssignments.Add(entity);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Hủy assignment
+        public async Task<bool> RemoveTaskAssignmentAsync(int taskId, int accountId)
+        {
+            var assignment = await _context.TaskAssignments
+                .FirstOrDefaultAsync(x => x.TaskId == taskId && x.AssignToAccountId == accountId);
+            if (assignment == null) return false;
+
+            _context.TaskAssignments.Remove(assignment);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        public async Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId)
+        {
+            return await _context.CommentTasks
+                .Where(x => x.TaskId == taskId)
+                .OrderByDescending(x => x.CreateAt)
+                .Select(x => new CommentTaskDto
+                {
+                    CommentTaskId = x.CommentTaskId,
+                    TaskId = (int)x.TaskId,
+                    AccountId = (int)x.AccountId,
+                    Comment = x.Comment,
+                    CreateAt = x.CreateAt,
+                    FullName = x.Account != null
+                        ? x.Account.AccountProfile.FirstName + " " + x.Account.AccountProfile.LastName
+                        : null,
+                    AvatarUrl = x.Account != null && x.Account.AccountProfile != null? x.Account.AccountProfile.AvatarUrl: null
+                })
+                .ToListAsync();
+        }
+        public async Task<StartupTask?> GetTaskByIdAsync(int taskId)
+        {
+            return await _context.StartupTasks
+                .Include(x => x.ColumnnStatus)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(a => a.AssignToAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(a => a.AssignedByAccount)
+                        .ThenInclude(acc => acc.AccountProfile)
+                .FirstOrDefaultAsync(x => x.TaskId == taskId);
+        }
+        public async Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId)
+        {
+            return await _context.MilestoneAssignments
+                .Where(ma => ma.MilestoneId == milestoneId)
+                .Include(ma => ma.Member)
+                    .ThenInclude(sm => sm.Account)
+                        .ThenInclude(a => a.AccountProfile)
+                .Select(ma => new MemberInMilestoneDto
+                {
+                    MemberId = (int)ma.MemberId,
+                    AccountId = ma.Member.Account.AccountId,
+                    FullName = ma.Member.Account.AccountProfile.FirstName + " " + ma.Member.Account.AccountProfile.LastName,
+                    AvatarUrl = ma.Member.Account.AccountProfile.AvatarUrl
+                })
+                .ToListAsync();
+        }
     }
 }
