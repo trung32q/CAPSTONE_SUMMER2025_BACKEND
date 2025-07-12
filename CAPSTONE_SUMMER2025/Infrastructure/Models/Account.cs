@@ -27,6 +27,7 @@ namespace Infrastructure.Models
             Posts = new HashSet<Post>();
             StartupMembers = new HashSet<StartupMember>();
             Subcribes = new HashSet<Subcribe>();
+            TaskActivityLogs = new HashSet<TaskActivityLog>();
             TaskAssignmentAssignToAccounts = new HashSet<TaskAssignment>();
             TaskAssignmentAssignedByAccounts = new HashSet<TaskAssignment>();
             UserOtps = new HashSet<UserOtp>();
@@ -64,6 +65,7 @@ namespace Infrastructure.Models
         public virtual ICollection<Post> Posts { get; set; }
         public virtual ICollection<StartupMember> StartupMembers { get; set; }
         public virtual ICollection<Subcribe> Subcribes { get; set; }
+        public virtual ICollection<TaskActivityLog> TaskActivityLogs { get; set; }
         public virtual ICollection<TaskAssignment> TaskAssignmentAssignToAccounts { get; set; }
         public virtual ICollection<TaskAssignment> TaskAssignmentAssignedByAccounts { get; set; }
         public virtual ICollection<UserOtp> UserOtps { get; set; }

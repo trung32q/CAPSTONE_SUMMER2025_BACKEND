@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Models
 {
@@ -61,14 +60,15 @@ namespace Infrastructure.Models
         public virtual DbSet<StartupTask> StartupTasks { get; set; } = null!;
         public virtual DbSet<StartupTaskLabel> StartupTaskLabels { get; set; } = null!;
         public virtual DbSet<Subcribe> Subcribes { get; set; } = null!;
+        public virtual DbSet<TaskActivityLog> TaskActivityLogs { get; set; } = null!;
         public virtual DbSet<TaskAssignment> TaskAssignments { get; set; } = null!;
         public virtual DbSet<UserOtp> UserOtps { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                              .SetBasePath(Directory.GetCurrentDirectory())
-                              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                               .SetBasePath(Directory.GetCurrentDirectory())
+                               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -1240,6 +1240,34 @@ namespace Infrastructure.Models
                     .WithMany(p => p.Subcribes)
                     .HasForeignKey(d => d.FollowingStartUpId)
                     .HasConstraintName("FK__Subcribe__Follow__6AEFE058");
+            });
+
+            modelBuilder.Entity<TaskActivityLog>(entity =>
+            {
+                entity.HasKey(e => e.ActivityId)
+                    .HasName("PK__TaskActi__45F4A79184027D9B");
+
+                entity.ToTable("TaskActivityLog");
+
+                entity.Property(e => e.ActionType).HasMaxLength(50);
+
+                entity.Property(e => e.AtTime)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Content).HasMaxLength(500);
+
+                entity.HasOne(d => d.ByAccount)
+                    .WithMany(p => p.TaskActivityLogs)
+                    .HasForeignKey(d => d.ByAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TaskActivityLog_Account");
+
+                entity.HasOne(d => d.Task)
+                    .WithMany(p => p.TaskActivityLogs)
+                    .HasForeignKey(d => d.TaskId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TaskActivityLog_Task");
             });
 
             modelBuilder.Entity<TaskAssignment>(entity =>
