@@ -340,5 +340,9 @@ namespace API.Repositories
         {
             return await _context.TaskAssignments.Include(a => a.AssignToAccount).ThenInclude(acc => acc.AccountProfile).FirstOrDefaultAsync(x => x.TaskId == taskId);
         }
+        public async Task<int?> GetMemberIDByAccountIdAsync(int accountid)
+        {
+            return (await _context.StartupMembers.FirstOrDefaultAsync(x => x.AccountId == accountid))?.StartupMemberId;
+        }
     }
 }

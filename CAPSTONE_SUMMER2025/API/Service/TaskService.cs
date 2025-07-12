@@ -61,9 +61,15 @@ namespace API.Service
                     Status = MilestoneStatus.ACTIVE
                 };
                 await _repo.AddMilestoneAsync(milestone);
+                var firstmember = await _repo.GetMemberIDByAccountIdAsync(dto.AccountID);
+                var allMemberIds = dto.MemberIds.Distinct().ToList();
 
+                if (firstmember.HasValue && !allMemberIds.Contains(firstmember.Value))
+                {
+                    allMemberIds.Add(firstmember.Value);
+                }
                 // Gán member nếu có
-                foreach (var memberId in dto.MemberIds.Distinct())
+                foreach (var memberId in allMemberIds)
                 {
                     var assignment = new MilestoneAssignment
                     {
