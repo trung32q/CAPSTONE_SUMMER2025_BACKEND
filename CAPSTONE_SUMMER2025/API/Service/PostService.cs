@@ -927,5 +927,22 @@ namespace API.Service
             };
         }
 
+        public async Task<bool> UpdateInternshipPostAsync(int internshipPostId, UpdateInternshipPostDTO dto)
+        {
+            return await _repository.UpdateInternshipPostAsync(
+                internshipPostId,
+                new InternshipPost
+                {
+                    Deadline = dto.Deadline,
+                    Requirement = dto.Requirement,
+                    Salary = dto.Salary,
+                    Address = dto.Address,
+                    Benefits = dto.Benefits,
+                    Description = dto.Description
+                });
+           
+        }
+
+
     }
 }

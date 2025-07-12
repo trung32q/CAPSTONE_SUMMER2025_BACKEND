@@ -9,6 +9,7 @@ namespace Infrastructure.Models
         {
             CommentTasks = new HashSet<CommentTask>();
             StartupTaskLabels = new HashSet<StartupTaskLabel>();
+            TaskActivityLogs = new HashSet<TaskActivityLog>();
             TaskAssignments = new HashSet<TaskAssignment>();
         }
 
@@ -26,6 +27,7 @@ namespace Infrastructure.Models
         public virtual Milestone? Milestone { get; set; }
         public virtual ICollection<CommentTask> CommentTasks { get; set; }
         public virtual ICollection<StartupTaskLabel> StartupTaskLabels { get; set; }
+        public virtual ICollection<TaskActivityLog> TaskActivityLogs { get; set; }
         public virtual ICollection<TaskAssignment> TaskAssignments { get; set; }
     }
 }

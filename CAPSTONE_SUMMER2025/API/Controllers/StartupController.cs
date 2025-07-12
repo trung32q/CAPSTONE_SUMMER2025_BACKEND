@@ -492,8 +492,16 @@ namespace API.Controllers
             return Ok(cvs);
         }
 
+        // accpept hoặc reject cv
+        [HttpPut("response-candidateCV/{candidateCVId}")]
+        public async Task<IActionResult> UpdateStatus(int candidateCVId, string status)
+        {
+            var success = await _service.ResponseCandidateCVAsync( candidateCVId, status);
+            if (!success) return NotFound("Candidate CV not found.");
 
-     
+            return Ok("resonse successfully.");
+        }
+
     }
 }
 

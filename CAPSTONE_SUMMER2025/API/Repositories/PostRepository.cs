@@ -806,6 +806,21 @@ namespace API.Repositories
         }
 
 
+        public async Task<bool> UpdateInternshipPostAsync(int internhsipId, InternshipPost internshipPost)
+        {
+            var post = await _context.InternshipPosts.FindAsync(internhsipId);
+            if (post == null)
+                return false;
 
+            post.Description = internshipPost.Description;
+            post.Requirement = internshipPost.Requirement;
+            post.Benefits = internshipPost.Benefits;
+            post.Address = internshipPost.Address;
+            post.Salary = internshipPost.Salary;
+            post.Deadline = internshipPost.Deadline;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
