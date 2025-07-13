@@ -32,5 +32,6 @@ namespace API.Repositories.Interfaces
         Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId);
         Task<TaskAssignment?> GetAssignToByTaskIdAsync(int taskId);
         Task<int?> GetMemberIDByAccountIdAsync(int accountid);
+        Task<List<Label>> GetAllAsync();
     }
 }

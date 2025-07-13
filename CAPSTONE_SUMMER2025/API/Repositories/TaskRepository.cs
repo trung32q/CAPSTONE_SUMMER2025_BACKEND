@@ -344,5 +344,9 @@ namespace API.Repositories
         {
             return (await _context.StartupMembers.FirstOrDefaultAsync(x => x.AccountId == accountid))?.StartupMemberId;
         }
+        public async Task<List<Label>> GetAllAsync()
+        {
+            return await _context.Labels.ToListAsync();
+        }
     }
 }

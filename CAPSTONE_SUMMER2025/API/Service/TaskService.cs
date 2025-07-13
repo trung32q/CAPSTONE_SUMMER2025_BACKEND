@@ -362,5 +362,14 @@ namespace API.Service
                .ToList();
             return asignTo;
         }
+        public async Task<List<LabelDto>> GetAllLabelsAsync()
+        {
+            var labels = await _repo.GetAllAsync();
+            return labels.Select(x => new LabelDto
+            {
+                LabelName = x.LabelName,
+                Color = x.Color
+            }).ToList();
+        }
     }
 }

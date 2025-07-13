@@ -220,6 +220,12 @@ namespace API.Controllers
 
             return Ok(members);
         }
+        [HttpGet("labels")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _Service.GetAllLabelsAsync();
+            return Ok(result);
+        }
     }
 }
  
