@@ -348,5 +348,46 @@ namespace API.Repositories
         {
             return await _context.Labels.ToListAsync();
         }
+        public async Task<List<ActivityLogDto>> GetAllActivityLogsAsync(int milestoneId)
+        {
+            var taskIds = await _context.StartupTasks
+          .Where(t => t.MilestoneId == milestoneId)
+          .Select(t => t.TaskId)
+         .ToListAsync();
+            var logs = await _context.TaskActivityLogs.Where(log => taskIds.Contains(log.TaskId))
+            .Include(l => l.ByAccount)
+            .ThenInclude(acc => acc.AccountProfile)
+            .OrderByDescending(l => l.AtTime)
+            .ToListAsync();
+            var dtos = logs.Select(l => new ActivityLogDto
+            {
+                ActivityId = l.ActivityId,
+                TaskId = l.TaskId,
+                ActionType = l.ActionType,
+                AtTime = l.AtTime,
+                Content = l.Content,
+                ByAccountId = l.ByAccountId,
+                FullName = l.ByAccount != null && l.ByAccount.AccountProfile != null
+        ? l.ByAccount.AccountProfile.FirstName + " " + l.ByAccount.AccountProfile.LastName
+        : null,
+                AvatarUrl = l.ByAccount != null && l.ByAccount.AccountProfile != null
+        ? l.ByAccount.AccountProfile.AvatarUrl
+        : null
+            }).ToList();
+            return dtos;
+        }
+
+        public async Task AddActivityLogAsync(TaskActivityLog log)
+        {
+            _context.TaskActivityLogs.Add(log);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<string> GetColumnNameAsync(int columnId)
+        {
+            return await _context.ColumnnStatuses
+                .Where(x => x.ColumnnStatusId == columnId)
+                .Select(x => x.ColumnName)
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -28,5 +28,7 @@ namespace API.Service.Interface
         Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId);
         Task<List<AssignToDTO>> GetMembersInTaskAsync(int taskId);
         Task<List<LabelDto>> GetAllLabelsAsync();
+        Task<List<ActivityLogDto>> GetAllActivityLogsAsync(int milestoneId);
+        Task AddActivityLogAsync(ActivityLogDto dto);
     }
 }

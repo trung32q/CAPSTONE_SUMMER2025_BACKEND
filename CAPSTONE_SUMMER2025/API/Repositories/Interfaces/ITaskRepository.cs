@@ -33,5 +33,8 @@ namespace API.Repositories.Interfaces
         Task<TaskAssignment?> GetAssignToByTaskIdAsync(int taskId);
         Task<int?> GetMemberIDByAccountIdAsync(int accountid);
         Task<List<Label>> GetAllAsync();
+        Task<List<ActivityLogDto>> GetAllActivityLogsAsync(int milestoneId);
+        Task AddActivityLogAsync(TaskActivityLog log);
+        Task<string> GetColumnNameAsync(int columnId);
     }
 }

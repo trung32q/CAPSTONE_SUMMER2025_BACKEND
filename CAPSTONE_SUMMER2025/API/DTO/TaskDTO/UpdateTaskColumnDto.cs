@@ -4,5 +4,6 @@
     {
         public int TaskId { get; set; }
         public int NewColumnStatusId { get; set; }
+        public int AccountId { get; set; }
     }
 }

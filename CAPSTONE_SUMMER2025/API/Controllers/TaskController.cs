@@ -226,6 +226,14 @@ namespace API.Controllers
             var result = await _Service.GetAllLabelsAsync();
             return Ok(result);
         }
+        [HttpGet("all-activity-log")]
+        public async Task<IActionResult> GetAllActivityLog(int milestoneId)
+        {
+            var logs = await _Service.GetAllActivityLogsAsync(milestoneId);
+            if (logs == null || logs.Count == 0)
+                return NotFound(new { message = "Không có activity log nào cho milestone này!" });
+            return Ok(logs);
+        }
     }
 }
  

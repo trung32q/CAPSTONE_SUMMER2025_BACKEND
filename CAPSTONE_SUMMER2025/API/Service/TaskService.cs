@@ -168,6 +168,15 @@ namespace API.Service
                         TargetURL = targetUrl
                     });
                 }
+                var entity = new TaskActivityLog
+                {
+                    TaskId = createdTask.TaskId,
+                    ActionType = "create task",
+                    ByAccountId = (int)dto.AssignedByAccountId,
+                    AtTime = DateTime.Now,
+                    Content = $"{senderName} has create new task : {dto.Title}"
+                };
+                await _repo.AddActivityLogAsync(entity);
             }
             return createdTask;
         }
@@ -227,6 +236,20 @@ namespace API.Service
         }
         public async Task<bool> UpdateTaskColumnAsync(UpdateTaskColumnDto dto)
         {
+            var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AccountId);
+            var accountname = accountsender.AccountProfile.FirstName + " " + accountsender.AccountProfile.LastName;
+            var task = await _repo.GetTaskByIdAsync(dto.TaskId);
+            var oldcolumn = await _repo.GetColumnNameAsync((int)task.ColumnnStatusId);
+            var newcolumn = await _repo.GetColumnNameAsync((int)dto.NewColumnStatusId);
+            var entityactivity = new TaskActivityLog
+            {
+                TaskId = dto.TaskId,
+                ActionType = "change status task",
+                ByAccountId = (int)dto.AccountId,
+                AtTime = DateTime.Now,
+                Content = $"{accountname} has change task :{task.Title} from {oldcolumn} to {newcolumn}"
+            };
+            await _repo.AddActivityLogAsync(entityactivity);
             return await _repo.UpdateTaskColumnAsync(dto.TaskId, dto.NewColumnStatusId);
         }
 
@@ -236,6 +259,18 @@ namespace API.Service
         }
         public async Task<bool> UpdateTaskAsync(UpdateTaskDto dto)
         {
+            var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AccountId);
+            var accountname = accountsender.AccountProfile.FirstName+" "+ accountsender.AccountProfile.LastName;
+            var task = await _repo.GetTaskByIdAsync(dto.TaskId);
+            var entityactivity = new TaskActivityLog
+            {
+                TaskId = dto.TaskId,
+                ActionType = "assign task",
+                ByAccountId = (int)dto.AccountId,
+                AtTime = DateTime.Now,
+                Content = $"{accountname} has update task :{task.Title}"
+            };
+            await _repo.AddActivityLogAsync(entityactivity);
             return await _repo.UpdateTaskAsync(dto);
         }
         public async Task<bool> AddCommentAsync(CreateCommentTaskDto dto)
@@ -274,11 +309,36 @@ namespace API.Service
                 AssignToAccountId = dto.AssignToAccountId,
                 AssignAt = DateTime.Now
             };
-
-           var assign = await _repo.AddTaskAssignmentAsync(entity);
+            var task = await _repo.GetTaskByIdAsync(dto.TaskId);
+            var assign = await _repo.AddTaskAssignmentAsync(entity);
             var targetUrl = $"/task/{dto.TaskId}";
-            var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AssignedByAccountId);
-           
+            var sender = await _accountRepository.GetAccountByAccountIDAsync((int)dto.AssignedByAccountId);
+            var senderName = sender?.AccountProfile != null
+                ? $"{sender.AccountProfile.FirstName} {sender.AccountProfile.LastName}"
+                : "SomeOne";
+            var assignToAccount= await _accountRepository.GetAccountByAccountIDAsync((int)dto.AssignToAccountId);
+            var assigntoaccountName = assignToAccount?.AccountProfile != null
+                ? $"{sender.AccountProfile.FirstName} {sender.AccountProfile.LastName}"
+                : "SomeOne";
+            await _notificationService.CreateAndSendAsync(new reqNotificationDTO
+                {
+                    UserId = dto.AssignToAccountId,
+                    Message = $"{senderName} has assigned you a new task",
+                    CreatedAt = DateTime.Now,
+                    IsRead = false,
+                    senderid = (int)dto.AssignedByAccountId,
+                    NotificationType = NotiConst.Task,
+                    TargetURL = targetUrl
+                });
+            var entityactivity = new TaskActivityLog
+            {
+                TaskId = dto.TaskId,
+                ActionType = "assign task",
+                ByAccountId = (int)dto.AssignedByAccountId,
+                AtTime = DateTime.Now,
+                Content = $"{senderName} has assign task: {task.Title} for {assigntoaccountName}"
+            };
+            await _repo.AddActivityLogAsync(entityactivity);
             return assign;
         }
         public async Task<PagedResult<TasklistDto>> GetTaskByMilestoneIdPagedAsync(int milestoneId, int pageNumber, int pageSize)
@@ -370,6 +430,23 @@ namespace API.Service
                 LabelName = x.LabelName,
                 Color = x.Color
             }).ToList();
+        }
+        public async Task<List<ActivityLogDto>> GetAllActivityLogsAsync(int milestoneId)
+        {
+            return await _repo.GetAllActivityLogsAsync( milestoneId);
+        }
+
+        public async Task AddActivityLogAsync(ActivityLogDto dto)
+        {
+            var entity = new TaskActivityLog
+            {
+                TaskId = dto.TaskId,
+                ActionType = dto.ActionType,
+                ByAccountId = dto.ByAccountId,
+                AtTime = DateTime.Now,
+                Content = dto.Content
+            };
+            await _repo.AddActivityLogAsync(entity);
         }
     }
 }
