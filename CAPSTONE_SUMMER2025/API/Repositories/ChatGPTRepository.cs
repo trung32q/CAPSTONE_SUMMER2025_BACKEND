@@ -259,7 +259,7 @@ Các tiêu chí:
 3. Kỹ năng mềm (Evaluation_SoftSkills)  
 4. Tổng kết (Evaluation_OverallSummary): Nhận xét chung và khuyến nghị
 
-**Chỉ trả về JSON đúng theo định dạng sau (chấm điểm từng phần và thêm lời giải thích ngắn):**
+**Chỉ trả về JSON đúng theo định dạng sau (chấm điểm từng phần,thêm lời giải thích ngắn và trả về bằng tiếng anh):**
 ```json
 {{
   ""Evaluation_TechSkills"": {{

@@ -336,5 +336,12 @@ namespace API.Repositories
                 })
                 .ToListAsync();
         }
+
+
+        //lấy ra các label
+        public async Task<List<Label>> GetAllAsync()
+        {
+            return await _context.Labels.ToListAsync();
+        }
     }
 }

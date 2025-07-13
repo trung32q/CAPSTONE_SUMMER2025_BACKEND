@@ -432,16 +432,7 @@ namespace API.Controllers
             return Ok("Status updated successfully");
         }
 
-        //apply cv
-        [HttpPost("apply-cv")]
-        public async Task<IActionResult> Apply([FromForm] ApplyCVRequestDTO dto)
-        {
-            var success = await _postService.ApplyCVAsync(dto);
-            if (!success)
-                return BadRequest("Already applied or error occurred");
-
-            return Ok("CV submitted successfully");
-        }
+   
 
     
         [HttpGet("GetPostsByStartupId")]

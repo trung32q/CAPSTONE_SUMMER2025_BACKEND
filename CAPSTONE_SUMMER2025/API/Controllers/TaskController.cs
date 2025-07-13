@@ -208,6 +208,14 @@ namespace API.Controllers
 
             return Ok(members);
         }
+
+        //lấy ra các label(color)
+        [HttpGet("labels")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _Service.GetAllLabelsAsync();
+            return Ok(result);
+        }
     }
 }
  

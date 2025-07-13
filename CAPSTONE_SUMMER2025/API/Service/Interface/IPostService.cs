@@ -38,7 +38,6 @@ namespace API.Service.Interface
         Task<List<PostScheduleDTO>> GetScheduledPostsAsync();
         Task<bool> PublishPostAsync(int postId);
         Task<bool> UpdateInternshipPostAsync(int internShipPostId);
-        Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto);
         Task<PagedResult<resPostDTO>> GetPostsByStartupIdAsync(int startupId, int pageNumber, int pageSize);
         Task<PagedResult<InternshipPostDTO>> GetAllInternshipPostsAsync(int pageNumber, int pageSize,int startupid);
         Task<PagedResult<PostSearchDTO>> GetSearchPostsByStartup(int startupId, string? keyword, int pageNumber, int pageSize);

@@ -341,5 +341,15 @@ namespace API.Service
         {
             return await _repo.GetMembersInMilestoneAsync(milestoneId);
         }
+
+        public async Task<List<LabelDto>> GetAllLabelsAsync()
+        {
+            var labels = await _repo.GetAllAsync();
+            return labels.Select(x => new LabelDto
+            {
+                LabelName = x.LabelName,
+                Color = x.Color
+            }).ToList();
+        }
     }
 }

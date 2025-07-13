@@ -30,5 +30,6 @@ namespace API.Repositories.Interfaces
         Task<List<CommentTaskDto>> GetCommentsByTaskIdAsync(int taskId);
         Task<StartupTask?> GetTaskByIdAsync(int taskId);
         Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId);
+        Task<List<Label>> GetAllAsync();
     }
 }
