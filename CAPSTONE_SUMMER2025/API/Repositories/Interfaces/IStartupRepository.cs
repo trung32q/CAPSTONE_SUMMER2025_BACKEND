@@ -65,11 +65,8 @@ namespace API.Repositories.Interfaces
         Task RemoveSubcribeAsync(Subcribe subcribe);
         Task<Startup> GetStartupByIdAsync(int id);
         Task UpdateStartupAsync(Startup startup);
-        Task<PagedResult<CandidateCVResponseDTO>> GetCandidateCVsByStartupIdAsync(
-      int startupId,int positionId, int pageNumber, int pageSize);
+ 
         Task<PositionRequirement?> GetByIdAsync(int positionId);
         Task AddCVRequirementEvaluationAsync(CvrequirementEvaluation evaluation);
-        Task<CandidateCv?> GetCandidateCvWithRelationsAsync(int candidateCvId);
-        Task<CandidateCv?> GetCandidateCVByIdAsync(int id);
     }
 }

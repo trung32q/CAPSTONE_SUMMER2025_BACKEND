@@ -24,13 +24,15 @@ namespace API.Service
         private readonly IFilebaseHandler _filebaseHandler;
         private readonly ILogger<StartupService> _logger;
         private readonly INotificationService _notificationService;
-        private readonly IEmailService _emailService;
+        private readonly ICVRepository _cvRepository;
+      
         private readonly CAPSTONE_SUMMER2025Context _context;
         private readonly IConfiguration _config;
+        private readonly IEmailService _emailService;
 
-
-        public StartupService(IConfiguration configuration,IEmailService emailService,IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext, INotificationService notificationService, IPostRepository postRepo)
+        public StartupService(ICVRepository cVRepository,IConfiguration configuration,IEmailService emailService,IStartupRepository repo, IMapper mapper, IFilebaseHandler filebaseHandler, ILogger<StartupService> logger, IAccountRepository accountRepository, CAPSTONE_SUMMER2025Context conntext, INotificationService notificationService, IPostRepository postRepo)
         {
+            _cvRepository = cVRepository;
             _repo = repo;
             _mapper = mapper;
             _filebaseHandler = filebaseHandler;
@@ -869,7 +871,7 @@ namespace API.Service
 
         public async Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId,int positionId, int page, int pageSize)
         {
-            return await _repo.GetCandidateCVsByStartupIdAsync(startupId, positionId, page, pageSize);
+            return await _cvRepository.GetCandidateCVsByStartupIdAsync(startupId, positionId, page, pageSize);
         }
 
         public async Task<PositionRequirementDto?> GetRequirementInfoAsync(int positionId)
@@ -901,53 +903,8 @@ namespace API.Service
             await _repo.SaveChangesAsync();
         }
 
-        public async Task<CandidateInfoDto?> GetCandidateInfoAsync(int candidateCvId)
-        {
-            var cv = await _repo.GetCandidateCvWithRelationsAsync(candidateCvId);
-            if (cv == null) return null;
+    
 
-            return new CandidateInfoDto
-            {
-                FullName = $"{cv.Account?.AccountProfile?.FirstName} {cv.Account?.AccountProfile?.LastName}",
-                PositionTitle = cv.Internship?.Position?.Title ?? "",
-                StartupName = cv.Internship?.Startup?.StartupName ?? "",
-                email = cv.Account?.Email
-               
-            };
-        }
-
-        public async Task<bool> ResponseCandidateCVAsync(int candidateCVId, string newStatus)
-        {
-            var cv = await _repo.GetCandidateCVByIdAsync(candidateCVId);
-            var infor = await GetCandidateInfoAsync(candidateCVId);
-            if (cv == null) return false;
-
-            string subject = "";
-            string htmlBody = "";
-
-            if (newStatus == Utils.Constants.CVStatus.ACCEPT)
-            {
-                subject = _config["EmailTemplates:AcceptSubject"];
-                htmlBody = _config["EmailTemplates:AcceptHtmlBody"]
-                    .Replace("{CandidateFullName}", infor.FullName)
-                    .Replace("{StartupName}", infor.StartupName)
-                    .Replace("{PositionTitle}", infor.PositionTitle);
-            }
-            else if (newStatus == Utils.Constants.CVStatus.REJECT)
-            {
-                subject = _config["EmailTemplates:RejectSubject"];
-                htmlBody = _config["EmailTemplates:RejectHtmlBody"]
-                    .Replace("{CandidateFullName}", infor.FullName)
-                    .Replace("{StartupName}", infor.StartupName)
-                    .Replace("{PositionTitle}", infor.PositionTitle);
-            }
-
-            await _emailService.SendEmailAsync(infor.email, subject, htmlBody);
-
-            cv.Status = newStatus;
-            await _repo.SaveChangesAsync();
-            return true;
-        }
-
+       
     }
 }

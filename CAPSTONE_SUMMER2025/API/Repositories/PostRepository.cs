@@ -729,14 +729,7 @@ namespace API.Repositories
             return await _context.InternshipPosts.FindAsync(id);
         }
 
-        // apply cv
-        public async Task<int> AddCandidateCvAsync(CandidateCv cv)
-        {
-            await _context.CandidateCvs.AddAsync(cv);
-            await _context.SaveChangesAsync();
-            return cv.CandidateCvId; 
-        }
-
+      
 
 
 
@@ -822,5 +815,7 @@ namespace API.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        
     }
 }

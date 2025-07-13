@@ -42,7 +42,6 @@ namespace API.Repositories.Interfaces
         Task<InternshipPost> GetInternshipPostByIdAsync(int id);
         Task UpdateInternshipPostAsync(InternshipPost post);
         Task SaveChangesAsync();
-        Task<int> AddCandidateCvAsync(CandidateCv cv);
 
         Task<PagedResult<Post>> GetPostsByStartupId(int startupId, int pageNumber, int pageSize);
         Task<Startup?> GetStartupByIdAsync(int startupId);

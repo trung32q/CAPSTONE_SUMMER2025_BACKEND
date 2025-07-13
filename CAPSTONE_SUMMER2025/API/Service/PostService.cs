@@ -808,41 +808,7 @@ namespace API.Service
         }
 
         //apply cv
-        public async Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto)
-        {
-
-            var positionInfor = await _startupService.GetRequirementInfoAsync(dto.PositionId);
-
-            var cvURL = await _filebase.UploadPdfAsync((IFormFile)dto.CVFile);
-            var cvText = await _fileHandlerService.GetTextFromPdfAsync(dto.CVFile);
-            var evaluationCV = await _chatGPTRepository.EvaluateCVAgainstPositionAsync(cvText, positionInfor.Description, positionInfor.Requirement);
-
-         
-
-            var cv = new CandidateCv
-            {
-                AccountId = dto.Account_ID,
-                InternshipId = dto.Internship_ID,
-                Cvurl = cvURL,
-                CreateAt = DateTime.Now,
-                Status = Utils.Constants.CVStatus.PENDING
-            };
-
-            var candidateId = await _repository.AddCandidateCvAsync(cv);
-
-            await _startupService.AddEvaluationAsync(new DTO.StartupDTO.CVRequirementEvaluationResultDto
-            {
-                CandidateCVID = candidateId,
-                InternshipId = dto.Internship_ID,
-                Evaluation_Experience = evaluationCV.Evaluation_Experience,
-                Evaluation_SoftSkills = evaluationCV.Evaluation_SoftSkills,
-                Evaluation_TechSkills = evaluationCV.Evaluation_TechSkills,
-                Evaluation_OverallSummary = evaluationCV.Evaluation_OverallSummary
-            });
-
-            await _repository.SaveChangesAsync();
-            return true;
-        }
+        
 
       
         public async Task<PagedResult<resPostDTO>> GetPostsByStartupIdAsync(int startupId, int pageNumber, int pageSize)
@@ -943,6 +909,6 @@ namespace API.Service
            
         }
 
-
+      
     }
 }

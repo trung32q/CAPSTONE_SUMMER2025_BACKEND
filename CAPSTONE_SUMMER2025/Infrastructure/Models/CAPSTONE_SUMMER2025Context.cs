@@ -68,8 +68,8 @@ namespace Infrastructure.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                               .SetBasePath(Directory.GetCurrentDirectory())
-                               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                                .SetBasePath(Directory.GetCurrentDirectory())
+                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -419,19 +419,19 @@ namespace Infrastructure.Models
                 entity.Property(e => e.CandidateCvId).HasColumnName("CandidateCV_ID");
 
                 entity.Property(e => e.EvaluationExperience)
-                    .HasMaxLength(200)
+                    .HasMaxLength(2000)
                     .HasColumnName("Evaluation_Experience");
 
                 entity.Property(e => e.EvaluationOverallSummary)
-                    .HasMaxLength(200)
+                    .HasMaxLength(2000)
                     .HasColumnName("Evaluation_OverallSummary");
 
                 entity.Property(e => e.EvaluationSoftSkills)
-                    .HasMaxLength(200)
+                    .HasMaxLength(2000)
                     .HasColumnName("Evaluation_SoftSkills");
 
                 entity.Property(e => e.EvaluationTechSkills)
-                    .HasMaxLength(200)
+                    .HasMaxLength(2000)
                     .HasColumnName("Evaluation_TechSkills");
 
                 entity.Property(e => e.InternshipId).HasColumnName("Internship_ID");
