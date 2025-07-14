@@ -36,5 +36,6 @@ namespace API.Repositories.Interfaces
         Task<List<ActivityLogDto>> GetAllActivityLogsAsync(int milestoneId);
         Task AddActivityLogAsync(TaskActivityLog log);
         Task<string> GetColumnNameAsync(int columnId);
+        Task<List<LabeltaskDto>> GetTaskslable(List<int> taskIds);
     }
 }

@@ -184,7 +184,8 @@ namespace API.Service
         {
             var columns = await _repo.GetColumnsByMilestoneIdAsync(milestoneId);
             var tasks = await _repo.GetTasksByMilestoneAsync(milestoneId);
-
+            var taskids =tasks.Select(task => task.TaskId).ToList();
+            var taskLabels = await _repo.GetTaskslable(taskids);
             return columns.Select(c => new ColumnWithTasksDto
             {
                 ColumnStatusId = c.ColumnnStatusId,
@@ -194,7 +195,7 @@ namespace API.Service
                     .Select(t => new TaskDto
                     {
                         TaskId = t.TaskId,
-                        label =t.StartupTaskLabels.FirstOrDefault()?.Label.LabelName,
+                        label = t.StartupTaskLabels?.FirstOrDefault()?.Label?.LabelName,
                         Title = t.Title,
                         Description = t.Description,
                         Priority = t.Priority,

@@ -67,13 +67,27 @@ namespace API.Repositories
         }
         public async Task<List<StartupTask>> GetTasksByMilestoneAsync(int milestoneId)
         {
-            return await _context.StartupTasks.Include(x=>x.TaskAssignments)
-                .ThenInclude(x=>x.AssignToAccount)
-                .ThenInclude(x=>x.AccountProfile)
-                .Include(x=>x.StartupTaskLabels)
-                .ThenInclude(x=>x.Label)
+            return await _context.StartupTasks
+                .Include(x => x.TaskAssignments)
+                    .ThenInclude(x => x.AssignToAccount)
+                        .ThenInclude(acc => acc.AccountProfile)               
                 .Where(t => t.MilestoneId == milestoneId)
                 .ToListAsync();
+        }
+        public async Task<List<LabeltaskDto>> GetTaskslable(List<int> taskIds)
+        {
+            var taskLabels = await _context.StartupTaskLabels
+      .Where(x => taskIds.Contains(x.TaskId))
+      .Join(_context.Labels,
+          stl => stl.LabelId,
+          l => l.LabelId,
+          (stl, l) => new LabeltaskDto{ 
+              taskid =stl.TaskId,
+              LabelID=  l.LabelId, 
+              LabelName = l.LabelName,
+              Color =l.Color})
+      .ToListAsync();
+            return taskLabels;
         }
         public async Task<List<Milestone>> GetAllMilestonesWithMembersAsync(int startupId )
         {
