@@ -194,6 +194,7 @@ namespace API.Service
                     .Select(t => new TaskDto
                     {
                         TaskId = t.TaskId,
+                        label =t.StartupTaskLabels.FirstOrDefault()?.Label.LabelName,
                         Title = t.Title,
                         Description = t.Description,
                         Priority = t.Priority,
@@ -427,6 +428,7 @@ namespace API.Service
             var labels = await _repo.GetAllAsync();
             return labels.Select(x => new LabelDto
             {
+                LabelID =x.LabelId,
                 LabelName = x.LabelName,
                 Color = x.Color
             }).ToList();

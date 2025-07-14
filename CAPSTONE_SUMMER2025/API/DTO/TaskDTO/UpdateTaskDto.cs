@@ -11,5 +11,6 @@
         public int? ColumnnStatusId { get; set; }
         public string? Note { get; set; }
         public int AccountId  { get; set; }
+        public int? labelcolorID { get; set; }
     }
 }

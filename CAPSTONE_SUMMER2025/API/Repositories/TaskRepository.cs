@@ -70,6 +70,8 @@ namespace API.Repositories
             return await _context.StartupTasks.Include(x=>x.TaskAssignments)
                 .ThenInclude(x=>x.AssignToAccount)
                 .ThenInclude(x=>x.AccountProfile)
+                .Include(x=>x.StartupTaskLabels)
+                .ThenInclude(x=>x.Label)
                 .Where(t => t.MilestoneId == milestoneId)
                 .ToListAsync();
         }
@@ -126,7 +128,18 @@ namespace API.Repositories
             if (dto.Progress.HasValue) task.Progress = dto.Progress;
             if (dto.ColumnnStatusId.HasValue) task.ColumnnStatusId = dto.ColumnnStatusId;
             if (!string.IsNullOrEmpty(dto.Note)) task.Note = dto.Note;
+            if (dto.labelcolorID.HasValue)
+            {
+                // Xoá hết label cũ
+                _context.StartupTaskLabels.RemoveRange(task.StartupTaskLabels);
 
+                // Nếu truyền label mới thì add
+                _context.StartupTaskLabels.Add(new StartupTaskLabel
+                {
+                    TaskId = task.TaskId,
+                    LabelId = dto.labelcolorID.Value
+                });
+            }
             await _context.SaveChangesAsync();
             return true;
         }
