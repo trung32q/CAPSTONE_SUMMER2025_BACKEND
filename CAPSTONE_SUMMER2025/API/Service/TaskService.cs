@@ -281,6 +281,16 @@ namespace API.Service
             var accountids= await _repo.GetAccountIdsByTaskIdAsync(dto.TaskId);
             var accountsender = await _accountRepository.GetAccountByAccountIDAsync(dto.AccountId);
             var targetUrl = $"/task/{dto.TaskId}";
+            var task = await _repo.GetTaskByIdAsync(dto.TaskId);
+            var entityactivity = new TaskActivityLog
+            {
+                TaskId = dto.TaskId,
+                ActionType = "Comment task",
+                ByAccountId = (int)dto.AccountId,
+                AtTime = DateTime.Now,
+                Content = $"{accountsender.AccountProfile.FirstName + " " + accountsender.AccountProfile.LastName} has comment in task: {task.Title}"
+            };
+            await _repo.AddActivityLogAsync(entityactivity);
             foreach (var accountId in accountids)
             {
                 // Không gửi noti cho người tạo sự kiện
@@ -297,6 +307,7 @@ namespace API.Service
                     TargetURL = targetUrl
                 });
             }
+            
             return comment;
         }
         public async Task<bool> AssignTaskAsync(TaskAssignmentDto dto)
