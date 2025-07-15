@@ -427,7 +427,7 @@ namespace API.Service
                         }
 
                         var commenter = await _accountRepository.GetAccountByIdAsync(accountID.Value);
-                        if (commenter != null)
+                        if (commenter != null&& reqPostCommentDTO.AccountId != accountID)
                         {
                             var targetUrl = $"/post/{reqPostCommentDTO.PostId}";
                             var message = $"{commenter.AccountProfile?.FirstName} has comment on your post.";
