@@ -57,6 +57,7 @@ namespace Infrastructure.Models
         public virtual DbSet<StartupClick> StartupClicks { get; set; } = null!;
         public virtual DbSet<StartupLicense> StartupLicenses { get; set; } = null!;
         public virtual DbSet<StartupMember> StartupMembers { get; set; } = null!;
+        public virtual DbSet<StartupPitching> StartupPitchings { get; set; } = null!;
         public virtual DbSet<StartupStage> StartupStages { get; set; } = null!;
         public virtual DbSet<StartupTask> StartupTasks { get; set; } = null!;
         public virtual DbSet<StartupTaskLabel> StartupTaskLabels { get; set; } = null!;
@@ -1136,6 +1137,31 @@ namespace Infrastructure.Models
                     .WithMany(p => p.StartupMembers)
                     .HasForeignKey(d => d.StartupId)
                     .HasConstraintName("FK__StartupMe__Start__5441852A");
+            });
+
+            modelBuilder.Entity<StartupPitching>(entity =>
+            {
+                entity.HasKey(e => e.PitchingId)
+                    .HasName("PK__Startup___C55608ACE83ABCC4");
+
+                entity.ToTable("Startup_Pitching");
+
+                entity.Property(e => e.PitchingId).HasColumnName("Pitching_ID");
+
+                entity.Property(e => e.CreateAt)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Link).HasMaxLength(500);
+
+                entity.Property(e => e.StartupId).HasColumnName("Startup_ID");
+
+                entity.Property(e => e.Type).HasMaxLength(100);
+
+                entity.HasOne(d => d.Startup)
+                    .WithMany(p => p.StartupPitchings)
+                    .HasForeignKey(d => d.StartupId)
+                    .HasConstraintName("FK_Startup_Pitching_Startup");
             });
 
             modelBuilder.Entity<StartupStage>(entity =>

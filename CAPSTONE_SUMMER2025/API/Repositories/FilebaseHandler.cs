@@ -352,6 +352,7 @@ namespace API.Repositories
                 return randomName;
             }
         }
+
         //lấy ra pre link của filebase
         public string GeneratePresignedPDFUrl(string key, int expireHours = 2)
         {
@@ -374,6 +375,34 @@ namespace API.Repositories
                 return client.GetPreSignedURL(urlRequest);
             }
         }
+
+        //xóa file trên filebase
+        public async Task DeleteFileOnFilebaseAsync(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Key không hợp lệ.");
+
+            var config = new AmazonS3Config
+            {
+                ServiceURL = "https://s3.filebase.com",
+                ForcePathStyle = true
+            };
+
+            using (var client = new AmazonS3Client(
+                "185323F8105191E3009D",
+                "MXoHSlXNV2UrElhlUVDUhpCFS0OVNsJlUebrZyC6",
+                config))
+            {
+                var deleteRequest = new Amazon.S3.Model.DeleteObjectRequest
+                {
+                    BucketName = "media-file",
+                    Key = key
+                };
+
+                await client.DeleteObjectAsync(deleteRequest);
+            }
+        }
+
 
     }
 

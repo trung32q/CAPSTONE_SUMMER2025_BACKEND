@@ -903,8 +903,119 @@ namespace API.Service
             await _repo.SaveChangesAsync();
         }
 
-    
+        public async Task<StartupPitching> AddStartupPitchingAsync(StartupPitchingCreateDTO dto)
+        {
+            string type;
+            string link;
 
-       
+            if (dto.File.ContentType.StartsWith("video/"))
+            {
+                type = Utils.Constants.StartupPitchingConst.Video;
+                link = await _filebaseHandler.UploadMediaFile(dto.File);
+            }
+            else if (dto.File.ContentType == "application/pdf")
+            {
+                type = Utils.Constants.StartupPitchingConst.PDF;
+                link = await _filebaseHandler.UploadPdfAsync(dto.File);
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported file type. Only video and PDF are allowed.");
+            }
+
+            var entity = new StartupPitching
+            {
+                StartupId = dto.StartupId,
+                Type = type,
+                Link = link
+            };
+
+            await _repo.AddStartupPitchingAsync(entity);
+            await _repo.SaveChangesAsync();
+
+            return entity;
+        }
+
+        public async Task<List<GetStartupPitchingDTO>> GetPitchingsByTypeAndStartupAsync(int startupId, string type)
+        {
+            var pitchings = await _repo.GetPitchingsByTypeAndStartupAsync(startupId, type);
+
+            var result = pitchings.Select(p =>
+            {
+                string link = p.Type switch
+                {
+                    Utils.Constants.StartupPitchingConst.PDF => _filebaseHandler.GeneratePresignedPDFUrl(p.Link),
+                    Utils.Constants.StartupPitchingConst.Video => _filebaseHandler.GeneratePreSignedUrl(p.Link),
+                    _ => p.Link
+                };
+
+                return new GetStartupPitchingDTO
+                {
+                    PitchingId = p.PitchingId,
+                    Type = p.Type,
+                    Link = link,
+                    CreateAt = p.CreateAt ?? DateTime.MinValue // fallback nếu null
+                };
+            }).ToList();
+
+            return result;
+        }
+
+        public async Task<bool> DeleteStartupPitchingAsync(int pitchingId)
+        {
+            var pitching = await _repo.GetStartupPitchingByIdAsync(pitchingId);
+            if (pitching == null)
+                return false;
+
+            _repo.DeleteStartupPitching(pitching);
+            await _repo.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<bool> UpdateStartupPitchingAsync(int startupPitchingId, IFormFile file)
+        {
+            var pitching = await _repo.GetStartupPitchingByIdAsync(startupPitchingId);
+            if (pitching == null) return false;
+
+            string type = "";
+            string link = "";
+
+
+            if(pitching.Type == Utils.Constants.StartupPitchingConst.Video)
+            {
+                _filebaseHandler.DeleteFileByUrlAsync(pitching.Link);
+            }
+            else
+            {
+                _filebaseHandler.DeleteFileOnFilebaseAsync(pitching.Link);
+            }
+
+            if (file.ContentType.StartsWith("video/"))
+            {
+                type = Utils.Constants.StartupPitchingConst.Video;
+                link = await _filebaseHandler.UploadMediaFile(file);
+            }
+            else if (file.ContentType == "application/pdf")
+            {
+                type = Utils.Constants.StartupPitchingConst.PDF;
+                link = await _filebaseHandler.UploadPdfAsync(file);
+                
+            }
+            else
+            {
+                throw new ArgumentException("File không hợp lệ. Chỉ chấp nhận PDF hoặc video.");
+            }
+
+            pitching.Type = type;
+            pitching.Link = link;
+            pitching.CreateAt = DateTime.UtcNow;
+
+            _repo.UpdateStartupPitching(pitching);
+            await _repo.SaveChangesAsync();
+
+            return true;
+        }
+
     }
 }

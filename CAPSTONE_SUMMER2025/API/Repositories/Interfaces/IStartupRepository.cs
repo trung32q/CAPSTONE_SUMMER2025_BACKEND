@@ -68,5 +68,10 @@ namespace API.Repositories.Interfaces
  
         Task<PositionRequirement?> GetByIdAsync(int positionId);
         Task AddCVRequirementEvaluationAsync(CvrequirementEvaluation evaluation);
+        Task AddStartupPitchingAsync(StartupPitching pitching);
+        Task<List<StartupPitching>> GetPitchingsByTypeAndStartupAsync(int startupId, string type);
+        Task<StartupPitching?> GetStartupPitchingByIdAsync(int pitchingId);
+        void DeleteStartupPitching(StartupPitching pitching);
+        void UpdateStartupPitching(StartupPitching pitching);
     }
 }
