@@ -371,7 +371,7 @@ namespace API.Controllers
         [HttpPost("invite/respond")]
         public async Task<IActionResult> RespondToInvite([FromBody] InviteRespondDto dto)
         {
-            var success = await _service.UpdateInviteAsync(dto.InviteId, dto.Response?.ToLower());
+            var success = await _service.UpdateInviteAsync(dto.InviteId, dto.Response);
             if (!success)
                 return BadRequest("Invalid invite or invite not in pending status.");
             return Ok(new { message = $"Invite has been {dto.Response}ed." });
