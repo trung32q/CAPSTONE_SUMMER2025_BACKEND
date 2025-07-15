@@ -18,6 +18,7 @@ namespace Infrastructure.Models
             StartupClicks = new HashSet<StartupClick>();
             StartupLicenses = new HashSet<StartupLicense>();
             StartupMembers = new HashSet<StartupMember>();
+            StartupPitchings = new HashSet<StartupPitching>();
             Subcribes = new HashSet<Subcribe>();
         }
 
@@ -48,6 +49,7 @@ namespace Infrastructure.Models
         public virtual ICollection<StartupClick> StartupClicks { get; set; }
         public virtual ICollection<StartupLicense> StartupLicenses { get; set; }
         public virtual ICollection<StartupMember> StartupMembers { get; set; }
+        public virtual ICollection<StartupPitching> StartupPitchings { get; set; }
         public virtual ICollection<Subcribe> Subcribes { get; set; }
     }
 }

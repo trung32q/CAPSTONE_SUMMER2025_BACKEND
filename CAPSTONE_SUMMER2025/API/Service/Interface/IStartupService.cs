@@ -51,5 +51,9 @@ namespace API.Service.Interface
         Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId,int positionId, int page, int pageSize);
         Task<PositionRequirementDto?> GetRequirementInfoAsync(int positionId);
         Task AddEvaluationAsync(CVRequirementEvaluationResultDto evaluation);
+        Task<StartupPitching> AddStartupPitchingAsync(StartupPitchingCreateDTO dto);
+        Task<List<GetStartupPitchingDTO>> GetPitchingsByTypeAndStartupAsync(int startupId, string type);
+        Task<bool> DeleteStartupPitchingAsync(int pitchingId);
+        Task<bool> UpdateStartupPitchingAsync(int startupPitchingId, IFormFile file);
     }
 }

@@ -480,7 +480,49 @@ namespace API.Controllers
             return Ok("update thành công");
         }
 
-       
+        //tạo mới startup pitching
+        [HttpPost("startup-pitching")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateStartupPitching([FromForm] StartupPitchingCreateDTO dto)
+        {
+            var created = await _service.AddStartupPitchingAsync(dto);
+            return Ok(new
+            {
+                id = created.PitchingId,
+                data = created
+            });
+
+        }
+
+        //list ra các startup pistching theo startupid và type(nếu type bỏ trống thì chỉ theo startupId)
+        [HttpGet("startup-pitching-by-startup/{startupId}")]
+        public async Task<IActionResult> GetPitchingsByStartupAndType(int startupId, string? type)
+        {
+            var result = await _service.GetPitchingsByTypeAndStartupAsync(startupId, type);
+            return Ok(result);
+        }
+        //xóa startup pitching
+        [HttpDelete("startup-piching{id}")]
+        public async Task<IActionResult> DeleteStartupPitching(int id)
+        {
+            var success = await _service.DeleteStartupPitchingAsync(id);
+            if (!success)
+                return NotFound(new { message = "Pitching not found." });
+
+            return Ok("xóa thành công"); 
+        }
+
+        [HttpPut("startup-pitching")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateStartupPitching([FromForm] StartupPitchingUpdateDTO dto)
+        {
+           
+            var result = await _service.UpdateStartupPitchingAsync(dto.PitchingId, dto.File);
+            if (!result) return NotFound();
+
+            return Ok("cập nhật thành công");
+        }
+
 
     }
 }

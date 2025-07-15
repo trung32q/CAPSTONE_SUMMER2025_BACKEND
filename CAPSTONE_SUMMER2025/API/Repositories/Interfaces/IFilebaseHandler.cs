@@ -9,5 +9,6 @@
         Task<string> UploadAuthenticatedRawFile(IFormFile file);
         Task<string> UploadPdfAsync(IFormFile file);
         string GeneratePresignedPDFUrl(string key, int expireHours = 2);
+        Task DeleteFileOnFilebaseAsync(string key);
     }
 }

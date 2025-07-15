@@ -496,10 +496,38 @@ namespace API.Repositories
             await _context.CvrequirementEvaluations.AddAsync(evaluation);
         }
 
-       
 
-     
+        public async Task AddStartupPitchingAsync(StartupPitching pitching)
+        {
+            await _context.StartupPitchings.AddAsync(pitching);
+        }
 
-  
+        public async Task<List<StartupPitching>> GetPitchingsByTypeAndStartupAsync(int startupId, string type)
+        {
+            var query = _context.StartupPitchings
+                .Where(p => p.StartupId == startupId);
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                query = query.Where(p => p.Type == type);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<StartupPitching?> GetStartupPitchingByIdAsync(int pitchingId)
+        {
+            return await _context.StartupPitchings.FindAsync(pitchingId);
+        }
+
+        public void DeleteStartupPitching(StartupPitching pitching)
+        {
+            _context.StartupPitchings.Remove(pitching);
+        }
+
+        public void UpdateStartupPitching(StartupPitching pitching)
+        {
+            _context.StartupPitchings.Update(pitching);
+        }
     }
 }
