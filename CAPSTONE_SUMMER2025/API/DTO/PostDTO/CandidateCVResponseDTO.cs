@@ -13,6 +13,9 @@ namespace API.DTO.PostDTO
         public string PositionRequirement { get; set; }
         public int PositionId {  get; set; }
 
+        public string AvatarUrl {  get; set; }
+        public int AccountId {  get; set; }
+
         public CVRequirementEvaluationResultDto CVRequirementEvaluation {  get; set; }
     }
 }

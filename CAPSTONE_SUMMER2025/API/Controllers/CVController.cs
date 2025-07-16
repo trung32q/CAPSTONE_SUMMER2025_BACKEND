@@ -49,5 +49,14 @@ namespace API.Controllers
 
             return Ok("resonse successfully.");
         }
+
+        //xem account đã nộp cv vào bài internshippost chưa
+        [HttpGet("submitted")]
+        public async Task<IActionResult> HasSubmittedCV([FromQuery] int accountId, [FromQuery] int internshipId)
+        {
+            var hasSubmitted = await _cvService.CheckSubmittedCVAsync(accountId, internshipId);
+            return Ok(hasSubmitted);
+        }
+
     }
 }

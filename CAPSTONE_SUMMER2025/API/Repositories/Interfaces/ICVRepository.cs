@@ -12,5 +12,6 @@ namespace API.Repositories.Interfaces
      int startupId, int positionId, int pageNumber, int pageSize);
         Task<CandidateCv?> GetCandidateCvWithRelationsAsync(int candidateCvId);
         Task<CandidateCv?> GetCandidateCVByIdAsync(int id);
+        Task<bool> HasSubmittedCVAsync(int accountId, int internshipId);
     }
 }

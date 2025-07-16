@@ -66,7 +66,9 @@ namespace API.Repositories
                     FullName = $"{cv.Account.AccountProfile.FirstName} {cv.Account.AccountProfile.LastName}",
                     PositionRequirement = cv.Internship.Position.Title,
                     PositionId = cv.Internship.Position.PositionId,
-                    CVRequirementEvaluation = evaluation
+                    CVRequirementEvaluation = evaluation,
+                    AvatarUrl = cv.Account.AccountProfile.AvatarUrl,
+                    AccountId = cv.Account.AccountId
                 });
             }
 
@@ -102,5 +104,12 @@ namespace API.Repositories
         {
             return await _context.CandidateCvs.FindAsync(id);
         }
+
+        public async Task<bool> HasSubmittedCVAsync(int accountId, int internshipId)
+        {
+            return await _context.CandidateCvs
+                .AnyAsync(cv => cv.AccountId == accountId && cv.InternshipId == internshipId);
+        }
+
     }
 }

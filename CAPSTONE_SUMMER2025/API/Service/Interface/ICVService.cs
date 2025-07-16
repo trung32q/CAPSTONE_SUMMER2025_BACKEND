@@ -8,5 +8,6 @@ namespace API.Service.Interface
         Task<bool> ResponseCandidateCVAsync(int candidateCVId, string newStatus);
         Task<bool> ApplyCVAsync(ApplyCVRequestDTO dto);
         Task<PagedResult<CandidateCVResponseDTO>> GetCVsOfStartupAsync(int startupId, int positionId, int page, int pageSize);
+        Task<bool> CheckSubmittedCVAsync(int accountId, int internshipId);
     }
 }

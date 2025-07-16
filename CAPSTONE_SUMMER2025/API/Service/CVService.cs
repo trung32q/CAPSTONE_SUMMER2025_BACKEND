@@ -118,5 +118,11 @@ namespace API.Service
 
             };
         }
+
+        public async Task<bool> CheckSubmittedCVAsync(int accountId, int internshipId)
+        {
+            return await _cvRepository.HasSubmittedCVAsync(accountId, internshipId);
+        }
+
     }
 }
