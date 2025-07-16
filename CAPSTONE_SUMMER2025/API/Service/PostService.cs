@@ -822,7 +822,7 @@ namespace API.Service
             var postDTOs = pagedPosts.Items.Select(post => new resPostDTO
             {
                 PostId = post.PostId,
-                AccountId = post.AccountId,
+                StartupId = (int)post.StartupId,
                 Content = post.Content,
                 Title = post.Title,
                 CreateAt = post.CreateAt,
