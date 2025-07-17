@@ -519,9 +519,13 @@ namespace API.Repositories
                     PostId = p.PostId,
                     AccountID = p.AccountId,
                     PostShareId = p.PostShareId,
-                    name = p.Account.AccountProfile.FirstName +" "+ p.Account.AccountProfile.LastName,
-                    AvatarURL = p.Account.AccountProfile.AvatarUrl,
-                    Type = "Post",
+                    name = p.AccountId != null
+            ? (p.Account.AccountProfile.FirstName + " " + p.Account.AccountProfile.LastName)
+            : p.Startup.StartupName,
+                    AvatarURL = p.AccountId != null
+            ? p.Account.AccountProfile.AvatarUrl
+            : p.Startup.Logo,
+                    Type = p.AccountId != null ? "Post" : "StartupPost",
                     Title = p.Title,
                     Content = p.Content,
                     CreatedAt = (DateTime)p.CreateAt,
