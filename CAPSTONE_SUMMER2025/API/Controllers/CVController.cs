@@ -11,10 +11,12 @@ namespace API.Controllers
     {
 
         public readonly ICVService _cvService;
+        public readonly IPostService _postServiceService;
 
-        public CVController(ICVService cvService)
+        public CVController(ICVService cvService, IPostService postServiceService)
         {
             _cvService = cvService;
+            _postServiceService = postServiceService;
         }
 
         //apply cv
@@ -56,6 +58,14 @@ namespace API.Controllers
         {
             var hasSubmitted = await _cvService.CheckSubmittedCVAsync(accountId, internshipId);
             return Ok(hasSubmitted);
+        }
+
+        //lấy ra top internship post được nộp cv nhiều nhất
+        [HttpGet("top-internship-post-cv-submitted")]
+        public async Task<IActionResult> GetTopCVSubmittedInternshipPosts([FromQuery] int top = 5)
+        {
+            var result = await _postServiceService.GetTopInternshipPostsAsync(top);
+            return Ok(result);
         }
 
     }

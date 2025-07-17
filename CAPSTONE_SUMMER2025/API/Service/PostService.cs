@@ -3,6 +3,7 @@ using System.Text;
 using API.DTO.AccountDTO;
 using API.DTO.NotificationDTO;
 using API.DTO.PostDTO;
+using API.DTO.StartupDTO;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
@@ -909,6 +910,27 @@ namespace API.Service
            
         }
 
-      
+
+        public async Task<bool> UpdateAsync(int id, InternshipPostUpdateDTO dto)
+        {
+            var post = await _repository.GetInternshipPostByIdAsync(id);
+            if (post == null) return false;
+
+            post.Description = dto.Description ?? post.Description;
+            post.Requirement = dto.Requirement ?? post.Requirement;
+            post.Benefits = dto.Benefits ?? post.Benefits;
+            post.Deadline = dto.Deadline ?? post.Deadline;
+            post.Address = dto.Address ?? post.Address;
+            post.Salary = dto.Salary ?? post.Salary;
+
+            _repository.UpdateInternshipPost(post);
+            await _repository.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<TopInternshipPostDTO>> GetTopInternshipPostsAsync(int top)
+        {
+            return await _repository.GetTopInternshipPostsByCVCountAsync(top);
+        }
     }
 }

@@ -39,10 +39,11 @@ namespace API.Service.Interface
         Task<bool> PublishPostAsync(int postId);
         Task<bool> UpdateInternshipPostAsync(int internShipPostId);
         Task<PagedResult<resPostDTO>> GetPostsByStartupIdAsync(int startupId, int pageNumber, int pageSize);
-        Task<PagedResult<InternshipPostDTO>> GetAllInternshipPostsAsync(int pageNumber, int pageSize,int startupid);
+        Task<PagedResult<InternshipPostDTO>> GetAllInternshipPostsAsync(int pageNumber, int pageSize, int startupid);
         Task<PagedResult<PostSearchDTO>> GetSearchPostsByStartup(int startupId, string? keyword, int pageNumber, int pageSize);
         Task<PagedResult<InternshipPostDTO>> GetSearchStartupInternshipPost(int startupId, string? keyword, int pageNumber, int pageSize);
         Task<InternshipPostDetailDTO?> GetInternshipPostDetailAsync(int internshipPostId);
         Task<bool> UpdateInternshipPostAsync(int internshipPostId, UpdateInternshipPostDTO dto);
+        Task<List<TopInternshipPostDTO>> GetTopInternshipPostsAsync(int top);
     }
 }

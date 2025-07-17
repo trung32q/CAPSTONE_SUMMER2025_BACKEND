@@ -816,6 +816,55 @@ namespace API.Repositories
             return true;
         }
 
-        
+        public void UpdateInternshipPost(InternshipPost post)
+        {
+            _context.InternshipPosts.Update(post);
+        }
+
+        public async Task<List<TopInternshipPostDTO>> GetTopInternshipPostsByCVCountAsync(int top = 5)
+        {
+            var query = await _context.CandidateCvs
+                .GroupBy(cv => cv.InternshipId)
+                .Select(g => new
+                {
+                    InternshipId = g.Key,
+                    Total = g.Count()
+                })
+                .OrderByDescending(x => x.Total)
+                .Take(top)
+                .Join(_context.InternshipPosts,
+                      g => g.InternshipId,
+                      ip => ip.InternshipId,
+                      (g, ip) => new { g.Total, Internship = ip })
+                .Join(_context.PositionRequirements,
+                      ipg => ipg.Internship.PositionId,
+                      pr => pr.PositionId,
+                      (ipg, pr) => new { ipg.Total, ipg.Internship, Position = pr })
+                .Join(_context.Startups,
+                      all => all.Internship.StartupId,
+                      st => st.StartupId,
+                      (all, st) => new TopInternshipPostDTO
+                      {
+                          InternshipId = all.Internship.InternshipId,
+                          Description = all.Internship.Description,
+                          Address = all.Internship.Address,
+                          Salary = all.Internship.Salary,
+                          TotalCVs = all.Total,
+                          PositionTitle = all.Position.Title,
+                          StartupName = st.StartupName,
+                          Logo = st.Logo,
+                          Requirement = all.Internship.Requirement,
+                          CreateAt = all.Internship.CreateAt,
+                          Deadline = all.Internship.Deadline,
+                          Status = all.Internship.Status,
+                          StartupId = st.StartupId,
+                          PositionId = all.Position.PositionId,
+                          Benefits = all.Internship.Benefits
+                      })
+                .ToListAsync();
+
+            return query;
+        }
+
     }
 }

@@ -50,5 +50,7 @@ namespace API.Repositories.Interfaces
         IQueryable<InternshipPost> GetStartupInternshipPost(int startupId);
         Task<InternshipPost?> GetInternshipPostWithNavigationAsync(int internshipPostId);
         Task<bool> UpdateInternshipPostAsync(int internhsipId, InternshipPost internshipPost);
+        void UpdateInternshipPost(InternshipPost post);
+        Task<List<TopInternshipPostDTO>> GetTopInternshipPostsByCVCountAsync(int top = 5);
     }
 }

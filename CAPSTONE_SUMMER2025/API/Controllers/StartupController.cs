@@ -512,6 +512,7 @@ namespace API.Controllers
             return Ok("xóa thành công"); 
         }
 
+        //update startup pitching
         [HttpPut("startup-pitching")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateStartupPitching([FromForm] StartupPitchingUpdateDTO dto)
