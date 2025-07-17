@@ -22,6 +22,7 @@ namespace API.Controllers
     {
         private readonly IStartupService _service;
         private readonly IAccountService _accountservice;
+        private readonly IPermissionService _permissionService;
         private readonly ILogger<StartupService> _logger;
         private readonly IHubContext<MessageHub> _hubContext;
         private readonly CAPSTONE_SUMMER2025Context _context;
@@ -30,7 +31,7 @@ namespace API.Controllers
 
 
 
-        public StartupController(IFileHandlerService fileHandler,IStartupService service, ILogger<StartupService> logger, IAccountService accountservice, IHubContext<MessageHub> hubContext, CAPSTONE_SUMMER2025Context context)
+        public StartupController(IFileHandlerService fileHandler,IStartupService service, ILogger<StartupService> logger, IAccountService accountservice, IHubContext<MessageHub> hubContext, CAPSTONE_SUMMER2025Context context, IPermissionService permissionService)
         {
             _service = service;
             _logger = logger;
@@ -38,6 +39,7 @@ namespace API.Controllers
             _hubContext = hubContext;
             _context = context;
             _filehandler = fileHandler;
+            _permissionService = permissionService;
         }
         [HttpPost("create")]
         public async Task<IActionResult> CreateStartup([FromForm] CreateStartupRequest req)
@@ -66,6 +68,10 @@ namespace API.Controllers
         [HttpPost("create-chatromm")]
         public async Task<IActionResult> Create([FromBody] CreateChatRoomDTO dto)
         {
+            var hasPermission = await _permissionService.HasPermissionAsync(dto.CreatorAccountId, p => p.CanManageChatRoom);
+            if (!hasPermission)
+                throw new UnauthorizedAccessException("Bạn không có quyền quản lí chatroom");
+
             var room = await _service.CreateChatRoomAsync(dto);
             return Ok(new { message = "Created", roomId = room.ChatRoomId });
         }

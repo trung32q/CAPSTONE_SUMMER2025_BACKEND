@@ -73,5 +73,7 @@ namespace API.Repositories.Interfaces
         Task<StartupPitching?> GetStartupPitchingByIdAsync(int pitchingId);
         void DeleteStartupPitching(StartupPitching pitching);
         void UpdateStartupPitching(StartupPitching pitching);
+        Task<PermissionInStartup> CreatePermissionAsync(PermissionInStartup permission);
+        Task<PermissionInStartup?> GetByRoleIdAsync(int roleId);
     }
 }

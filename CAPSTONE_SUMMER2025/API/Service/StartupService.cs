@@ -549,13 +549,31 @@ namespace API.Service
         }
         public async Task<RoleInStartup> CreateRoleAsync(CreateRoleDto dto)
         {
+            // 1. Tạo Role
             var role = new RoleInStartup
             {
                 StartupId = dto.Startup_ID,
                 RoleName = dto.RoleName
             };
-            return await _repo.CreateRoleAsync(role);
+
+            var createdRole = await _repo.CreateRoleAsync(role);
+
+            // 2. Tạo Permission tương ứng, mặc định tất cả quyền là false
+            var permission = new PermissionInStartup
+            {
+                RoleId = createdRole.RoleId, 
+                CanManagePost = false,
+                CanManageCandidate = false,
+                CanManageChatRoom = false,
+                CanManageMember = false,
+                CanManageMilestone = false
+            };
+
+            await _repo.CreatePermissionAsync(permission); // bạn cần có hàm này trong Repository
+
+            return createdRole;
         }
+
 
         public async Task<RoleInStartup?> GetRoleAsync(int roleId)
         {
@@ -1029,6 +1047,6 @@ namespace API.Service
 
             return true;
         }
-
+      
     }
 }

@@ -529,5 +529,16 @@ namespace API.Repositories
         {
             _context.StartupPitchings.Update(pitching);
         }
+        public async Task<PermissionInStartup> CreatePermissionAsync(PermissionInStartup permission)
+        {
+            _context.PermissionInStartups.Add(permission);
+            await _context.SaveChangesAsync();
+            return permission;
+        }
+        public async Task<PermissionInStartup?> GetByRoleIdAsync(int roleId)
+        {
+            return await _context.PermissionInStartups
+                                 .FirstOrDefaultAsync(p => p.RoleId == roleId);
+        }
     }
 }

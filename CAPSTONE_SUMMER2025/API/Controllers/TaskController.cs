@@ -12,14 +12,18 @@ namespace API.Controllers
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _Service;
-
-        public TaskController(ITaskService milestoneService)
+        private readonly IPermissionService _permissionService;
+        public TaskController(ITaskService milestoneService, IPermissionService service)
         {
             _Service = milestoneService;
+            _permissionService = service; 
         }
         [HttpPost("CreateMilestone")]
         public async Task<IActionResult> CreateMilestone([FromBody] CreateMilestoneDto dto)
         {
+            var allowed = await _permissionService.HasPermissionAsync(dto.AccountID, p => p.CanManageMilestone);
+            if (!allowed)
+                return Forbid("Không đủ quyền để thao tác milestone");
             var result = await _Service.CreateMilestoneAsync(dto);
             if (result)
                 return Ok(new { success = true, message = "Tạo milestone thành công!" });
