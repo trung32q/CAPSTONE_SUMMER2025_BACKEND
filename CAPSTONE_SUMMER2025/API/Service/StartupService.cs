@@ -855,13 +855,26 @@ namespace API.Service
             if (startup == null)
                 return false;
 
+            var logo = startup.Logo;
+            var backgroundUrl = startup.BackgroundUrl;
+
+            if (dto.Logo != null && dto.Logo.Length != 0)
+            {
+                logo = await _filebaseHandler.UploadMediaFile(dto.Logo);
+            }
+
+            if(dto.Background != null && dto.Background.Length != 0)
+            {
+                backgroundUrl = await _filebaseHandler.UploadMediaFile(dto.Background);
+            }
+
             startup.StartupName = dto.StartupName;
             startup.AbbreviationName = dto.AbbreviationName;
             startup.Description = dto.Description;
             startup.Vision = dto.Vision;
             startup.Mission = dto.Mission;
-            startup.Logo = dto.Logo;
-            startup.BackgroundUrl = dto.BackgroundURL;
+            startup.Logo = logo;
+            startup.BackgroundUrl = backgroundUrl;
             startup.WebsiteUrl = dto.WebsiteURL;
             startup.Email = dto.Email;
 

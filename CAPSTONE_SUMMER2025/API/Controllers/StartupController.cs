@@ -471,7 +471,7 @@ namespace API.Controllers
 
         //update startup
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStartup(int id, [FromBody] UpdateStartupDto dto)
+        public async Task<IActionResult> UpdateStartup(int id, [FromForm] UpdateStartupDto dto)
         {
             var success = await _service.UpdateStartupAsync(id, dto);
             if (!success)
