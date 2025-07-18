@@ -128,7 +128,9 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IDartboardRepository, DartboardRepository>();
 builder.Services.AddScoped<IFileHandlerRepository, FileHandlerRepository> ();
 builder.Services.AddScoped<ICVRepository, CVRepository> ();
+builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IDartboardService, DartboardService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IStartupService, StartupService> ();
