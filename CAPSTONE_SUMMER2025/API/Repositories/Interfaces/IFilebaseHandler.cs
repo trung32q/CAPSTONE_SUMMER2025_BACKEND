@@ -10,5 +10,8 @@
         Task<string> UploadPdfAsync(IFormFile file);
         string GeneratePresignedPDFUrl(string key, int expireHours = 2);
         Task DeleteFileOnFilebaseAsync(string key);
+        Task<string> UploadPdfToBackblazeAsync(IFormFile file);
+        string GeneratePresignedBackblazePDFUrl(string key, int expireHours = 2);
+        Task DeleteFileOnBackblazeAsync(string key);
     }
 }
