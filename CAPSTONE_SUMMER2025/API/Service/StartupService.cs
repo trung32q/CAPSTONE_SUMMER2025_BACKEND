@@ -127,9 +127,9 @@ namespace API.Service
 
             return startup.StartupId;
         }
-        public async Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize)
+        public async Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize, int? categoryId = null)
         {
-            var pagedResult = await _repo.GetAllStartupsAsync(pageNumber, pageSize);
+            var pagedResult = await _repo.GetAllStartupsAsync(pageNumber, pageSize, categoryId);
 
             var dtoList = pagedResult.Items.Select(s => new ResStartupDTO
             {
@@ -159,6 +159,7 @@ namespace API.Service
 
             return new PagedResult<ResStartupDTO>(dtoList, pagedResult.TotalCount, pageNumber, pageSize);
         }
+
 
         public async Task<bool> IsMemberOfAnyStartup(int accountId)
        => await _repo.IsMemberOfAnyStartup(accountId);

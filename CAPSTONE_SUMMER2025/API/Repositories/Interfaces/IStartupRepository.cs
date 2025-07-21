@@ -12,7 +12,7 @@ namespace API.Repositories.Interfaces
         Task<StartupMember> AddMemberAsync(StartupMember member);
         Task AddStartupCategoryAsync(StartupCategory startupCategory);
         Task SaveChangesAsync();
-        Task<PagedResult<Startup>> GetAllStartupsAsync(int pageNumber, int pageSize);
+        Task<PagedResult<Startup>> GetAllStartupsAsync(int pageNumber, int pageSize, int? categoryId = null);
         Task<ChatRoom> CreateChatRoomAsync(ChatRoom room);
         Task AddMemberAsync(ChatRoomMember member);
         Task AddMembersAsync(List<ChatRoomMember> members);
