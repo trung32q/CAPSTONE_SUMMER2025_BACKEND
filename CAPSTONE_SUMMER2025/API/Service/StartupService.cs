@@ -895,6 +895,7 @@ namespace API.Service
             startup.BackgroundUrl = backgroundUrl;
             startup.WebsiteUrl = dto.WebsiteURL;
             startup.Email = dto.Email;
+            startup.StageId = startup.StageId;
 
             await _repo.UpdateStartupAsync(startup);
             return true;
@@ -947,7 +948,7 @@ namespace API.Service
             else if (dto.File.ContentType == "application/pdf")
             {
                 type = Utils.Constants.StartupPitchingConst.PDF;
-                link = await _filebaseHandler.UploadPdfAsync(dto.File);
+                link = await _filebaseHandler.UploadPdfToBackblazeAsync(dto.File);
             }
             else
             {
@@ -975,7 +976,7 @@ namespace API.Service
             {
                 string link = p.Type switch
                 {
-                    Utils.Constants.StartupPitchingConst.PDF => _filebaseHandler.GeneratePresignedPDFUrl(p.Link),
+                    Utils.Constants.StartupPitchingConst.PDF => _filebaseHandler.GeneratePresignedBackblazePDFUrl(p.Link),
                     Utils.Constants.StartupPitchingConst.Video => _filebaseHandler.GeneratePreSignedUrl(p.Link),
                     _ => p.Link
                 };
@@ -998,6 +999,15 @@ namespace API.Service
             if (pitching == null)
                 return false;
 
+            if (pitching.Type == Utils.Constants.StartupPitchingConst.Video)
+            {
+                _filebaseHandler.DeleteFileByUrlAsync(pitching.Link);
+            }
+            else
+            {
+                _filebaseHandler.DeleteFileOnBackblazeAsync(pitching.Link);
+            }
+
             _repo.DeleteStartupPitching(pitching);
             await _repo.SaveChangesAsync();
             return true;
@@ -1019,7 +1029,7 @@ namespace API.Service
             }
             else
             {
-                _filebaseHandler.DeleteFileOnFilebaseAsync(pitching.Link);
+                _filebaseHandler.DeleteFileOnBackblazeAsync(pitching.Link);
             }
 
             if (file.ContentType.StartsWith("video/"))
@@ -1030,7 +1040,7 @@ namespace API.Service
             else if (file.ContentType == "application/pdf")
             {
                 type = Utils.Constants.StartupPitchingConst.PDF;
-                link = await _filebaseHandler.UploadPdfAsync(file);
+                link = await _filebaseHandler.UploadPdfToBackblazeAsync(file);
                 
             }
             else

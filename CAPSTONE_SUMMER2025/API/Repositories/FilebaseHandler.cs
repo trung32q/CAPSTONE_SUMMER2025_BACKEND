@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Amazon.S3.Transfer;
 using Amazon.S3;
 using System.Text;
+using Amazon.S3.Model;
 
 namespace API.Repositories
 {
@@ -403,6 +404,83 @@ namespace API.Repositories
             }
         }
 
+
+        private const string BackblazeServiceUrl = "https://s3.us-east-005.backblazeb2.com";
+        private const string BackblazeBucketName = "simes-media-file";
+        private const string BackblazeAccessKey = "005891643634b660000000002";
+        private const string BackblazeSecretKey = "K005Qd8vlO+4zIez3Z/1nHDhqHFy2c8";
+
+
+        public async Task<string> UploadPdfToBackblazeAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File không hợp lệ.");
+
+            var extension = Path.GetExtension(file.FileName);
+            var randomKey = $"{Guid.NewGuid():N}{extension}";
+
+            var config = new AmazonS3Config
+            {
+                ServiceURL = BackblazeServiceUrl,
+                ForcePathStyle = true
+            };
+
+            using var client = new AmazonS3Client(BackblazeAccessKey, BackblazeSecretKey, config);
+            using var stream = file.OpenReadStream();
+
+            var request = new PutObjectRequest
+            {
+                BucketName = BackblazeBucketName,
+                Key = randomKey,
+                InputStream = stream,
+                ContentType = file.ContentType ?? "application/octet-stream"
+            };
+
+            await client.PutObjectAsync(request);
+            return randomKey;
+        }
+
+        public string GeneratePresignedBackblazePDFUrl(string key, int expireHours = 2)
+        {
+            var config = new AmazonS3Config
+            {
+                ServiceURL = BackblazeServiceUrl,
+                ForcePathStyle = true
+            };
+
+            using var client = new AmazonS3Client(BackblazeAccessKey, BackblazeSecretKey, config);
+
+            var urlRequest = new GetPreSignedUrlRequest
+            {
+                BucketName = BackblazeBucketName,
+                Key = key,
+                Expires = DateTime.UtcNow.AddHours(expireHours)
+            };
+
+            return client.GetPreSignedURL(urlRequest);
+        }
+
+        public async Task DeleteFileOnBackblazeAsync(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Key không hợp lệ.");
+
+            var config = new AmazonS3Config
+            {
+                ServiceURL = BackblazeServiceUrl,
+                ForcePathStyle = true
+            };
+
+            using var client = new AmazonS3Client(BackblazeAccessKey, BackblazeSecretKey, config);
+
+            var deleteRequest = new DeleteObjectRequest
+            {
+                BucketName = BackblazeBucketName,
+                Key = key
+            };
+
+            await client.DeleteObjectAsync(deleteRequest);
+        }
 
     }
 
