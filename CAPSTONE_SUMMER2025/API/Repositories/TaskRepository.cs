@@ -347,6 +347,14 @@ namespace API.Repositories
                         .ThenInclude(acc => acc.AccountProfile)
                 .FirstOrDefaultAsync(x => x.TaskId == taskId);
         }
+        public async Task<int?> GetMilestoneIDByTaskIDAsync(int taskId)
+        {
+            return await _context.StartupTasks
+                .Where(x => x.TaskId == taskId)
+                .Select(x => (int?)x.MilestoneId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId)
         {
             return await _context.MilestoneAssignments

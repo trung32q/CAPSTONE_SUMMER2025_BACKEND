@@ -151,9 +151,8 @@ namespace API.Service
                 var senderName = sender?.AccountProfile != null
                     ? $"{sender.AccountProfile.FirstName} {sender.AccountProfile.LastName}"
                     : "SomeOne";
-
-                var targetUrl = $"/task/{createdTask.TaskId}";
-
+                var milestoneID = await _repo.GetMilestoneIDByTaskIDAsync(createdTask.TaskId);
+                var targetUrl = $"/me/milestones/{milestoneID}";
                 // Gửi thông báo cho từng người được gán vào task
                 foreach (var assignToId in dto.AssignToAccountIds)
                 {
@@ -324,7 +323,8 @@ namespace API.Service
             };
             var task = await _repo.GetTaskByIdAsync(dto.TaskId);
             var assign = await _repo.AddTaskAssignmentAsync(entity);
-            var targetUrl = $"/task/{dto.TaskId}";
+            var milestoneID = await _repo.GetMilestoneIDByTaskIDAsync(dto.TaskId);
+            var targetUrl = $"/me/milestones/{milestoneID}";
             var sender = await _accountRepository.GetAccountByAccountIDAsync((int)dto.AssignedByAccountId);
             var senderName = sender?.AccountProfile != null
                 ? $"{sender.AccountProfile.FirstName} {sender.AccountProfile.LastName}"
