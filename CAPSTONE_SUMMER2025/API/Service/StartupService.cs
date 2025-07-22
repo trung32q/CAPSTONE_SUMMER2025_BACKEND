@@ -548,7 +548,7 @@ namespace API.Service
         {
             return await _repo.GetStartupIdByAccountIdAsync(accountId);
         }
-        public async Task<RoleInStartup> CreateRoleAsync(CreateRoleDto dto)
+        public async Task<RoleDto> CreateRoleAsync(CreateRoleDto dto)
         {
             // 1. Tạo Role
             var role = new RoleInStartup
@@ -572,7 +572,12 @@ namespace API.Service
 
             await _repo.CreatePermissionAsync(permission); // bạn cần có hàm này trong Repository
 
-            return createdRole;
+            return new RoleDto
+            {
+                RoleId = createdRole.RoleId,
+                RoleName = createdRole.RoleName,
+                StartupId = (int)createdRole.StartupId
+            };
         }
 
 
