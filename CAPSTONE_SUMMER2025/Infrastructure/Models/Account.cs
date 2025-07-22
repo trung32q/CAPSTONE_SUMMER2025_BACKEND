@@ -30,6 +30,7 @@ namespace Infrastructure.Models
             TaskActivityLogs = new HashSet<TaskActivityLog>();
             TaskAssignmentAssignToAccounts = new HashSet<TaskAssignment>();
             TaskAssignmentAssignedByAccounts = new HashSet<TaskAssignment>();
+            UserChatRoomMembers = new HashSet<UserChatRoomMember>();
             UserOtps = new HashSet<UserOtp>();
         }
 
@@ -68,6 +69,7 @@ namespace Infrastructure.Models
         public virtual ICollection<TaskActivityLog> TaskActivityLogs { get; set; }
         public virtual ICollection<TaskAssignment> TaskAssignmentAssignToAccounts { get; set; }
         public virtual ICollection<TaskAssignment> TaskAssignmentAssignedByAccounts { get; set; }
+        public virtual ICollection<UserChatRoomMember> UserChatRoomMembers { get; set; }
         public virtual ICollection<UserOtp> UserOtps { get; set; }
     }
 }

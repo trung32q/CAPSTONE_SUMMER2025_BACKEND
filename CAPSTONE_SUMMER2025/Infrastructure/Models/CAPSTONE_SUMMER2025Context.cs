@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Models
 {
@@ -64,6 +63,9 @@ namespace Infrastructure.Models
         public virtual DbSet<Subcribe> Subcribes { get; set; } = null!;
         public virtual DbSet<TaskActivityLog> TaskActivityLogs { get; set; } = null!;
         public virtual DbSet<TaskAssignment> TaskAssignments { get; set; } = null!;
+        public virtual DbSet<UserChatRoom> UserChatRooms { get; set; } = null!;
+        public virtual DbSet<UserChatRoomMember> UserChatRoomMembers { get; set; } = null!;
+        public virtual DbSet<UserMessage> UserMessages { get; set; } = null!;
         public virtual DbSet<UserOtp> UserOtps { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -1328,6 +1330,64 @@ namespace Infrastructure.Models
                     .WithMany(p => p.TaskAssignments)
                     .HasForeignKey(d => d.TaskId)
                     .HasConstraintName("FK__TaskAssig__Task___75A278F5");
+            });
+
+            modelBuilder.Entity<UserChatRoom>(entity =>
+            {
+                entity.HasKey(e => e.ChatRoomId)
+                    .HasName("PK__UserChat__69733CF7E8AFD60F");
+
+                entity.ToTable("UserChatRoom");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Type).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<UserChatRoomMember>(entity =>
+            {
+                entity.HasKey(e => e.ChatRoomMemberId)
+                    .HasName("PK__UserChat__E5EEAA0EAEA7E8FD");
+
+                entity.ToTable("UserChatRoomMember");
+
+                entity.HasOne(d => d.Account)
+                    .WithMany(p => p.UserChatRoomMembers)
+                    .HasForeignKey(d => d.AccountId)
+                    .HasConstraintName("FK__UserChatR__Start__42ACE4D4");
+
+                entity.HasOne(d => d.ChatRoom)
+                    .WithMany(p => p.UserChatRoomMembers)
+                    .HasForeignKey(d => d.ChatRoomId)
+                    .HasConstraintName("FK__UserChatR__ChatR__41B8C09B");
+
+                entity.HasOne(d => d.Startup)
+                    .WithMany(p => p.UserChatRoomMembers)
+                    .HasForeignKey(d => d.StartupId)
+                    .HasConstraintName("FK__UserChatR__Start__43A1090D");
+            });
+
+            modelBuilder.Entity<UserMessage>(entity =>
+            {
+                entity.HasKey(e => e.MessageId)
+                    .HasName("PK__UserMess__C87C0C9CE7F5D034");
+
+                entity.ToTable("UserMessage");
+
+                entity.Property(e => e.FileType).HasMaxLength(50);
+
+                entity.Property(e => e.FileUrl).HasMaxLength(500);
+
+                entity.Property(e => e.SentAt)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.HasOne(d => d.ChatRoom)
+                    .WithMany(p => p.UserMessages)
+                    .HasForeignKey(d => d.ChatRoomId)
+                    .HasConstraintName("FK__UserMessa__ChatR__467D75B8");
             });
 
             modelBuilder.Entity<UserOtp>(entity =>
