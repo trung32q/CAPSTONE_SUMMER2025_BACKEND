@@ -12,11 +12,15 @@ namespace API.Service
     {
         private readonly IUserChatRepository _repo;
         private readonly IFilebaseHandler _FilebaseHandler;
+        private readonly IStartupRepository _startupRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public UserChatService(IUserChatRepository repo, IFilebaseHandler filebaseHandler)
+        public UserChatService(IUserChatRepository repo, IFilebaseHandler filebaseHandler, IStartupRepository startupRepository, IAccountRepository accountRepository)
         {
             _repo = repo;
             _FilebaseHandler = filebaseHandler;
+            _startupRepository = startupRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<int> EnsureChatRoomAsync(int accountId, int? targetAccountId, int? targetStartupId)
@@ -33,19 +37,54 @@ namespace API.Service
             var totalCount = await _repo.GetTotalMessagesAsync(chatRoomId);
             var resultRaw = await _repo.GetMessagesAsync(chatRoomId, pageNumber, pageSize);
 
-            var result = resultRaw.Select(message => new GetUserMessageDTO
-            {
-                ChatRoomId = chatRoomId,
-                Content = message.FileType == Utils.Constants.MessageTypeConst.FILE
+            var result = new List<GetUserMessageDTO>();
+
+            foreach (var message in resultRaw) {
+                var dto = new GetUserMessageDTO();
+
+                if (message.SenderAccountId != null)
+                {
+                    var account = await _accountRepository.GetAccountByAccountIDAsync((int)message.SenderAccountId);
+                    dto = new GetUserMessageDTO
+                    {
+                        ChatRoomId = chatRoomId,
+                        Content = message.FileType == Utils.Constants.MessageTypeConst.FILE
                     ? _FilebaseHandler.GeneratePreSignedUrl(message.Content)
                     : message.Content,
-                IsRead = message.IsRead,
-                SenderAccountId = message.SenderAccountId,
-                SenderStartupId = message.SenderStartupId,
-                MessageId = message.MessageId,
-                SentAt = message.SentAt,
-                Type = message.FileType
-            }).ToList();
+                        IsRead = message.IsRead,
+                        SenderAccountId = message.SenderAccountId,
+                        SenderStartupId = message.SenderStartupId,
+                        MessageId = message.MessageId,
+                        SentAt = message.SentAt,
+                        Type = message.FileType,
+                        Name = account.AccountProfile.FirstName + " " + account.AccountProfile.LastName,
+                        AvatarUrl = account.AccountProfile.AvatarUrl
+                    };
+                    result.Add(dto);
+                }
+                else if(message.SenderStartupId != null)
+                {
+                    var startup = await _startupRepository.GetStartupByIdAsync((int)message.SenderStartupId);
+                    dto = new GetUserMessageDTO
+                    {
+                        ChatRoomId = chatRoomId,
+                        Content = message.FileType == Utils.Constants.MessageTypeConst.FILE
+                    ? _FilebaseHandler.GeneratePreSignedUrl(message.Content)
+                    : message.Content,
+                        IsRead = message.IsRead,
+                        SenderAccountId = message.SenderAccountId,
+                        SenderStartupId = message.SenderStartupId,
+                        MessageId = message.MessageId,
+                        SentAt = message.SentAt,
+                        Type = message.FileType,
+                        Name = startup.StartupName,
+                        AvatarUrl = startup.Logo
+                    };
+                    result.Add(dto);
+                }
+            }
+
+    
 
             return new PagedResult<GetUserMessageDTO>(result, totalCount, pageNumber, pageSize);
         }

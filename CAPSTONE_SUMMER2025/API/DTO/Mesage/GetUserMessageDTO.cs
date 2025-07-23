@@ -10,5 +10,8 @@
         public string? Type { get; set; }
         public DateTime SentAt { get; set; }
         public bool IsRead { get; set; }
+
+        public string? Name {  get; set; }
+        public string? AvatarUrl {  get; set; }
     }
 }
