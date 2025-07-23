@@ -37,5 +37,11 @@ namespace API.Controllers
             await _service.SendMessageAsync(dto);
             return Ok();
         }
+        [HttpGet("list-chatroom-by/{accountId}")]
+        public async Task<IActionResult> GetChatRoomsByAccount(int accountId)
+        {
+            var result = await _service.GetChatRoomsByAccountAsync(accountId);
+            return Ok(result);
+        }
     }
 }

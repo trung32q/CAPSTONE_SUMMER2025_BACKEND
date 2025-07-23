@@ -130,5 +130,9 @@ namespace API.Service
 
             await _repo.SendMessageAsync(message);
         }
+        public async Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountAsync(int accountId)
+        {
+            return await _repo.GetChatRoomsByAccountIdAsync(accountId);
+        }
     }
 }

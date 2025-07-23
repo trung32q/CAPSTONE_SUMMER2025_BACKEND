@@ -1,4 +1,5 @@
-﻿using API.Repositories.Interfaces;
+﻿using API.DTO.Mesage;
+using API.Repositories.Interfaces;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -62,5 +63,41 @@ namespace API.Repositories
             _context.UserMessages.Add(message);
             await _context.SaveChangesAsync();
         }
+        public async Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountIdAsync(int accountId)
+        {
+            return await _context.UserChatRooms
+                .Where(room => room.UserChatRoomMembers.Any(m => m.AccountId == accountId))
+                .Select(room => new ChatRoomWithLatestMessageDto
+                {
+                    ChatRoomId = room.ChatRoomId,
+                    Type = room.Type,
+                    CreatedAt = room.CreatedAt,
+
+                    LatestMessageContent = room.UserMessages
+                        .OrderByDescending(m => m.SentAt)
+                        .Select(m => m.Content)
+                        .FirstOrDefault(),
+
+                    LatestMessageTime = room.UserMessages
+                        .OrderByDescending(m => m.SentAt)
+                        .Select(m => (DateTime?)m.SentAt)
+                        .FirstOrDefault(),
+
+                    // Lấy người còn lại trong chat room
+                    TargetName = room.UserChatRoomMembers
+                        .Where(m => m.AccountId != accountId)  // người còn lại
+                        .Select(m => m.Account != null ? m.Account.AccountProfile.FirstName+" "
+                        + m.Account.AccountProfile.LastName : m.Startup.StartupName)
+                        .FirstOrDefault(),
+
+                    TargetAvatar = room.UserChatRoomMembers
+                        .Where(m => m.AccountId != accountId)
+                        .Select(m => m.Account != null ? m.Account.AccountProfile.AvatarUrl : m.Startup.Logo)
+                        .FirstOrDefault()
+                })
+                .OrderByDescending(r => r.LatestMessageTime)
+                .ToListAsync();
+        }
+
     }
 }
