@@ -17,21 +17,22 @@ namespace API.Controllers
         }
 
         [HttpPost("ensure-room")]
-        public async Task<IActionResult> EnsureRoom([FromBody] EnsureRoomDto dto)
+        public async Task<IActionResult> EnsureRoom([FromQuery] EnsureRoomDto dto)
         {
             var roomId = await _service.EnsureChatRoomAsync(dto.AccountId, dto.TargetAccountId, dto.TargetStartupId);
             return Ok(roomId);
         }
 
         [HttpGet("messages/{chatRoomId}")]
-        public async Task<IActionResult> GetMessages(int chatRoomId)
+        public async Task<IActionResult> GetMessages(int chatRoomId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var messages = await _service.GetMessagesAsync(chatRoomId);
-            return Ok(messages);
+            var pagedMessages = await _service.GetMessagesAsync(chatRoomId, pageNumber, pageSize);
+            return Ok(pagedMessages);
         }
 
+
         [HttpPost("send-message")]
-        public async Task<IActionResult> SendMessage([FromBody] UserMessageDto dto)
+        public async Task<IActionResult> SendMessage([FromQuery] UserMessageDto dto)
         {
             await _service.SendMessageAsync(dto);
             return Ok();

@@ -6,7 +6,8 @@ namespace API.Repositories.Interfaces
     {
         Task<UserChatRoom?> GetChatRoomAsync(int accountId, int? targetAccountId, int? targetStartupId);
         Task<UserChatRoom> CreateChatRoomAsync(int accountId, int? targetAccountId, int? targetStartupId);
-        Task<List<UserMessage>> GetMessagesAsync(int chatRoomId);
+        Task<List<UserMessage>> GetMessagesAsync(int chatRoomId, int pageNumber, int pageSize);
         Task SendMessageAsync(UserMessage message);
+        Task<int> GetTotalMessagesAsync(int chatRoomId);
     }
 }

@@ -1,4 +1,5 @@
-﻿using API.DTO.Mesage;
+﻿using API.DTO.AccountDTO;
+using API.DTO.Mesage;
 using Infrastructure.Models;
 
 namespace API.Service.Interface
@@ -6,7 +7,7 @@ namespace API.Service.Interface
     public interface IUserChatService
     {
         Task<int> EnsureChatRoomAsync(int accountId, int? targetAccountId, int? targetStartupId);
-        Task<List<UserMessage>> GetMessagesAsync(int chatRoomId);
+        Task<PagedResult<GetUserMessageDTO>> GetMessagesAsync(int chatRoomId, int pageNumber, int pageSize);
         Task SendMessageAsync(UserMessageDto dto);
     }
 }

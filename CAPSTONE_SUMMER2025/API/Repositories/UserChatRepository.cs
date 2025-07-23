@@ -41,13 +41,21 @@ namespace API.Repositories
             return chatRoom;
         }
 
-        public async Task<List<UserMessage>> GetMessagesAsync(int chatRoomId)
+        public async Task<List<UserMessage>> GetMessagesAsync(int chatRoomId, int pageNumber, int pageSize)
         {
             return await _context.UserMessages
                 .Where(m => m.ChatRoomId == chatRoomId)
                 .OrderBy(m => m.SentAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
+
+        public async Task<int> GetTotalMessagesAsync(int chatRoomId)
+        {
+            return await _context.UserMessages.CountAsync(m => m.ChatRoomId == chatRoomId);
+        }
+
 
         public async Task SendMessageAsync(UserMessage message)
         {

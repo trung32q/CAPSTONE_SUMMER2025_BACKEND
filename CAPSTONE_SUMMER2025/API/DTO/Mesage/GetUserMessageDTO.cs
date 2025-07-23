@@ -1,12 +1,14 @@
 ﻿namespace API.DTO.Mesage
 {
-    public class UserMessageDto
+    public class GetUserMessageDTO
     {
-        public int ChatRoomId { get; set; }
+        public int MessageId { get; set; }
+        public int? ChatRoomId { get; set; }
         public int? SenderAccountId { get; set; }
         public int? SenderStartupId { get; set; }
         public string? Content { get; set; }
-        public IFormFile? File { get; set; }
         public string? Type { get; set; }
+        public DateTime SentAt { get; set; }
+        public bool IsRead { get; set; }
     }
 }
