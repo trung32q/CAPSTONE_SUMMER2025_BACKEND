@@ -90,7 +90,7 @@ namespace API.Service
         }
 
 
-        public async Task SendMessageAsync(UserMessageDto dto)
+        public async Task<UserMessage> SendMessageAsync(UserMessageDto dto)
         {
 
 
@@ -129,6 +129,7 @@ namespace API.Service
          
 
             await _repo.SendMessageAsync(message);
+            return message;
         }
         public async Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountAsync(int accountId)
         {

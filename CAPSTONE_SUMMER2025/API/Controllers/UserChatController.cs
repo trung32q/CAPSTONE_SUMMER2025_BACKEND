@@ -1,7 +1,10 @@
 ﻿using API.DTO.Mesage;
+using API.DTO.StartupDTO;
+using API.Hubs;
 using API.Service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers
 {
@@ -10,10 +13,14 @@ namespace API.Controllers
     public class UserChatController : ControllerBase
     {
         private readonly IUserChatService _service;
+        private readonly IHubContext<MessageHub> _hubContext;
+        private readonly ILogger<UserChatController> _logger;
 
-        public UserChatController(IUserChatService service)
+        public UserChatController(IUserChatService service, IHubContext<MessageHub> hubContext, ILogger<UserChatController> logger)
         {
             _service = service;
+            _hubContext = hubContext;
+            _logger = logger;
         }
 
         [HttpPost("ensure-room")]
@@ -30,13 +37,30 @@ namespace API.Controllers
             return Ok(pagedMessages);
         }
 
-
-        [HttpPost("send-message")]
-        public async Task<IActionResult> SendMessage([FromQuery] UserMessageDto dto)
+        [HttpPost("message")]
+        public async Task<IActionResult> SendMessage([FromForm] UserMessageDto dto)
         {
-            await _service.SendMessageAsync(dto);
-            return Ok();
-        }
+            try
+            {
+                // 1. Lưu tin nhắn
+                var message = await _service.SendMessageAsync(dto);
+
+                // 2. Gửi realtime đến tất cả clients trong phòng
+                await _hubContext.Clients.Group(dto.ChatRoomId.ToString()).SendAsync("NewMessage", message);
+
+                return Ok(message);
+            }
+            catch (ApplicationException ex)
+            {
+                _logger.LogWarning(ex, "Lỗi gửi tin nhắn (xử lý được)");
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi hệ thống khi gửi tin nhắn");
+                return StatusCode(500, new { message = "Lỗi hệ thống" });
+            }
+        }       
         [HttpGet("list-chatroom-by/{accountId}")]
         public async Task<IActionResult> GetChatRoomsByAccount(int accountId)
         {
