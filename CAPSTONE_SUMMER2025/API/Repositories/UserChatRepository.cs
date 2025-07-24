@@ -46,7 +46,7 @@ namespace API.Repositories
         {
             return await _context.UserMessages
                 .Where(m => m.ChatRoomId == chatRoomId)
-                .OrderBy(m => m.SentAt)
+                .OrderByDescending(m => m.SentAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
