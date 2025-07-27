@@ -91,67 +91,11 @@ namespace API.Service
         }
 
 
-        public async Task<ResUserMessageDTO> SendMessageAsync(UserMessageDto dto)
+        public async Task<UserMessage> SendMessageAsync(UserMessageDto dto)
         {
 
 
-            var messagedto = new ResUserMessageDTO();
-            string SenderName = string.Empty;
-
-            if (dto.SenderAccountId != null && int.TryParse(dto.SenderAccountId.ToString(), out int accountId))
-            {
-                var account = await _accountRepository.GetAccountByAccountIDAsync(accountId);
-                SenderName = account?.AccountProfile?.FirstName + " " + account?.AccountProfile?.LastName;
-            }
-            else if (dto.SenderStartupId != null && int.TryParse(dto.SenderStartupId.ToString(), out int startupId))
-            {
-                var startup = await _postRepo.GetStartupByIdAsync(startupId);
-                SenderName = startup?.StartupName;
-            }
-            string SenderAvatar = string.Empty;
-
-            if (dto.SenderAccountId != null && int.TryParse(dto.SenderAccountId.ToString(), out int avaaccountId))
-            {
-                var account = await _accountRepository.GetAccountByAccountIDAsync(avaaccountId);
-                SenderAvatar = account?.AccountProfile?.AvatarUrl ?? string.Empty;
-            }
-            else if (dto.SenderStartupId != null && int.TryParse(dto.SenderStartupId.ToString(), out int avastartupId))
-            {
-                var startup = await _postRepo.GetStartupByIdAsync(avastartupId);
-                SenderAvatar = startup.Logo;
-            }
-
-            if (dto.Type == Utils.Constants.MessageTypeConst.FILE)
-            {
-                var content = await _FilebaseHandler.UploadMediaFile(dto.File);
-
-                messagedto = new ResUserMessageDTO
-                {
-                    ChatRoomId = dto.ChatRoomId,
-                    SenderName = SenderName,
-                    SenderAvatar = SenderAvatar,
-                    Content = content,
-                    SentAt = DateTime.Now,
-                    Type= dto.Type,
-                    IsRead = false,
-                };
-
-
-            }
-            else
-            {
-                messagedto = new ResUserMessageDTO
-                {
-                    ChatRoomId = dto.ChatRoomId,
-                    SenderName = SenderName,
-                    SenderAvatar = SenderAvatar,
-                    Content = dto.Content,
-                    SentAt = DateTime.Now,
-                    Type = dto.Type,
-                    IsRead = false,
-                };
-            }
-
+           
             var message = new UserMessage();
 
             if (dto.Type == Utils.Constants.MessageTypeConst.FILE)
@@ -184,7 +128,7 @@ namespace API.Service
                 };
             }
             await _repo.SendMessageAsync(message);
-            return messagedto;
+            return message;
         }
         public async Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountAsync(int accountId)
         {
