@@ -14,13 +14,14 @@ namespace API.Service
         private readonly IFilebaseHandler _FilebaseHandler;
         private readonly IStartupRepository _startupRepository;
         private readonly IAccountRepository _accountRepository;
-
-        public UserChatService(IUserChatRepository repo, IFilebaseHandler filebaseHandler, IStartupRepository startupRepository, IAccountRepository accountRepository)
+        private readonly IPostRepository _postRepo;
+        public UserChatService(IUserChatRepository repo, IFilebaseHandler filebaseHandler, IStartupRepository startupRepository, IAccountRepository accountRepository, IPostRepository postRepository)
         {
             _repo = repo;
             _FilebaseHandler = filebaseHandler;
             _startupRepository = startupRepository;
             _accountRepository = accountRepository;
+            _postRepo = postRepository;
         }
 
         public async Task<int> EnsureChatRoomAsync(int accountId, int? targetAccountId, int? targetStartupId)
@@ -90,9 +91,66 @@ namespace API.Service
         }
 
 
-        public async Task<UserMessage> SendMessageAsync(UserMessageDto dto)
+        public async Task<ResUserMessageDTO> SendMessageAsync(UserMessageDto dto)
         {
 
+
+            var messagedto = new ResUserMessageDTO();
+            string SenderName = string.Empty;
+
+            if (dto.SenderAccountId != null && int.TryParse(dto.SenderAccountId.ToString(), out int accountId))
+            {
+                var account = await _accountRepository.GetAccountByAccountIDAsync(accountId);
+                SenderName = account?.AccountProfile?.FirstName + " " + account?.AccountProfile?.LastName;
+            }
+            else if (dto.SenderStartupId != null && int.TryParse(dto.SenderStartupId.ToString(), out int startupId))
+            {
+                var startup = await _postRepo.GetStartupByIdAsync(startupId);
+                SenderName = startup?.StartupName;
+            }
+            string SenderAvatar = string.Empty;
+
+            if (dto.SenderAccountId != null && int.TryParse(dto.SenderAccountId.ToString(), out int avaaccountId))
+            {
+                var account = await _accountRepository.GetAccountByAccountIDAsync(avaaccountId);
+                SenderName = account?.AccountProfile?.AvatarUrl ?? string.Empty;
+            }
+            else if (dto.SenderStartupId != null && int.TryParse(dto.SenderStartupId.ToString(), out int avastartupId))
+            {
+                var startup = await _postRepo.GetStartupByIdAsync(avastartupId);
+                SenderName = startup.Logo;
+            }
+
+            if (dto.Type == Utils.Constants.MessageTypeConst.FILE)
+            {
+                var content = await _FilebaseHandler.UploadMediaFile(dto.File);
+
+                messagedto = new ResUserMessageDTO
+                {
+                    ChatRoomId = dto.ChatRoomId,
+                    SenderName = SenderName,
+                    SenderAvatar = SenderAvatar,
+                    Content = content,
+                    SentAt = DateTime.Now,
+                    Type= dto.Type,
+                    IsRead = false,
+                };
+
+
+            }
+            else
+            {
+                messagedto = new ResUserMessageDTO
+                {
+                    ChatRoomId = dto.ChatRoomId,
+                    SenderName = SenderName,
+                    SenderAvatar = SenderAvatar,
+                    Content = dto.Content,
+                    SentAt = DateTime.Now,
+                    Type = dto.Type,
+                    IsRead = false,
+                };
+            }
 
             var message = new UserMessage();
 
@@ -111,7 +169,6 @@ namespace API.Service
                     SenderStartupId = dto.SenderStartupId,
                 };
 
-
             }
             else
             {
@@ -126,10 +183,8 @@ namespace API.Service
                     SenderStartupId = dto.SenderStartupId,
                 };
             }
-         
-
             await _repo.SendMessageAsync(message);
-            return message;
+            return messagedto;
         }
         public async Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountAsync(int accountId)
         {
