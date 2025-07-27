@@ -59,6 +59,7 @@ namespace API.Repositories
                 .Include(s => s.Stage)
                 .Include(s => s.StartupCategories)
                     .ThenInclude(sc => sc.Category)
+                .Include(s=>s.Subcribes)
                 .Select(s => new
                 {
                     Startup = s,
