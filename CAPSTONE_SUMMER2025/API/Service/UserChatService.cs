@@ -113,12 +113,12 @@ namespace API.Service
             if (dto.SenderAccountId != null && int.TryParse(dto.SenderAccountId.ToString(), out int avaaccountId))
             {
                 var account = await _accountRepository.GetAccountByAccountIDAsync(avaaccountId);
-                SenderName = account?.AccountProfile?.AvatarUrl ?? string.Empty;
+                SenderAvatar = account?.AccountProfile?.AvatarUrl ?? string.Empty;
             }
             else if (dto.SenderStartupId != null && int.TryParse(dto.SenderStartupId.ToString(), out int avastartupId))
             {
                 var startup = await _postRepo.GetStartupByIdAsync(avastartupId);
-                SenderName = startup.Logo;
+                SenderAvatar = startup.Logo;
             }
 
             if (dto.Type == Utils.Constants.MessageTypeConst.FILE)
