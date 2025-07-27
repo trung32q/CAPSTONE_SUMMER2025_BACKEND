@@ -532,7 +532,13 @@ namespace API.Controllers
             return Ok("cập nhật thành công");
         }
 
-
+        //check xem account đã follow startup chưa nếu rồi trả về true
+        [HttpGet("is-account-follow-startup")]
+        public async Task<IActionResult> IsAccountSubcibeStartup(int accountId, int startupId)
+        {
+            var result = await _service.IsAccountSubcibeStartup(accountId, startupId);
+            return Ok(result);
+        }
     }
 }
 

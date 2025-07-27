@@ -1064,5 +1064,10 @@ namespace API.Service
             return true;
         }
       
+
+        public async Task<bool> IsAccountSubcibeStartup(int accountId, int startupId)
+        {
+            return await _repo.IsAccountSubcibeStartup(accountId, startupId);
+        }
     }
 }

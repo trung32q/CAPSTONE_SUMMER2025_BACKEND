@@ -75,5 +75,6 @@ namespace API.Repositories.Interfaces
         void UpdateStartupPitching(StartupPitching pitching);
         Task<PermissionInStartup> CreatePermissionAsync(PermissionInStartup permission);
         Task<PermissionInStartup?> GetByRoleIdAsync(int roleId);
+        Task<bool> IsAccountSubcibeStartup(int accountId, int startupId);
     }
 }

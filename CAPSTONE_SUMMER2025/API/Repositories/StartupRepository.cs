@@ -128,6 +128,13 @@ namespace API.Repositories
                 .AnyAsync(m => m.ChatRoomId == chatRoomId && m.AccountId == accountId && (bool)m.CanAdministerChannel);
         }
 
+        //hàm check xem account đã follow startup chưa
+        public async Task<bool> IsAccountSubcibeStartup(int accountId, int startupId)
+        {
+            return await _context.Subcribes
+                .AnyAsync(s => s.FollowerAccountId == accountId && s.FollowingStartUpId == startupId);
+        }
+
         // hàm lấy ra những người thuộc startup
         public async Task<List<int>> FilterValidStartupMembersAsync(int startupId, List<int> accountIds)
         {

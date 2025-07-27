@@ -55,5 +55,6 @@ namespace API.Service.Interface
         Task<List<GetStartupPitchingDTO>> GetPitchingsByTypeAndStartupAsync(int startupId, string type);
         Task<bool> DeleteStartupPitchingAsync(int pitchingId);
         Task<bool> UpdateStartupPitchingAsync(int startupPitchingId, IFormFile file);
+        Task<bool> IsAccountSubcibeStartup(int accountId, int startupId);
     }
 }
