@@ -11,5 +11,6 @@
         public IFormFile? Background { get; set; }
         public string? WebsiteURL { get; set; }
         public string? Email { get; set; }
+        public int? StageId { get; set; }
     }
 }

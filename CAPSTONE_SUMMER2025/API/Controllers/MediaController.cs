@@ -32,6 +32,23 @@ namespace API.Controllers
         }
 
 
+        [HttpGet("proxy-pdf")]
+        public async Task<IActionResult> ProxyPdf([FromQuery] string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return BadRequest("Missing URL");
+
+            try
+            {
+                using var client = new HttpClient();
+                var data = await client.GetByteArrayAsync(url);
+                return File(data, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Error downloading PDF", error = ex.Message });
+            }
+        }
 
 
 

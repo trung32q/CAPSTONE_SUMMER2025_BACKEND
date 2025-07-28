@@ -487,6 +487,7 @@ namespace API.Controllers
         }
 
         //tạo mới startup pitching
+        [RequestSizeLimit(204857600)] // 200 MB
         [HttpPost("startup-pitching")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> CreateStartupPitching([FromForm] StartupPitchingCreateDTO dto)
@@ -519,6 +520,7 @@ namespace API.Controllers
         }
 
         //update startup pitching
+        [RequestSizeLimit(204857600)] // 200 MB
         [HttpPut("startup-pitching")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateStartupPitching([FromForm] StartupPitchingUpdateDTO dto)

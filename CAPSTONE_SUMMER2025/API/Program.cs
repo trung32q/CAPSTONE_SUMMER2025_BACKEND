@@ -171,6 +171,11 @@ builder.Services.AddAutoMapper(typeof(MappingStartup));
 builder.Services.AddControllers ();
 builder.Services.AddEndpointsApiExplorer ();
 builder.Services.AddSwaggerGen ();
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 209_715_200; // 200 MB
+});
+
 
 var app = builder.Build ();
 app.MapHub<NotificationHub> ("/hubs/notification").RequireCors ("AllowAll");
