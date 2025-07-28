@@ -119,18 +119,23 @@ namespace API.Repositories
                         .FirstOrDefault(),
 
                     TargetName = room.UserChatRoomMembers
-                        .Where(m => m.StartupId != startupId)
-                        .Select(m => m.Startup != null
-                            ? m.Startup.StartupName
-                            : "N/A")
-                        .FirstOrDefault(),
+    .Where(m => m.StartupId != startupId)
+    .Select(m => m.Account != null
+        ? m.Account.AccountProfile.FirstName + " " + m.Account.AccountProfile.LastName
+        : m.Startup != null
+            ? m.Startup.StartupName
+            : "N/A")
+    .FirstOrDefault(),
 
                     TargetAvatar = room.UserChatRoomMembers
-                        .Where(m => m.StartupId != startupId)
-                        .Select(m => m.Startup != null
-                            ? m.Startup.Logo
-                            :"N/A")
-                        .FirstOrDefault()
+    .Where(m => m.StartupId != startupId)
+    .Select(m => m.Account != null
+        ? m.Account.AccountProfile.AvatarUrl
+        : m.Startup != null
+            ? m.Startup.Logo
+            : "N/A")
+    .FirstOrDefault()
+
                 })
                 .OrderByDescending(r => r.LatestMessageTime)
                 .ToListAsync();
