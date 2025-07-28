@@ -238,6 +238,13 @@ namespace API.Controllers
                 return NotFound(new { message = "Không có activity log nào cho milestone này!" });
             return Ok(logs);
         }
+        [HttpGet("dashboard-task")]
+        public async Task<IActionResult> GetDashboard([FromQuery] int milestoneId)
+        {
+            var result = await _Service.GetFullDashboardAsync(milestoneId);
+            return Ok(result);
+        }
+
     }
 }
  

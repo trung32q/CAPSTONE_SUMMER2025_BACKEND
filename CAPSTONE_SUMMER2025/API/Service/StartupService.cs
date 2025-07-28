@@ -127,9 +127,9 @@ namespace API.Service
 
             return startup.StartupId;
         }
-        public async Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize)
+        public async Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize, int? categoryId = null)
         {
-            var pagedResult = await _repo.GetAllStartupsAsync(pageNumber, pageSize);
+            var pagedResult = await _repo.GetAllStartupsAsync(pageNumber, pageSize, categoryId);
 
             var dtoList = pagedResult.Items.Select(s => new ResStartupDTO
             {
@@ -159,6 +159,7 @@ namespace API.Service
 
             return new PagedResult<ResStartupDTO>(dtoList, pagedResult.TotalCount, pageNumber, pageSize);
         }
+
 
         public async Task<bool> IsMemberOfAnyStartup(int accountId)
        => await _repo.IsMemberOfAnyStartup(accountId);
@@ -547,7 +548,7 @@ namespace API.Service
         {
             return await _repo.GetStartupIdByAccountIdAsync(accountId);
         }
-        public async Task<RoleInStartup> CreateRoleAsync(CreateRoleDto dto)
+        public async Task<RoleDto> CreateRoleAsync(CreateRoleDto dto)
         {
             // 1. Tạo Role
             var role = new RoleInStartup
@@ -571,7 +572,12 @@ namespace API.Service
 
             await _repo.CreatePermissionAsync(permission); // bạn cần có hàm này trong Repository
 
-            return createdRole;
+            return new RoleDto
+            {
+                RoleId = createdRole.RoleId,
+                RoleName = createdRole.RoleName,
+                StartupId = (int)createdRole.StartupId
+            };
         }
 
 
@@ -1058,5 +1064,10 @@ namespace API.Service
             return true;
         }
       
+
+        public async Task<bool> IsAccountSubcibeStartup(int accountId, int startupId)
+        {
+            return await _repo.IsAccountSubcibeStartup(accountId, startupId);
+        }
     }
 }

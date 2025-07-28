@@ -129,7 +129,9 @@ builder.Services.AddScoped<IDartboardRepository, DartboardRepository>();
 builder.Services.AddScoped<IFileHandlerRepository, FileHandlerRepository> ();
 builder.Services.AddScoped<ICVRepository, CVRepository> ();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+builder.Services.AddScoped<IUserChatRepository,UserChatRepository>();
 
+builder.Services.AddScoped<IUserChatService, UserChatService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IDartboardService, DartboardService>();
 builder.Services.AddScoped<ITaskService, TaskService>();

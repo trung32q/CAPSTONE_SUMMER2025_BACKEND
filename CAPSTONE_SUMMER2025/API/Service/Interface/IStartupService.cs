@@ -8,7 +8,7 @@ namespace API.Service.Interface
     public interface IStartupService
     {
         Task<int> CreateStartupAsync(CreateStartupRequest request);
-        Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize);
+        Task<PagedResult<ResStartupDTO>> GetAllStartupsAsync(int pageNumber, int pageSize, int? categoryId = null);
         Task<bool> IsMemberOfAnyStartup(int accountId);
         Task<ChatRoom> CreateChatRoomAsync(CreateChatRoomDTO dto);
         Task AddMembersToChatRoomAsync(AddMembersDTO dto);
@@ -23,7 +23,7 @@ namespace API.Service.Interface
         Task<List<Account>> SearchByEmailAsync(string keyword);
         Task<ResInviteDto> CreateInviteAsync(CreateInviteDTO dto);
         Task<int?> GetStartupIdByAccountIdAsync(int accountId);
-        Task<RoleInStartup> CreateRoleAsync(CreateRoleDto dto);
+        Task<RoleDto> CreateRoleAsync(CreateRoleDto dto);
         Task<RoleInStartup?> GetRoleAsync(int roleId);
         Task<RoleInStartup> UpdateRoleAsync(UpdateRoleDto dto);
         Task<bool> DeleteRoleAsync(int roleId);
@@ -55,5 +55,6 @@ namespace API.Service.Interface
         Task<List<GetStartupPitchingDTO>> GetPitchingsByTypeAndStartupAsync(int startupId, string type);
         Task<bool> DeleteStartupPitchingAsync(int pitchingId);
         Task<bool> UpdateStartupPitchingAsync(int startupPitchingId, IFormFile file);
+        Task<bool> IsAccountSubcibeStartup(int accountId, int startupId);
     }
 }

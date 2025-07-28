@@ -53,19 +53,28 @@ namespace API.Repositories
         }
 
         public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
-        public async Task<PagedResult<Startup>> GetAllStartupsAsync(int pageNumber, int pageSize)
+        public async Task<PagedResult<Startup>> GetAllStartupsAsync(int pageNumber, int pageSize, int? categoryId = null)
         {
             var query = _context.Startups
-                  .Include(s => s.Stage)
-         .Include(s => s.StartupCategories)
-             .ThenInclude(sc => sc.Category)
-           
-         .Select(s => new
-         {
-             Startup = s,
-             FollowCount = _context.Subcribes.Count(sub => sub.FollowingStartUpId == s.StartupId)
-         })
-         .OrderByDescending(x => x.FollowCount);
+                .Include(s => s.Stage)
+                .Include(s => s.StartupCategories)
+                    .ThenInclude(sc => sc.Category)
+                .Include(s=>s.Subcribes)
+                .Select(s => new
+                {
+                    Startup = s,
+                    FollowCount = _context.Subcribes.Count(sub => sub.FollowingStartUpId == s.StartupId)
+                });
+
+            // Thêm điều kiện lọc theo categoryId nếu có truyền vào
+            if (categoryId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.Startup.StartupCategories.Any(sc => sc.CategoryId == categoryId.Value)
+                );
+            }
+
+            query = query.OrderByDescending(x => x.FollowCount);
 
             var totalCount = await query.CountAsync();
 
@@ -77,6 +86,7 @@ namespace API.Repositories
 
             return new PagedResult<Startup>(items, totalCount, pageNumber, pageSize);
         }
+
 
         //tạo chatroom
         public async Task<ChatRoom> CreateChatRoomAsync(ChatRoom room)
@@ -117,6 +127,13 @@ namespace API.Repositories
         {
             return await _context.ChatRoomMembers
                 .AnyAsync(m => m.ChatRoomId == chatRoomId && m.AccountId == accountId && (bool)m.CanAdministerChannel);
+        }
+
+        //hàm check xem account đã follow startup chưa
+        public async Task<bool> IsAccountSubcibeStartup(int accountId, int startupId)
+        {
+            return await _context.Subcribes
+                .AnyAsync(s => s.FollowerAccountId == accountId && s.FollowingStartUpId == startupId);
         }
 
         // hàm lấy ra những người thuộc startup

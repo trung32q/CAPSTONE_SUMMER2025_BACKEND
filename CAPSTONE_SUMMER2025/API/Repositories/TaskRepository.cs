@@ -1,4 +1,5 @@
 ﻿using API.DTO.AccountDTO;
+using API.DTO.DartBoardDTO;
 using API.DTO.TaskDTO;
 using API.Repositories.Interfaces;
 using AutoMapper;
@@ -347,6 +348,14 @@ namespace API.Repositories
                         .ThenInclude(acc => acc.AccountProfile)
                 .FirstOrDefaultAsync(x => x.TaskId == taskId);
         }
+        public async Task<int?> GetMilestoneIDByTaskIDAsync(int taskId)
+        {
+            return await _context.StartupTasks
+                .Where(x => x.TaskId == taskId)
+                .Select(x => (int?)x.MilestoneId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<List<MemberInMilestoneDto>> GetMembersInMilestoneAsync(int milestoneId)
         {
             return await _context.MilestoneAssignments
@@ -416,5 +425,63 @@ namespace API.Repositories
                 .Select(x => x.ColumnName)
                 .FirstOrDefaultAsync();
         }
+        public async Task<TaskDashboardResponseDto> GetFullDashboardAsync(int milestoneId)
+        {
+            var now = DateTime.UtcNow;
+
+            // 🔹 Truy vấn task theo trạng thái (ColumnStatus)
+            var statusCounts = await _context.StartupTasks
+                .Where(t => t.MilestoneId == milestoneId)
+                .GroupBy(t => new { t.ColumnnStatusId, t.ColumnnStatus.ColumnName })
+                .Select(g => new TaskStatusCountDto
+                {
+                    ColumnStatusId = (int)g.Key.ColumnnStatusId,
+                    StatusName = g.Key.ColumnName,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            // 🔹 Truy vấn danh sách assignments + các navigation liên quan
+            var assignments = await _context.TaskAssignments
+                .Where(a => a.Task.MilestoneId == milestoneId)
+                .Include(a => a.Task).ThenInclude(t => t.ColumnnStatus)
+                .Include(a => a.AssignToAccount).ThenInclude(acc => acc.AccountProfile)
+                .ToListAsync();
+
+            // 🔹 Xử lý group và thống kê task theo từng thành viên
+            var memberStats = assignments
+                .GroupBy(a => a.AssignToAccountId)
+                .Select(g =>
+                {
+                    var account = g.First().AssignToAccount;
+                    var total = g.Count();
+                    var completed = g.Count(x => x.Task.ColumnnStatus?.ColumnName == "DONE");
+                    var overdue = g.Count(x =>
+                        x.Task.Duedate.HasValue &&
+                        x.Task.Duedate.Value < now &&
+                        x.Task.ColumnnStatus?.ColumnName != "DONE");
+
+                    return new TaskDashboardDto
+                    {
+                       
+                        AccountName = account.AccountProfile.FirstName + " " + account.AccountProfile.LastName,
+                        AccountAvatar = account.AccountProfile.AvatarUrl,
+                        TotalTasks = total,
+                        CompletedTasks = completed,
+                        OverdueTasks = overdue
+                        // CompletionRate tính tự động trong DTO
+                    };
+                })
+                .ToList();
+
+            // 🔹 Trả kết quả
+            return new TaskDashboardResponseDto
+            {
+                StatusCounts = statusCounts,
+                MemberTaskStats = memberStats
+            };
+        }
+
+
     }
 }

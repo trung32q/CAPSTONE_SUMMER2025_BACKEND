@@ -58,9 +58,9 @@ namespace API.Controllers
             return Ok(new { StartupId = startupId });
         }
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllStartups(int pageNumber=1, int pageSize = 10)
+        public async Task<IActionResult> GetAllStartups(int pageNumber=1, int pageSize = 10, int? categoryId = null)
         {
-            var result = await _service.GetAllStartupsAsync( pageNumber, pageSize);
+            var result = await _service.GetAllStartupsAsync( pageNumber, pageSize,categoryId);
             return Ok(result);
         }
 
@@ -532,7 +532,13 @@ namespace API.Controllers
             return Ok("cập nhật thành công");
         }
 
-
+        //check xem account đã follow startup chưa nếu rồi trả về true
+        [HttpGet("is-account-follow-startup")]
+        public async Task<IActionResult> IsAccountSubcibeStartup(int accountId, int startupId)
+        {
+            var result = await _service.IsAccountSubcibeStartup(accountId, startupId);
+            return Ok(result);
+        }
     }
 }
 

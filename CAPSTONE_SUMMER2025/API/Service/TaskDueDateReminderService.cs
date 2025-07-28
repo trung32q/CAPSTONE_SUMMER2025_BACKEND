@@ -4,6 +4,7 @@ using API.Service.Interface;
 using API.Utils.Constants;
 using Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace API.Service
 {
@@ -40,7 +41,10 @@ namespace API.Service
                         var assignments = await db.TaskAssignments
                             .Where(a => a.TaskId == task.TaskId)
                             .ToListAsync();
-
+                       var milestoneid=  await db.StartupTasks
+                        .Where(x => x.TaskId == task.TaskId)
+                        .Select(x => (int?)x.MilestoneId)
+                        .FirstOrDefaultAsync();
                         foreach (var assign in assignments)
                         {
                             await notificationService.CreateAndSendAsync(new reqNotificationDTO
@@ -51,7 +55,7 @@ namespace API.Service
                                 IsRead = false,
                                 senderid = (int)assign.AssignedByAccountId,
                                 NotificationType = NotiConst.Task,
-                                TargetURL = $"/task/{task.TaskId}"
+                                TargetURL = $"/me/milestones/{milestoneid}"
                             });
                         }
                         // Nếu muốn: task.IsDueSoonNotified = true;
@@ -71,7 +75,10 @@ namespace API.Service
                         var assignments = await db.TaskAssignments
                             .Where(a => a.TaskId == task.TaskId)
                             .ToListAsync();
-
+                        var milestoneid = await db.StartupTasks
+                      .Where(x => x.TaskId == task.TaskId)
+                      .Select(x => (int?)x.MilestoneId)
+                      .FirstOrDefaultAsync();
                         foreach (var assign in assignments)
                         {
                             await notificationService.CreateAndSendAsync(new reqNotificationDTO
@@ -82,7 +89,7 @@ namespace API.Service
                                 IsRead = false,
                                 senderid = (int)assign.AssignedByAccountId,
                                 NotificationType = NotiConst.Task,
-                                TargetURL = $"/task/{task.TaskId}"
+                                TargetURL = $"/me/milestones/{milestoneid}"
                             });
                         }
                         // Nếu muốn: task.IsOverdueNotified = true;

@@ -391,11 +391,11 @@ namespace API.Service
                 var policies = await _policyService.GetAllActivePoliciesAsync();
 
                 // Kiểm duyệt nội dung(comment lại để tránh tốn token)
-                //var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);
-                //if (result.Contains("Violation"))
-                //{
-                //    return result;
-                //}
+                var result = await _chatGPTService.ModeratePostContentAsync(reqPostDTO, policies);
+                if (result.Contains("Violation"))
+                {
+                    return result;
+                }
 
                 // Tạo bài viết
                 var success = await _repository.CreatePost(reqPostDTO);

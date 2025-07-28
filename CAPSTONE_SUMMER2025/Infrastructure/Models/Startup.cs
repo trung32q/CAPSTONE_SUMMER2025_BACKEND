@@ -20,6 +20,7 @@ namespace Infrastructure.Models
             StartupMembers = new HashSet<StartupMember>();
             StartupPitchings = new HashSet<StartupPitching>();
             Subcribes = new HashSet<Subcribe>();
+            UserChatRoomMembers = new HashSet<UserChatRoomMember>();
         }
 
         public int StartupId { get; set; }
@@ -51,5 +52,6 @@ namespace Infrastructure.Models
         public virtual ICollection<StartupMember> StartupMembers { get; set; }
         public virtual ICollection<StartupPitching> StartupPitchings { get; set; }
         public virtual ICollection<Subcribe> Subcribes { get; set; }
+        public virtual ICollection<UserChatRoomMember> UserChatRoomMembers { get; set; }
     }
 }
