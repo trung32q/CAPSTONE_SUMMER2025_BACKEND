@@ -1,4 +1,5 @@
 ﻿using API.DTO.AccountDTO;
+using API.DTO.DartBoardDTO;
 using API.DTO.NotificationDTO;
 using API.DTO.TaskDTO;
 using API.Repositories;
@@ -462,5 +463,10 @@ namespace API.Service
             };
             await _repo.AddActivityLogAsync(entity);
         }
+        public async Task<TaskDashboardResponseDto> GetFullDashboardAsync(int milestoneId)
+        {
+            return await _repo.GetFullDashboardAsync(milestoneId);
+        }
+
     }
 }

@@ -98,6 +98,43 @@ namespace API.Repositories
                 .OrderByDescending(r => r.LatestMessageTime)
                 .ToListAsync();
         }
+        public async Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByStartupIdAsync(int startupId)
+        {
+            return await _context.UserChatRooms
+                .Where(room => room.UserChatRoomMembers.Any(m => m.StartupId == startupId))
+                .Select(room => new ChatRoomWithLatestMessageDto
+                {
+                    ChatRoomId = room.ChatRoomId,
+                    Type = room.Type,
+                    CreatedAt = room.CreatedAt,
+
+                    LatestMessageContent = room.UserMessages
+                        .OrderByDescending(m => m.SentAt)
+                        .Select(m => m.Content)
+                        .FirstOrDefault(),
+
+                    LatestMessageTime = room.UserMessages
+                        .OrderByDescending(m => m.SentAt)
+                        .Select(m => (DateTime?)m.SentAt)
+                        .FirstOrDefault(),
+
+                    TargetName = room.UserChatRoomMembers
+                        .Where(m => m.StartupId != startupId)
+                        .Select(m => m.Startup != null
+                            ? m.Startup.StartupName
+                            : "N/A")
+                        .FirstOrDefault(),
+
+                    TargetAvatar = room.UserChatRoomMembers
+                        .Where(m => m.StartupId != startupId)
+                        .Select(m => m.Startup != null
+                            ? m.Startup.Logo
+                            :"N/A")
+                        .FirstOrDefault()
+                })
+                .OrderByDescending(r => r.LatestMessageTime)
+                .ToListAsync();
+        }
 
     }
 }

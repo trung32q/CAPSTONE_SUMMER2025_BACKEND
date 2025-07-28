@@ -67,5 +67,11 @@ namespace API.Controllers
             var result = await _service.GetChatRoomsByAccountAsync(accountId);
             return Ok(result);
         }
+        [HttpGet("list-chatroom-startup/{startupId}")]
+        public async Task<IActionResult> GetChatRoomsByStartup(int startupId)
+        {
+            var result = await _service.GetChatRoomsByStartupAsync(startupId);
+            return Ok(result);
+        }
     }
 }

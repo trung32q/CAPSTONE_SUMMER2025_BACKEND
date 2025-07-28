@@ -1,4 +1,5 @@
 ﻿using API.DTO.AccountDTO;
+using API.DTO.DartBoardDTO;
 using API.DTO.TaskDTO;
 using Infrastructure.Models;
 
@@ -30,5 +31,7 @@ namespace API.Service.Interface
         Task<List<LabelDto>> GetAllLabelsAsync();
         Task<List<ActivityLogDto>> GetAllActivityLogsAsync(int milestoneId);
         Task AddActivityLogAsync(ActivityLogDto dto);
+        Task<TaskDashboardResponseDto> GetFullDashboardAsync(int milestoneId);
+
     }
 }

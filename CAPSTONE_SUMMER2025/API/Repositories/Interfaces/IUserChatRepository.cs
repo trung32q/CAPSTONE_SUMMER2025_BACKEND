@@ -11,5 +11,6 @@ namespace API.Repositories.Interfaces
         Task SendMessageAsync(UserMessage message);
         Task<int> GetTotalMessagesAsync(int chatRoomId);
         Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountIdAsync(int accountId);
+        Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByStartupIdAsync(int startupId);
     }
 }

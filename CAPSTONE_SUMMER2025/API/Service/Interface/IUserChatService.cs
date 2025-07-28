@@ -10,5 +10,6 @@ namespace API.Service.Interface
         Task<PagedResult<GetUserMessageDTO>> GetMessagesAsync(int chatRoomId, int pageNumber, int pageSize);
         Task<UserMessage> SendMessageAsync(UserMessageDto dto);
         Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountAsync(int accountId);
+        Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByStartupAsync(int startupId);
     }
 }
