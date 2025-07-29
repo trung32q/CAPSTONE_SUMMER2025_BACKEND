@@ -16,12 +16,13 @@ namespace API.Controllers
         private readonly IUserChatService _service;
         private readonly IHubContext<MessageHub> _hubContext;
         private readonly ILogger<UserChatController> _logger;
-
-        public UserChatController(IUserChatService service, IHubContext<MessageHub> hubContext, ILogger<UserChatController> logger)
+        private readonly IHubContext<CallHub> _hubcallContext;
+        public UserChatController(IUserChatService service, IHubContext<MessageHub> hubContext, ILogger<UserChatController> logger, IHubContext<CallHub> hubcallContext)
         {
             _service = service;
             _hubContext = hubContext;
             _logger = logger;
+            _hubcallContext = hubcallContext;
         }
 
         [HttpPost("ensure-room")]
@@ -78,6 +79,15 @@ namespace API.Controllers
         public async Task<IActionResult> StartCall([FromBody] StartCallDto dto)
         {
             var result = await _service.StartCallAsync(dto);
+
+            // Notify callee via SignalR
+            await _hubcallContext.Clients.Group(result.RoomToken).SendAsync("IncomingCall", new
+            {
+                roomToken = result.RoomToken,
+                callSessionId = result.CallSessionId,
+                from = result.Caller
+            });
+
             return Ok(result);
         }
 
@@ -85,6 +95,7 @@ namespace API.Controllers
         public async Task<IActionResult> EndCall([FromBody] EndCallDto dto)
         {
             await _service.EndCallAsync(dto.CallSessionId);
+            await _hubcallContext.Clients.Group(dto.RoomToken).SendAsync("CallEnded", dto.CallSessionId);
             return Ok();
         }
 
@@ -94,10 +105,14 @@ namespace API.Controllers
             var result = await _service.GetCallHistoryAsync(chatRoomId);
             return Ok(result);
         }
+
         [HttpPost("accept-call")]
         public async Task<IActionResult> AcceptCall([FromBody] UpdateCallStatusDto dto)
         {
             await _service.AcceptCallAsync(dto.CallSessionId);
+
+            await _hubContext.Clients.Group(dto.RoomToken).SendAsync("CallAccepted", dto.CallSessionId);
+
             return Ok();
         }
 
@@ -105,6 +120,9 @@ namespace API.Controllers
         public async Task<IActionResult> RejectCall([FromBody] UpdateCallStatusDto dto)
         {
             await _service.RejectCallAsync(dto.CallSessionId);
+
+            // Optionally notify caller that callee rejected
+            await _hubContext.Clients.Group(dto.RoomToken).SendAsync("CallRejected", dto.CallSessionId);
             return Ok();
         }
 

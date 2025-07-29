@@ -185,6 +185,8 @@ var app = builder.Build ();
 app.MapHub<NotificationHub> ("/hubs/notification").RequireCors ("AllowAll");
 // Configure the HTTP request pipeline.
 app.MapHub<MessageHub> ("/messagehub").RequireCors ("AllowAll");
+app.MapHub<CallHub>("/callhub").RequireCors("AllowAll");
+
 if ( app.Environment.IsDevelopment () ) {
     app.UseSwagger ();
     app.UseSwaggerUI ();
