@@ -130,6 +130,7 @@ builder.Services.AddScoped<IFileHandlerRepository, FileHandlerRepository> ();
 builder.Services.AddScoped<ICVRepository, CVRepository> ();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<IUserChatRepository,UserChatRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository> ();
 
 builder.Services.AddScoped<IUserChatService, UserChatService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
@@ -147,6 +148,7 @@ builder.Services.AddScoped<IAccountService, AccountService> ();
 builder.Services.AddScoped<IEmailService, EmailService> ();
 builder.Services.AddScoped<IFileHandlerService, FileHandlerService> ();
 builder.Services.AddScoped<ICVService, CVService>();
+builder.Services.AddScoped<IAdminService, AdminService> ();
 builder.Services.AddScoped<ISwotService, SwotService>();
 builder.Services.AddScoped<JwtService> ();
 builder.Services.AddScoped<GoogleService> ();
