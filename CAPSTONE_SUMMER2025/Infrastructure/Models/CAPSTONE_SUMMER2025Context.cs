@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Models
 {
@@ -64,6 +63,7 @@ namespace Infrastructure.Models
         public virtual DbSet<Subcribe> Subcribes { get; set; } = null!;
         public virtual DbSet<TaskActivityLog> TaskActivityLogs { get; set; } = null!;
         public virtual DbSet<TaskAssignment> TaskAssignments { get; set; } = null!;
+        public virtual DbSet<UserCallSession> UserCallSessions { get; set; } = null!;
         public virtual DbSet<UserChatRoom> UserChatRooms { get; set; } = null!;
         public virtual DbSet<UserChatRoomMember> UserChatRoomMembers { get; set; } = null!;
         public virtual DbSet<UserMessage> UserMessages { get; set; } = null!;
@@ -72,8 +72,8 @@ namespace Infrastructure.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var builder = new ConfigurationBuilder()
-                                .SetBasePath(Directory.GetCurrentDirectory())
-                                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                              .SetBasePath(Directory.GetCurrentDirectory())
+                              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             IConfigurationRoot configuration = builder.Build();
             optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
         }
@@ -1331,6 +1331,28 @@ namespace Infrastructure.Models
                     .WithMany(p => p.TaskAssignments)
                     .HasForeignKey(d => d.TaskId)
                     .HasConstraintName("FK__TaskAssig__Task___75A278F5");
+            });
+
+            modelBuilder.Entity<UserCallSession>(entity =>
+            {
+                entity.HasKey(e => e.CallSessionId)
+                    .HasName("PK__UserCall__F6D4C0C6D5BE6128");
+
+                entity.ToTable("UserCallSession");
+
+                entity.Property(e => e.CallSessionId).ValueGeneratedNever();
+
+                entity.Property(e => e.EndedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.StartedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.Status).HasMaxLength(20);
+
+                entity.HasOne(d => d.ChatRoom)
+                    .WithMany(p => p.UserCallSessions)
+                    .HasForeignKey(d => d.ChatRoomId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Call_ChatRoom");
             });
 
             modelBuilder.Entity<UserChatRoom>(entity =>

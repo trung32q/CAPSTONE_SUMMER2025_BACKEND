@@ -7,6 +7,7 @@ namespace Infrastructure.Models
     {
         public UserChatRoom()
         {
+            UserCallSessions = new HashSet<UserCallSession>();
             UserChatRoomMembers = new HashSet<UserChatRoomMember>();
             UserMessages = new HashSet<UserMessage>();
         }
@@ -15,6 +16,7 @@ namespace Infrastructure.Models
         public string Type { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
 
+        public virtual ICollection<UserCallSession> UserCallSessions { get; set; }
         public virtual ICollection<UserChatRoomMember> UserChatRoomMembers { get; set; }
         public virtual ICollection<UserMessage> UserMessages { get; set; }
     }
