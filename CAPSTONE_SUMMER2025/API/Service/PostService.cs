@@ -57,13 +57,14 @@ namespace API.Service
             var dto = new resPostDTO
             {
                 PostId = post.PostId,
+                StartupId = (int) post.StartupId,
                 AccountId = post.AccountId,
                 Content = post.Content,
                 Title = post.Title,
                 CreateAt = post.CreateAt,
                 Schedule = post.Schedule,
-                FullName = post.Account.AccountProfile.FirstName + " " + post.Account.AccountProfile.LastName,
-                AvatarUrl = post.Account.AccountProfile.AvatarUrl,
+                FullName =  post.StartupId == null ?  (post.Account.AccountProfile.FirstName + " " + post.Account.AccountProfile.LastName) : post.Startup.StartupName,
+                AvatarUrl = post.StartupId == null ?  post.Account.AccountProfile.AvatarUrl : post.Startup.Logo,
                 PostShareId = post.PostShareId,
                 PostMedia = post.PostMedia.Select(m => new PostMediaDTO
                 {
