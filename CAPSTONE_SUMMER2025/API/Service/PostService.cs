@@ -64,6 +64,7 @@ namespace API.Service
                 Schedule = post.Schedule,
                 FullName = post.Account.AccountProfile.FirstName + " " + post.Account.AccountProfile.LastName,
                 AvatarUrl = post.Account.AccountProfile.AvatarUrl,
+                PostShareId = post.PostShareId,
                 PostMedia = post.PostMedia.Select(m => new PostMediaDTO
                 {
                     MediaUrl = m.MediaUrl,
