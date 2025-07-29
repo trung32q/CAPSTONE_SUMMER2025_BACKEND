@@ -140,6 +140,29 @@ namespace API.Repositories
                 .OrderByDescending(r => r.LatestMessageTime)
                 .ToListAsync();
         }
+        public async Task<UserCallSession> CreateAsync(UserCallSession call)
+        {
+            _context.UserCallSessions.Add(call);
+            await _context.SaveChangesAsync();
+            return call;
+        }
 
+        public async Task<UserCallSession?> GetByIdAsync(Guid id)
+        {
+            return await _context.UserCallSessions.FindAsync(id);
+        }
+
+        public async Task<List<UserCallSession>> GetByChatRoomIdAsync(int chatRoomId)
+        {
+            return await _context.UserCallSessions
+                .Where(x => x.ChatRoomId == chatRoomId)
+                .OrderByDescending(x => x.StartedAt)
+                .ToListAsync();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

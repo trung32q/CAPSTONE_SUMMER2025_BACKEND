@@ -1,10 +1,13 @@
 ﻿using API.DTO.AccountDTO;
 using API.DTO.Mesage;
+using API.DTO.VideoCall;
 using API.Repositories;
 using API.Repositories.Interfaces;
 using API.Service.Interface;
 using Google.Cloud.AIPlatform.V1;
 using Infrastructure.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace API.Service
 {
@@ -14,14 +17,17 @@ namespace API.Service
         private readonly IFilebaseHandler _FilebaseHandler;
         private readonly IStartupRepository _startupRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly CAPSTONE_SUMMER2025Context _context;
+
         private readonly IPostRepository _postRepo;
-        public UserChatService(IUserChatRepository repo, IFilebaseHandler filebaseHandler, IStartupRepository startupRepository, IAccountRepository accountRepository, IPostRepository postRepository)
+        public UserChatService(IUserChatRepository repo, IFilebaseHandler filebaseHandler, IStartupRepository startupRepository, IAccountRepository accountRepository, IPostRepository postRepository, CAPSTONE_SUMMER2025Context context)
         {
             _repo = repo;
             _FilebaseHandler = filebaseHandler;
             _startupRepository = startupRepository;
             _accountRepository = accountRepository;
             _postRepo = postRepository;
+            _context = context;
         }
 
         public async Task<int> EnsureChatRoomAsync(int accountId, int? targetAccountId, int? targetStartupId)
@@ -137,6 +143,73 @@ namespace API.Service
         public async Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByStartupAsync(int startupId)
         {
             return await _repo.GetChatRoomsByStartupIdAsync(startupId);
+        }
+        public async Task<ResStartCallDto> StartCallAsync(StartCallDto dto)
+        {
+            var members = await _context.UserChatRoomMembers
+                .Where(x => x.ChatRoomId == dto.ChatRoomId)
+                .Select(x => x.AccountId)
+                .ToListAsync();
+
+            var calleeId = members.FirstOrDefault(x => x != dto.AccountId);
+            if (calleeId == 0)
+                throw new Exception("Không tìm thấy người nhận trong phòng.");
+
+            var users = await _context.AccountProfiles
+                .Where(x => x.AccountId == dto.AccountId || x.AccountId == calleeId)
+                .Select(x => new { x.AccountId, x.FirstName, x.LastName, x.AvatarUrl })
+                .ToListAsync();
+
+            var caller = users.First(x => x.AccountId == dto.AccountId);
+            var callee = users.First(x => x.AccountId == calleeId);
+
+            var call = new UserCallSession
+            {
+                CallSessionId = Guid.NewGuid(),
+                ChatRoomId = dto.ChatRoomId,
+                StartedByAccountId = dto.AccountId,
+                StartedAt = DateTime.Now,
+                Status = "Pending",
+                RoomToken = Guid.NewGuid().ToString()
+            };
+
+            await _repo.CreateAsync(call);
+
+            return new ResStartCallDto
+            {
+                CallSessionId = call.CallSessionId,
+                RoomToken = call.RoomToken,
+                StartedAt = call.StartedAt,
+                ChatRoomId = call.ChatRoomId,
+                Status = call.Status,
+                Caller = new UserShortDto
+                {
+                    AccountId = (int)caller.AccountId,
+                    FullName = caller.FirstName+" "+caller.LastName,
+                    AvatarUrl = caller.AvatarUrl
+                },
+                Callee = new UserShortDto
+                {
+                    AccountId = (int)callee.AccountId,
+                    FullName = callee.FirstName + " " + callee.LastName,
+                    AvatarUrl = callee.AvatarUrl
+                }
+            };
+        }
+
+        public async Task EndCallAsync(Guid callSessionId)
+        {
+            var call = await _repo.GetByIdAsync(callSessionId);
+            if (call == null) throw new Exception("Cuộc gọi không tồn tại.");
+
+            call.Status = "Ended";
+            call.EndedAt = DateTime.Now;
+            await _repo.SaveChangesAsync();
+        }
+
+        public async Task<List<UserCallSession>> GetCallHistoryAsync(int chatRoomId)
+        {
+            return await _repo.GetByChatRoomIdAsync(chatRoomId);
         }
     }
 }

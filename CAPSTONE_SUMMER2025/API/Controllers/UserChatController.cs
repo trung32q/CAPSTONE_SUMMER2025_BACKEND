@@ -1,5 +1,6 @@
 ﻿using API.DTO.Mesage;
 using API.DTO.StartupDTO;
+using API.DTO.VideoCall;
 using API.Hubs;
 using API.Service.Interface;
 using Microsoft.AspNetCore.Http;
@@ -71,6 +72,26 @@ namespace API.Controllers
         public async Task<IActionResult> GetChatRoomsByStartup(int startupId)
         {
             var result = await _service.GetChatRoomsByStartupAsync(startupId);
+            return Ok(result);
+        }
+        [HttpPost("start-call")]
+        public async Task<IActionResult> StartCall([FromBody] StartCallDto dto)
+        {
+            var result = await _service.StartCallAsync(dto);
+            return Ok(result);
+        }
+
+        [HttpPost("end-call")]
+        public async Task<IActionResult> EndCall([FromBody] EndCallDto dto)
+        {
+            await _service.EndCallAsync(dto.CallSessionId);
+            return Ok();
+        }
+
+        [HttpGet("history-call")]
+        public async Task<IActionResult> GetHistory([FromQuery] int chatRoomId)
+        {
+            var result = await _service.GetCallHistoryAsync(chatRoomId);
             return Ok(result);
         }
     }
