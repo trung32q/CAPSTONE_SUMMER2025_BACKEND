@@ -16,5 +16,7 @@ namespace API.Repositories.Interfaces
         Task<UserCallSession?> GetByIdAsync(Guid id);
         Task<List<UserCallSession>> GetByChatRoomIdAsync(int chatRoomId);
         Task SaveChangesAsync();
+        Task UpdateStatusAsync(Guid callSessionId, string newStatus);
+
     }
 }

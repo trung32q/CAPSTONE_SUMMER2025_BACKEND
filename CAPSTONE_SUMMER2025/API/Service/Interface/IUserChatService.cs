@@ -15,5 +15,8 @@ namespace API.Service.Interface
         Task<ResStartCallDto> StartCallAsync(StartCallDto dto);
         Task EndCallAsync(Guid callSessionId);
         Task<List<UserCallSession>> GetCallHistoryAsync(int chatRoomId);
+        Task AcceptCallAsync(Guid callSessionId);
+        Task RejectCallAsync(Guid callSessionId);
+
     }
 }

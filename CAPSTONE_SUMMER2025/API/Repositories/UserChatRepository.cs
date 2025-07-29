@@ -164,5 +164,15 @@ namespace API.Repositories
         {
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateStatusAsync(Guid callSessionId, string newStatus)
+        {
+            var call = await _context.UserCallSessions.FindAsync(callSessionId);
+            if (call != null)
+            {
+                call.Status = newStatus;
+                await _context.SaveChangesAsync();
+            }
+        }
+
     }
 }

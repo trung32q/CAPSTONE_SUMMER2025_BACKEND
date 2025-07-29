@@ -94,5 +94,19 @@ namespace API.Controllers
             var result = await _service.GetCallHistoryAsync(chatRoomId);
             return Ok(result);
         }
+        [HttpPost("accept-call")]
+        public async Task<IActionResult> AcceptCall([FromBody] UpdateCallStatusDto dto)
+        {
+            await _service.AcceptCallAsync(dto.CallSessionId);
+            return Ok();
+        }
+
+        [HttpPost("reject-call")]
+        public async Task<IActionResult> RejectCall([FromBody] UpdateCallStatusDto dto)
+        {
+            await _service.RejectCallAsync(dto.CallSessionId);
+            return Ok();
+        }
+
     }
 }

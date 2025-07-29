@@ -211,5 +211,15 @@ namespace API.Service
         {
             return await _repo.GetByChatRoomIdAsync(chatRoomId);
         }
+        public async Task AcceptCallAsync(Guid callSessionId)
+        {
+            await _repo.UpdateStatusAsync(callSessionId, "Accepted");
+        }
+
+        public async Task RejectCallAsync(Guid callSessionId)
+        {
+            await _repo.UpdateStatusAsync(callSessionId, "Rejected");
+        }
+
     }
 }
