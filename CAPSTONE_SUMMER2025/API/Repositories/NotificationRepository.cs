@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace API.Repositories
 {
-    class NotificationRepository : INotificationRepository
+    public class NotificationRepository : INotificationRepository
     {
         private readonly CAPSTONE_SUMMER2025Context _context;
 
@@ -26,7 +26,7 @@ namespace API.Repositories
 
             return notification;
         }
-   
+
         public async Task<(List<Notification> Notifications, int TotalCount)> GetPagedNotificationsAsync(int accountId, int pageNumber, int pageSize)
         {
             // Truy vấn thông báo cho accountId
@@ -48,7 +48,7 @@ namespace API.Repositories
         public async Task<int> GetUnreadNotificationCountAsync(int accountId)
         {
             return await _context.Notifications
-                .Where(x => x.AccountId == accountId && x.IsRead==false)
+                .Where(x => x.AccountId == accountId && x.IsRead == false)
                 .CountAsync();
         }
         public async Task<bool> MarkNotificationAsReadAsync(int notificationId, int accountId)
@@ -61,9 +61,9 @@ namespace API.Repositories
                 return false; // Thông báo không tồn tại hoặc không thuộc về accountId
             }
 
-            if (notification.IsRead==true)
+            if (notification.IsRead == true)
             {
-                return true; 
+                return true;
             }
 
             notification.IsRead = true;

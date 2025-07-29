@@ -1,0 +1,10 @@
+global using AutoMapper;
+global using BCrypt.Net;
+global using Microsoft.EntityFrameworkCore;
+global using API.DTO.AccountDTO;
+global using API.Mapping;
+global using Infrastructure.Models;
+global using Infrastructure.Repository;
+global using System.Threading.Tasks;
+global using Xunit;
+global using static UnitTest.TestHelper;
