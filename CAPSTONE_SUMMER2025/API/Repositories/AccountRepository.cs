@@ -412,6 +412,11 @@ namespace Infrastructure.Repository
      .Where(x => x.BlockerAccountId == blockerId)
      .ToListAsync();
         }
-
+        public async Task<Account> CreateAdminAccountAsync(Account account)
+        {
+            _context.Accounts.Add(account);
+            await _context.SaveChangesAsync();
+            return account;
+        }
     }
 }
