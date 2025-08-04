@@ -24,5 +24,6 @@ namespace API.Service.Interface
         Task<bool> BlockAccountAsync(int blockerId, int blockedId);
         Task<bool> UnblockAccountAsync(int blockerId, int blockedId);
         Task<List<BlockedAccountDto>> GetBlockedAccountsAsync(int blockerId);
+        Task<Account> CreateAdminAccountAsync(CreateAdminDto dto);
     }
 }

@@ -263,7 +263,25 @@ namespace API.Service
             }).ToList();
             return dtos;
         }
+        public async Task<Infrastructure.Models.Account> CreateAdminAccountAsync(CreateAdminDto dto)
+        {
+            var existing = await _accountRepository.GetAccountByEmailAsync(dto.Email);
+            if (existing != null)
+                throw new Exception("Email already exists");
 
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
+            var account = new Infrastructure.Models.Account
+            {
+                Email = dto.Email,
+                Password = hashedPassword,
+                Role = "admin",
+                Status = "verified",
+                CreatedAt = DateTime.Now
+            };
+
+            return await _accountRepository.CreateAdminAccountAsync(account);
+        }
     }
 }
 

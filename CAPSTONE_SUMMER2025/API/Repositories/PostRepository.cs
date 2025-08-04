@@ -70,7 +70,7 @@ namespace API.Repositories
         //hàm tìm bài post theo id
         public async Task<Post> GetPostByPostIdAsync(int id)
         {
-            return await _context.Posts.Include(p => p.PostMedia).Include(p => p.Account).ThenInclude(a => a.AccountProfile).FirstOrDefaultAsync(x => x.PostId == id);
+            return await _context.Posts.Include(p => p.Startup).Include(p => p.PostMedia).Include(p => p.Account).ThenInclude(a => a.AccountProfile).FirstOrDefaultAsync(x => x.PostId == id);
         }
 
 

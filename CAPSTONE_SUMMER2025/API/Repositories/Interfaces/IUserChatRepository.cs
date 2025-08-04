@@ -12,5 +12,11 @@ namespace API.Repositories.Interfaces
         Task<int> GetTotalMessagesAsync(int chatRoomId);
         Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByAccountIdAsync(int accountId);
         Task<List<ChatRoomWithLatestMessageDto>> GetChatRoomsByStartupIdAsync(int startupId);
+        Task<UserCallSession> CreateAsync(UserCallSession call);
+        Task<UserCallSession?> GetByIdAsync(Guid id);
+        Task<List<UserCallSession>> GetByChatRoomIdAsync(int chatRoomId);
+        Task SaveChangesAsync();
+        Task UpdateStatusAsync(Guid callSessionId, string newStatus);
+
     }
 }

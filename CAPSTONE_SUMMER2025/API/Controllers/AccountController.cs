@@ -231,5 +231,18 @@ namespace API.Controllers
             var list = await _accountService.GetBlockedAccountsAsync(accountId);
             return Ok(list);
         }
+        [HttpPost("create-admin")]
+        public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminDto dto)
+        {
+            try
+            {
+                var account = await _accountService.CreateAdminAccountAsync(dto);
+                return Ok(new { message = "Admin created", account.Email });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
