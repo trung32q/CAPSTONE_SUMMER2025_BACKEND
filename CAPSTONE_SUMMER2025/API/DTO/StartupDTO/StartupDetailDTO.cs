@@ -14,6 +14,7 @@
         public string? Email { get; set; }
         public string? Status { get; set; }
         public int? StageId { get; set; }
+        public string? StageName {  get; set; }
         public DateTime CreateAt { get; set; }
     }
 }
