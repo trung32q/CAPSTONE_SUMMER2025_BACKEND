@@ -262,7 +262,7 @@ namespace API.Service
                 var likerer = await _accountRepository.GetAccountByIdAsync(dto.AccountId);
                 if (likerer != null)
                 {
-                    var message = $"{likerer.AccountProfile?.FirstName} has liked your post.";
+                    var message = $" has liked your post.";
                     await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                     {
                         UserId = accountID.Value,
@@ -433,7 +433,7 @@ namespace API.Service
                         if (commenter != null&& reqPostCommentDTO.AccountId != accountID)
                         {
                             var targetUrl = $"/post/{reqPostCommentDTO.PostId}";
-                            var message = $"{commenter.AccountProfile?.FirstName} has comment on your post.";
+                            var message = $" has comment on your post.";
                             await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                             {
                                 UserId = accountID.Value,
@@ -456,7 +456,7 @@ namespace API.Service
                         if (commenter != null)
                         {
                             var targetUrl = $"/post/{reqPostCommentDTO.PostId}";
-                            var message = $"{commenter.AccountProfile?.FirstName} has comment on your comment.";
+                            var message = $"has comment on your comment.";
                             await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                             {
                                 UserId = accountID.Value,
@@ -745,7 +745,7 @@ namespace API.Service
                 var Accountid = await _repository.GetAccountIdByPostIDAsync(request.OriginalPostId);
                 if (Accountid != null)
                 {
-                    var message = $"{Account.AccountProfile?.FirstName} has share your post.";
+                    var message = $" has share your post.";
                     await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                     {
                         UserId = (int)request.AccountId,
