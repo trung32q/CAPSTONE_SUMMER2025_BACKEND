@@ -72,11 +72,8 @@ namespace Infrastructure.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var builder = new ConfigurationBuilder()
-                              .SetBasePath(Directory.GetCurrentDirectory())
-                              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-            IConfigurationRoot configuration = builder.Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DBContext"));
+            var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+            optionsBuilder.UseSqlServer(config.GetConnectionString("DBContext"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
