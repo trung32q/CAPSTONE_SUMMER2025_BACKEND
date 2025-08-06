@@ -777,6 +777,7 @@ namespace API.Repositories
         public async Task<Startup?> GetStartupByIdAsync(int startupId)
         {
             return await _context.Startups
+                .Include(s => s.Stage)
                 .FirstOrDefaultAsync(s => s.StartupId == startupId);
         }
         public async Task<PagedResult<InternshipPost>> GetInternshipPostsAsync(int pageNumber, int pageSize,int startupid)

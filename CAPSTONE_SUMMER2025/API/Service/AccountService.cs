@@ -165,7 +165,7 @@ namespace API.Service
                 var follower = await _accountRepository.GetAccountByIdAsync(followerAccountId);
                 if (follower != null)
                 {
-                    var message = $"{follower.AccountProfile?.FirstName} has followed you.";
+                    var message = $" has followed you.";
                     await _notificationService.CreateAndSendAsync(new reqNotificationDTO
                     {
                         UserId = followingAccountId,

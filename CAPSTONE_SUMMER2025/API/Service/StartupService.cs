@@ -868,6 +868,7 @@ namespace API.Service
                 Email = startup.Email,
                 Status = startup.Status,
                 StageId = startup.StageId,
+                StageName = startup.Stage.StageName,
                 CreateAt = (DateTime)startup.CreateAt
             };
         }
