@@ -13,7 +13,7 @@ namespace API.Mapping
     {
         public MappingPolicy() {
             CreateMap<PolicyType, resPolicyTypeDTO>();
-            CreateMap<reqPolicyTypeDTO, PolicyType>().ForAllOtherMembers(opt => opt.Ignore());
+            CreateMap<reqPolicyTypeDTO, PolicyType>();
 
             CreateMap<Policy, resPolicyDTO>();
             CreateMap<reqPolicyDTO, Policy>().ForAllOtherMembers(opt => opt.Ignore());
