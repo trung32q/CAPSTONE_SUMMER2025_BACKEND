@@ -12,6 +12,7 @@ namespace Infrastructure.Models
         public bool CanManageChatRoom { get; set; }
         public bool CanManageMember { get; set; }
         public bool CanManageMilestone { get; set; }
+        public bool CanManageStartupChat { get; set; }
 
         public virtual RoleInStartup Role { get; set; } = null!;
     }
