@@ -35,6 +35,9 @@ namespace API.Service
             if (dto.CanManageMilestone.HasValue)
                 permission.CanManageMilestone = dto.CanManageMilestone.Value;
 
+            if (dto.CanManageStartupchat.HasValue)
+                permission.CanManageStartupChat = dto.CanManageStartupchat.Value;
+
             await _repository.UpdateAsync(permission);
             return true;
         }

@@ -46,5 +46,11 @@ namespace API.Controllers
             var canmember = await _service.HasPermissionAsync(accountId, p => p.CanManageMember);
             return Ok(canmember);
         }
+        [HttpGet("can-manage-Startup-chat")]
+        public async Task<IActionResult> CheckCanManageStartupchat([FromQuery] int accountId)
+        {
+            var canmember = await _service.HasPermissionAsync(accountId, p => p.CanManageStartupChat);
+            return Ok(canmember);
+        }
     }
 }
