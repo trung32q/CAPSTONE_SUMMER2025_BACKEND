@@ -54,7 +54,8 @@ namespace API.Service
                 CanManageCandidate = permission.CanManageCandidate,
                 CanManageChatRoom = permission.CanManageChatRoom,
                 CanManageMember = permission.CanManageMember,
-                CanManageMilestone = permission.CanManageMilestone
+                CanManageMilestone = permission.CanManageMilestone,
+                CanManageStartupChat = permission.CanManageStartupChat,
             };
         }
         public async Task<bool> HasPermissionAsync(int accountId, Expression<Func<PermissionInStartup, bool>> permissionSelector)
