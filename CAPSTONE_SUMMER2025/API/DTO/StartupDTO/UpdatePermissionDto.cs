@@ -8,5 +8,7 @@
         public bool? CanManageChatRoom { get; set; }
         public bool? CanManageMember { get; set; }
         public bool? CanManageMilestone { get; set; }
+        public bool? CanManageStartupchat{ get; set; }
+
     }
 }

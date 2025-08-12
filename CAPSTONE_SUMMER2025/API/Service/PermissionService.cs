@@ -35,6 +35,9 @@ namespace API.Service
             if (dto.CanManageMilestone.HasValue)
                 permission.CanManageMilestone = dto.CanManageMilestone.Value;
 
+            if (dto.CanManageStartupchat.HasValue)
+                permission.CanManageStartupChat = dto.CanManageStartupchat.Value;
+
             await _repository.UpdateAsync(permission);
             return true;
         }
@@ -51,7 +54,8 @@ namespace API.Service
                 CanManageCandidate = permission.CanManageCandidate,
                 CanManageChatRoom = permission.CanManageChatRoom,
                 CanManageMember = permission.CanManageMember,
-                CanManageMilestone = permission.CanManageMilestone
+                CanManageMilestone = permission.CanManageMilestone,
+                CanManageStartupChat = permission.CanManageStartupChat,
             };
         }
         public async Task<bool> HasPermissionAsync(int accountId, Expression<Func<PermissionInStartup, bool>> permissionSelector)
