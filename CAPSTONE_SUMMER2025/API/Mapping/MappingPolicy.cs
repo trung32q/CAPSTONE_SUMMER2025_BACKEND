@@ -16,7 +16,7 @@ namespace API.Mapping
             CreateMap<reqPolicyTypeDTO, PolicyType>();
 
             CreateMap<Policy, resPolicyDTO>();
-            CreateMap<reqPolicyDTO, Policy>().ForAllOtherMembers(opt => opt.Ignore());
+            CreateMap<reqPolicyDTO, Policy>();
         }
        
     }
