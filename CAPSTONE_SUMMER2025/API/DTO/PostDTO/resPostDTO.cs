@@ -14,7 +14,7 @@
         public string? FullName {  get; set; }
         public string? AvatarUrl {  get; set; }
 
-        public int StartupId {  get; set; }
+        public int? StartupId {  get; set; }
 
     }
 }
