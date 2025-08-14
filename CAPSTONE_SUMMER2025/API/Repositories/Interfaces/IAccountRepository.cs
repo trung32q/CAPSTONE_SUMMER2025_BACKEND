@@ -32,5 +32,6 @@ namespace API.Repositories.Interfaces
         Task<List<AccountBlock>> GetBlockedAccountsAsync(int blockerId);
         Task<AccountBlock?> GetBlockAsync(int blockerId, int blockedId);
         Task<Account> CreateAdminAccountAsync(Account account);
+        Task<bool> CheckBlockAccount(int currentAccountId, int targetAccountId);
     }
 }
