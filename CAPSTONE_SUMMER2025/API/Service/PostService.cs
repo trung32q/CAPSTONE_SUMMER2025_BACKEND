@@ -57,7 +57,7 @@ namespace API.Service
             var dto = new resPostDTO
             {
                 PostId = post.PostId,
-                StartupId = (int) post.StartupId,
+                StartupId = post.StartupId,
                 AccountId = post.AccountId,
                 Content = post.Content,
                 Title = post.Title,

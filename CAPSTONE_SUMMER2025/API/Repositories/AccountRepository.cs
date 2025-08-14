@@ -58,6 +58,10 @@ namespace Infrastructure.Repository
                                        .FirstOrDefaultAsync(x => x.AccountId == accountId);           
         }
 
+        public async Task<bool> CheckBlockAccount(int currentAccountId, int targetAccountId)
+        {
+            return await _context.AccountBlocks.AnyAsync(a => a.BlockerAccountId == currentAccountId && a.BlockedAccountId == targetAccountId);
+        }
 
         public async Task<List<Account>> GetFollowingAsync(int accountId)
         {

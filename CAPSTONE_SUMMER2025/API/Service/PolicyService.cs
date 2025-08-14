@@ -77,7 +77,13 @@ namespace API.Service
 
         public async Task<(bool Success, string Message)> AddPolicyAsync(reqPolicyDTO dto)
         {
-            var entity = _mapper.Map<Policy>(dto);
+            var entity = new Policy
+            {
+                CreateAt = DateTime.Now,
+                Description = dto.Description,
+                IsActive = dto.IsActive,
+                PolicyTypeId = dto.PolicyTypeId
+            };
             await _repository.AddPolicyAsync(entity);
             return (true, "Policy created successfully");
         }
@@ -87,7 +93,10 @@ namespace API.Service
             var existing = await _repository.GetPolicyByIdAsync(id);
             if (existing == null) return (false, "Policy not found");
 
-            _mapper.Map(dto, existing);
+            existing.Description = dto.Description;
+            existing.IsActive = dto.IsActive;
+            existing.PolicyTypeId = dto.PolicyTypeId;
+
             await _repository.UpdatePolicyAsync(existing);
             return (true, "Policy updated successfully");
         }
