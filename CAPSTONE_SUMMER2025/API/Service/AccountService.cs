@@ -282,6 +282,11 @@ namespace API.Service
 
             return await _accountRepository.CreateAdminAccountAsync(account);
         }
+
+        public async Task<bool> CheckBlockAccount(int currentAccountId, int targetAccountId)
+        {
+            return await _accountRepository.CheckBlockAccount(currentAccountId, targetAccountId);
+        }
     }
 }
 

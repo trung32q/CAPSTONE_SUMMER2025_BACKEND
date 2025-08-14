@@ -244,5 +244,12 @@ namespace API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpGet("CheckBlockAccount")]
+        public async Task<IActionResult> CheckBlockAccount(int currentAccountId, int targetAccountId)
+        {
+            var result = await _accountService.CheckBlockAccount(currentAccountId, targetAccountId);
+            return Ok(result);
+        }
     }
 }
