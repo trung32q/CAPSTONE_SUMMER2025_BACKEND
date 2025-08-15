@@ -42,7 +42,7 @@ namespace UnitTest.Repositories
             var result = await _adminRepository.GetCountAccountActiveAsync();
 
             // Assert
-            Assert.Equal(2, result); 
+            Assert.Equal(2, result);
         }
 
         [Fact]
@@ -213,6 +213,20 @@ namespace UnitTest.Repositories
             Assert.Equal(7, result.DailyStartupStats.Count);
             Assert.All(result.DailyStartupStats, x => Assert.Equal(0, x.StartupCount));
         }
+
+        [Fact]
+        public async Task GetStartupsCreatedLast7DaysAsync_NoStartups_ReturnsZeroStats()
+        {
+            // Arrange
+
+            // Act
+            var result = await _adminRepository.GetStartupsCreatedLast7DaysAsync();
+
+            // Assert
+            Assert.Equal(0, result.TotalNewStartupCount);
+            Assert.Equal(7, result.DailyStartupStats.Count);
+            Assert.All(result.DailyStartupStats, x => Assert.Equal(0, x.StartupCount));
+        }
         #endregion
 
         #region GetUserGrowthRateAsync
@@ -222,7 +236,7 @@ namespace UnitTest.Repositories
             // Arrange
             var today = DateTime.Today;
             var startOfThisWeek = today.AddDays(-(int)today.DayOfWeek + 1);
-            var startOfLastWeek = startOfThisWeek.AddDays(-7); 
+            var startOfLastWeek = startOfThisWeek.AddDays(-7);
             var accounts = new List<Account>
             {
                 new Account { AccountId = 1, CreatedAt = startOfLastWeek.AddDays(1), Status = AccountStatusConst.VERIFIED },
@@ -240,7 +254,7 @@ namespace UnitTest.Repositories
             // Assert
             Assert.Equal(3, result.ThisWeek);
             Assert.Equal(2, result.LastWeek);
-            Assert.Equal(50, result.GrowthPercent); 
+            Assert.Equal(50, result.GrowthPercent);
         }
 
         [Fact]
@@ -255,6 +269,30 @@ namespace UnitTest.Repositories
             Assert.Equal(0, result.ThisWeek);
             Assert.Equal(0, result.LastWeek);
             Assert.Equal(0, result.GrowthPercent);
+        }
+
+        [Fact]
+        public async Task GetUserGrowthRateAsync_OnlyLastWeekAccounts_ReturnsZeroGrowth()
+        {
+            // Arrange
+            var today = DateTime.Today;
+            var startOfThisWeek = today.AddDays(-(int)today.DayOfWeek + 1);
+            var startOfLastWeek = startOfThisWeek.AddDays(-7);
+            var accounts = new List<Account>
+            {
+                new Account { AccountId = 1, CreatedAt = startOfLastWeek.AddDays(1), Status = AccountStatusConst.VERIFIED },
+                new Account { AccountId = 2, CreatedAt = startOfLastWeek.AddDays(2), Status = AccountStatusConst.VERIFIED }
+            };
+            _context.Accounts.AddRange(accounts);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _adminRepository.GetUserGrowthRateAsync();
+
+            // Assert
+            Assert.Equal(0, result.ThisWeek);
+            Assert.Equal(2, result.LastWeek);
+            Assert.Equal(-100, result.GrowthPercent);
         }
         #endregion
     }

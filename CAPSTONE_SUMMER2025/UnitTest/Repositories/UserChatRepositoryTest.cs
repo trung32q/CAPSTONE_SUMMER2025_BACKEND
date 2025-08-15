@@ -415,5 +415,152 @@ namespace UnitTest.Repositories
             Assert.Empty(result);
         }
         #endregion
+
+        #region CreateAsync
+        [Fact]
+        public async Task CreateAsync_ValidCallSession_CreatesSuccessfully()
+        {
+            // Arrange
+            var call = new UserCallSession
+            {
+                ChatRoomId = 1,
+                Status = "Active",
+                StartedAt = DateTime.UtcNow
+            };
+            var chatRoom = new UserChatRoom { ChatRoomId = 1, Type = "UserToUser" };
+            _context.UserChatRooms.Add(chatRoom);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _userChatRepository.CreateAsync(call);
+
+            // Assert
+            var savedCall = await _context.UserCallSessions.FirstOrDefaultAsync(c => c.ChatRoomId == 1);
+            Assert.NotNull(savedCall);
+            Assert.Equal(1, savedCall.ChatRoomId);
+            Assert.Equal("Active", savedCall.Status);
+        }
+        #endregion
+
+        #region GetByIdAsync
+        [Fact]
+        public async Task GetByIdAsync_ValidId_ReturnsCallSession()
+        {
+            // Arrange
+            var callId = Guid.NewGuid();
+            var call = new UserCallSession { CallSessionId = callId, ChatRoomId = 1, Status = "Active", StartedAt = DateTime.UtcNow };
+            _context.UserCallSessions.Add(call);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _userChatRepository.GetByIdAsync(callId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(callId, result.CallSessionId);
+            Assert.Equal("Active", result.Status);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_NonExistingId_ReturnsNull()
+        {
+            // Arrange
+            var nonExistingId = Guid.NewGuid();
+
+            // Act
+            var result = await _userChatRepository.GetByIdAsync(nonExistingId);
+
+            // Assert
+            Assert.Null(result);
+        }
+        #endregion
+
+        #region GetByChatRoomIdAsync
+        [Fact]
+        public async Task GetByChatRoomIdAsync_ValidChatRoomId_ReturnsCallSessions()
+        {
+            // Arrange
+            var chatRoomId = 1;
+            var call = new UserCallSession { CallSessionId = Guid.NewGuid(), ChatRoomId = chatRoomId, Status = "Active", StartedAt = DateTime.UtcNow };
+            var chatRoom = new UserChatRoom { ChatRoomId = chatRoomId, Type = "UserToUser" };
+            _context.UserChatRooms.Add(chatRoom);
+            _context.UserCallSessions.Add(call);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _userChatRepository.GetByChatRoomIdAsync(chatRoomId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal(chatRoomId, result[0].ChatRoomId);
+            Assert.Equal("Active", result[0].Status);
+        }
+
+        [Fact]
+        public async Task GetByChatRoomIdAsync_NonExistingChatRoomId_ReturnsEmptyList()
+        {
+            // Arrange
+            int chatRoomId = 999;
+
+            // Act
+            var result = await _userChatRepository.GetByChatRoomIdAsync(chatRoomId);
+
+            // Assert
+            Assert.Empty(result);
+        }
+        #endregion
+
+        #region SaveChangesAsync
+        [Fact]
+        public async Task SaveChangesAsync_PendingChanges_SavesSuccessfully()
+        {
+            // Arrange
+            var chatRoom = new UserChatRoom { ChatRoomId = 1, Type = "UserToUser", CreatedAt = DateTime.UtcNow };
+            _context.UserChatRooms.Add(chatRoom);
+
+            // Act
+            await _userChatRepository.SaveChangesAsync();
+
+            // Assert
+            var savedRoom = await _context.UserChatRooms.FirstOrDefaultAsync(r => r.ChatRoomId == 1);
+            Assert.NotNull(savedRoom);
+            Assert.Equal("UserToUser", savedRoom.Type);
+        }
+        #endregion
+
+        #region UpdateStatusAsync
+        [Fact]
+        public async Task UpdateStatusAsync_ValidCallSessionId_UpdatesSuccessfully()
+        {
+            // Arrange
+            var callId = Guid.NewGuid();
+            var call = new UserCallSession { CallSessionId = callId, ChatRoomId = 1, Status = "Active", StartedAt = DateTime.UtcNow };
+            _context.UserCallSessions.Add(call);
+            await _context.SaveChangesAsync();
+
+            // Act
+            await _userChatRepository.UpdateStatusAsync(callId, "Ended");
+
+            // Assert
+            var updatedCall = await _context.UserCallSessions.FindAsync(callId);
+            Assert.NotNull(updatedCall);
+            Assert.Equal("Ended", updatedCall.Status);
+        }
+
+        [Fact]
+        public async Task UpdateStatusAsync_NonExistingCallSessionId_NoChanges()
+        {
+            // Arrange
+            var nonExistingId = Guid.NewGuid();
+
+            // Act
+            await _userChatRepository.UpdateStatusAsync(nonExistingId, "Ended");
+
+            // Assert
+            var updatedCall = await _context.UserCallSessions.FindAsync(nonExistingId);
+            Assert.Null(updatedCall);
+        }
+        #endregion
     }
 }

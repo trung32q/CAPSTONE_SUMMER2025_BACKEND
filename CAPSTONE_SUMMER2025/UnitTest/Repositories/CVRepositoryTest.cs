@@ -116,7 +116,7 @@ namespace UnitTest.Repositories
 
         #region GetCandidateCVsByStartupIdAsync
         [Fact]
-        public async Task GetCandidateCVsByStartupIdAsync_ValidStartupId_ReturnsPagedResults()
+        public async Task GetCandidateCVsByStartupIdAsync_ExistingStartupId_ReturnsPagedResults()
         {
             // Arrange
             var startup = new Startup { StartupId = 1, StartupName = "Test Startup" };
@@ -203,7 +203,7 @@ namespace UnitTest.Repositories
         }
 
         [Fact]
-        public async Task GetCandidateCVsByStartupIdAsync_NonExistentStartup_ReturnsEmptyList()
+        public async Task GetCandidateCVsByStartupIdAsync_NonExistingtStartup_ReturnsEmptyList()
         {
             // Arrange
             int startupId = 999;
@@ -222,11 +222,74 @@ namespace UnitTest.Repositories
             Assert.Equal(pageNumber, result.PageNumber);
             Assert.Equal(pageSize, result.PageSize);
         }
+
+
+        [Fact]
+        public async Task GetCandidateCVsByStartupIdAsync_NonExistingPositionId_ReturnsEmptyList()
+        {
+            // Arrange
+            var startup = new Startup { StartupId = 1, StartupName = "Test Startup" };
+            var position = new PositionRequirement
+            {
+                PositionId = 1,
+                Title = "Developer",
+                StartupId = 1,
+                Description = "Dev role"
+            };
+            var internship = new InternshipPost
+            {
+                InternshipId = 1,
+                StartupId = 1,
+                PositionId = 1,
+                Status = "Open",
+                Description = "Software internship",
+                Position = position,
+                Startup = startup
+            };
+            var account = new Account
+            {
+                AccountId = 1,
+                Email = "test@example.com",
+                AccountProfile = new AccountProfile
+                {
+                    FirstName = "John",
+                    LastName = "Doe",
+                    AvatarUrl = "avatar.jpg"
+                }
+            };
+            var cv = new CandidateCv
+            {
+                CandidateCvId = 1,
+                AccountId = 1,
+                InternshipId = 1,
+                Cvurl = "cv.pdf",
+                CreateAt = DateTime.UtcNow,
+                Status = "Submitted",
+                Account = account,
+                Internship = internship
+            };
+            _context.Startups.Add(startup);
+            _context.PositionRequirements.Add(position);
+            _context.InternshipPosts.Add(internship);
+            _context.Accounts.Add(account);
+            _context.CandidateCvs.Add(cv);
+            await _context.SaveChangesAsync();
+            // Act
+            var result = await _cvRepository.GetCandidateCVsByStartupIdAsync(1, 999, 1, 10);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result.Items);
+            Assert.Equal(0, result.TotalCount);
+            Assert.False(result.HasNextPage);
+            Assert.False(result.HasPreviousPage);
+            Assert.Equal(1, result.PageNumber);
+            Assert.Equal(10, result.PageSize);
+        }
         #endregion
 
         #region GetEvaluationByCandidateIdAsync
         [Fact]
-        public async Task GetEvaluationByCandidateIdAsync_ExistingEvaluation_ReturnsDto()
+        public async Task GetEvaluationByCandidateIdAsync_ExistingCandidateCvId_ReturnsDto()
         {
             // Arrange
             var evaluation = new CvrequirementEvaluation
@@ -360,7 +423,7 @@ namespace UnitTest.Repositories
         }
 
         [Fact]
-        public async Task GetCandidateCVByIdAsync_NonExistentCvId_ReturnsNull()
+        public async Task GetCandidateCVByIdAsync_NonExistingCvId_ReturnsNull()
         {
             // Act
             var result = await _cvRepository.GetCandidateCVByIdAsync(999);

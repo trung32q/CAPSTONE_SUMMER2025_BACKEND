@@ -158,6 +158,16 @@ namespace UnitTest.Repositories
             // Assert
             Assert.Equal(0, result);
         }
+
+        [Fact]
+        public async Task GetUnreadNotificationCountAsync_NonExistingAccountId_ReturnsZero()
+        {
+            // Arrange
+            // Act
+            var result = await _notificationRepository.GetUnreadNotificationCountAsync(999);
+            // Assert
+            Assert.Equal(0, result);
+        }
         #endregion
 
         [Fact]

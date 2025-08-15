@@ -134,5 +134,32 @@ namespace UnitTest.Repositories
                 ItExpr.IsAny<CancellationToken>()
             );
         }
+
+        [Fact]
+        public async Task VerifyFaceAsync_HttpError_ReturnsFalse()
+        {
+            // Arrange
+            var responseMessage = CreateResponse(HttpStatusCode.BadRequest, @"{""error"": ""Bad Request""}");
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Post &&
+                        req.RequestUri.ToString() == "https://api.fpt.ai/dmp/checkface/v1"),
+                    ItExpr.IsAny<CancellationToken>()
+                )
+                .ReturnsAsync(responseMessage);
+            // Act
+            var result = await _fptAIRepository.VerifyFaceAsync(_cccdImageMock.Object, _selfieImageMock.Object);
+            // Assert
+            Assert.False(result);
+            _httpMessageHandlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Once(),
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            );
+        }
     }
 }

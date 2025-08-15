@@ -44,6 +44,17 @@ namespace UnitTest.Repositories
             Assert.Contains(result, pt => pt.TypeName == "Type 1");
             Assert.Contains(result, pt => pt.TypeName == "Type 2");
         }
+
+        [Fact]
+        public async Task GetAllPolicyTypeAsync_NoPolicyType_ReturnsEmptyList()
+        {
+            // Arrange
+            // Act
+            var result = await _policyRepository.GetAllPolicyTypeAsync();
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
         #endregion
 
         #region GetPolicyTypeByIdAsync
@@ -176,6 +187,17 @@ namespace UnitTest.Repositories
             Assert.Contains(result, p => p.Description == "Policy 1");
             Assert.Contains(result, p => p.Description == "Policy 2");
         }
+
+        [Fact]
+        public async Task GetAllPolicyAsync_NoPolicy_ReturnsEmptyList()
+        {
+            // Arrange
+            // Act
+            var result = await _policyRepository.GetAllPolicyAsync();
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
         #endregion
 
         #region GetAllActivePolicyAsync
@@ -202,6 +224,23 @@ namespace UnitTest.Repositories
             Assert.Single(result);
             Assert.Equal("Policy 1", result[0].Description);
             Assert.True(result[0].IsActive);
+        }
+
+        [Fact]
+        public async Task GetAllActivePolicyAsync_NoActivePolicies_ReturnsEmptyList()
+        {
+            // Arrange
+            var policyType = new PolicyType { TypeName = "Type 1" };
+            _context.PolicyTypes.Add(policyType);
+            await _context.SaveChangesAsync();
+            var policy = new Policy { Description = "Policy 1", PolicyTypeId = policyType.PolicyTypeId, IsActive = false, CreateAt = DateTime.UtcNow };
+            _context.Policies.Add(policy);
+            await _context.SaveChangesAsync();
+            // Act
+            var result = await _policyRepository.GetAllActivePolicyAsync();
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
         }
         #endregion
 
@@ -348,6 +387,22 @@ namespace UnitTest.Repositories
             Assert.Equal(2, result.Count);
             Assert.Contains(result, p => p.Description == "Policy 1");
             Assert.Contains(result, p => p.Description == "Policy 2");
+        }
+
+        [Fact]
+        public async Task GetAllPoliciesByPolicyTypeAsync_NoPolicy_ReturnsEmptyList()
+        {
+            // Arrange
+            var utcId = "UTCID-PO-1034";
+            var policyType = new PolicyType { TypeName = "Type 1" };
+            _context.PolicyTypes.Add(policyType);
+            await _context.SaveChangesAsync();
+            // Act
+            var result = await _policyRepository.GetAllPoliciesByPolicyTypeAsync(policyType.PolicyTypeId);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+            Console.WriteLine($"[DEBUG] {utcId} GetAllPoliciesByPolicyTypeAsync_ValidPolicyTypeIdNoPolicies_ReturnsEmptyList: Result = EmptyList, ResultType = Boundary, Executed = 2025-08-14 20:54 PM +07");
         }
         #endregion
     }

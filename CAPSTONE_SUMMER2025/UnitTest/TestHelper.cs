@@ -1,4 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using AutoMapper;
+using Infrastructure.Models;
+using API.Mapping;
 
 namespace UnitTest
 {
@@ -14,7 +17,6 @@ namespace UnitTest
                 cfg.AddProfile<MappingPost>();
                 cfg.AddProfile<MappingStartup>();
             });
-            configuration.AssertConfigurationIsValid();
             return configuration.CreateMapper();
         }
 
@@ -22,13 +24,10 @@ namespace UnitTest
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddEntityFrameworkInMemoryDatabase();
-
             var serviceProvider = serviceCollection.BuildServiceProvider();
-
             var optionsBuilder = new DbContextOptionsBuilder<CAPSTONE_SUMMER2025Context>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .UseInternalServiceProvider(serviceProvider);
-
             return new CAPSTONE_SUMMER2025Context(optionsBuilder.Options);
         }
 

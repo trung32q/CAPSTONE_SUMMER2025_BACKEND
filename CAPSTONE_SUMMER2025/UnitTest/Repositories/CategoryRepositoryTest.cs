@@ -39,6 +39,22 @@ namespace UnitTest.Repositories
         }
 
         [Fact]
+        public async Task GetAllAsync_NoCategories_ReturnsEmptyList()
+        {
+            // Arrange
+            var utcId = "UTCID-CR-302";
+            // Không thêm danh mục nào vào _context.Categories
+
+            // Act
+            var result = await _repository.GetAllAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+            Console.WriteLine($"[DEBUG] {utcId} GetAllAsync_NoCategories_ReturnsEmptyList: Result = Empty, ResultType = Boundary, Executed = 2025-08-14 14:15 PM +07");
+        }
+
+        [Fact]
         public async Task GetByIdAsync_ExistingId_ReturnsCategory()
         {
             // Arrange
