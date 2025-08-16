@@ -286,6 +286,11 @@ namespace API.Service
             return await _repository.UnlikePostAsync(dto.PostId, dto.AccountId);
         }
 
+        public async Task<bool> UnhidePostAsync(LikeRequestDTO dto)
+        {
+            return await _repository.UnhidePostAsync(dto.PostId, dto.AccountId);
+        }
+
         //hàm lấy ra số lượng like ở 1 bài viết
         public async Task<int> GetPostLikeCountAsync(int postId)
         {
@@ -501,6 +506,7 @@ namespace API.Service
         //hàm xóa post
         public async Task<bool> DeletePostAsync(int postId)
         {
+
             return await _repository.DeletePostAsync(postId);
         }
 
@@ -810,15 +816,13 @@ namespace API.Service
             return true;
         }
 
-        //apply cv
-        
 
-      
+
         public async Task<PagedResult<resPostDTO>> GetPostsByStartupIdAsync(int startupId, int pageNumber, int pageSize)
         {
             var pagedPosts = await _repository.GetPostsByStartupId(startupId, pageNumber, pageSize);
             var startup = await _repository.GetStartupByIdAsync(startupId);
-             if (pagedPosts == null)
+            if (pagedPosts == null)
                 return null;
 
             // Map thủ công từng Post sang resPostDTO như hướng dẫn ở trên, ví dụ:
@@ -841,6 +845,65 @@ namespace API.Service
                     }).ToList()
                     : new List<PostMediaDTO>()
             }).ToList();
+
+            return new PagedResult<resPostDTO>(
+                postDTOs,
+                pagedPosts.TotalCount,
+                pagedPosts.PageNumber,
+                pagedPosts.PageSize
+            );
+        }
+
+        
+        public async Task<PagedResult<resPostDTO>> GetPostHideByAccountId(int accountId, int pageNumber, int pageSize)
+        {
+            var pagedPosts = await _repository.GetPostHideByAccountId(accountId, pageNumber, pageSize);
+            if (pagedPosts == null)
+                return null;
+
+
+            var postDTOs = new List<resPostDTO>();
+
+            foreach (Post post in pagedPosts.Items) {
+
+                var fullname = "";
+                var avatarUrl = "";
+                if(post.StartupId == null)
+                {
+                    var account =await _accountRepository.GetAccountByAccountIDAsync((int)post.AccountId);
+                    fullname = account.AccountProfile.FirstName + " " + account.AccountProfile.LastName;
+                    avatarUrl = account.AccountProfile.AvatarUrl;
+                }
+                else
+                {
+                    var st = await _startupService.GetStartupByIdAsync((int)post.StartupId);
+                    fullname = st.StartupName;
+                    avatarUrl = st.Logo;
+                }
+
+                postDTOs.Add(new resPostDTO
+                {
+                    PostId = post.PostId,
+                    AccountId = post.AccountId,
+                    StartupId = post.StartupId,
+                    Content = post.Content,
+                    Title = post.Title,
+                    CreateAt = post.CreateAt,
+                    PostShareId = post.PostShareId,
+                    Schedule = post.Schedule,
+                    LikeCount = post.PostLikes?.Count ?? 0,
+                    FullName = fullname,
+                    AvatarUrl = avatarUrl,
+                    PostMedia = post.PostMedia != null
+                    ? post.PostMedia.Select(pm => new PostMediaDTO
+                    {
+                        MediaUrl = pm.MediaUrl,
+                    }).ToList()
+                    : new List<PostMediaDTO>()
+                });
+            } 
+
+        
 
             return new PagedResult<resPostDTO>(
                 postDTOs,

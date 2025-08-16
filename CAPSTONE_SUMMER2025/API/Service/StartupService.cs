@@ -902,7 +902,7 @@ namespace API.Service
             startup.BackgroundUrl = backgroundUrl;
             startup.WebsiteUrl = dto.WebsiteURL;
             startup.Email = dto.Email;
-            startup.StageId = startup.StageId;
+            startup.StageId = dto.StageId;
 
             await _repo.UpdateStartupAsync(startup);
             return true;

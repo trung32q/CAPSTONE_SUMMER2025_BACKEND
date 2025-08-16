@@ -45,5 +45,7 @@ namespace API.Service.Interface
         Task<InternshipPostDetailDTO?> GetInternshipPostDetailAsync(int internshipPostId);
         Task<bool> UpdateInternshipPostAsync(int internshipPostId, UpdateInternshipPostDTO dto);
         Task<List<TopInternshipPostDTO>> GetTopInternshipPostsAsync(int top);
+        Task<PagedResult<resPostDTO>> GetPostHideByAccountId(int accountId, int pageNumber, int pageSize);
+        Task<bool> UnhidePostAsync(LikeRequestDTO dto);
     }
 }

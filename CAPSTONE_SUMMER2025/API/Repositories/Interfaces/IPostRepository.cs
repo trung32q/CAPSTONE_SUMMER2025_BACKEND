@@ -52,5 +52,8 @@ namespace API.Repositories.Interfaces
         Task<bool> UpdateInternshipPostAsync(int internhsipId, InternshipPost internshipPost);
         void UpdateInternshipPost(InternshipPost post);
         Task<List<TopInternshipPostDTO>> GetTopInternshipPostsByCVCountAsync(int top = 5);
+        Task<PagedResult<Post>> GetPostHideByAccountId(int accountId, int pageNumber, int pageSize);
+        Task<bool> UnhidePostAsync(int postId, int accountId);
+        Task DeletePostHideByPostIdAsync(int postId);
     }
 }
