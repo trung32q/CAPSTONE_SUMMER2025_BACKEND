@@ -125,6 +125,17 @@ namespace API.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task<bool> UnhidePostAsync(int postId, int accountId)
+        {
+            var existing = await _context.PostHides
+                .FirstOrDefaultAsync(pl => pl.PostId == postId && pl.AccountId == accountId);
+
+            if (existing == null) return false;
+
+            _context.PostHides.Remove(existing);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
         //hàm lấy số lượng like của 1 bài viết
         public async Task<int> GetPostLikeCountAsync(int postId)
         {
@@ -264,9 +275,13 @@ namespace API.Repositories
                 .Include(p => p.PostMedia)
                 .Include(p => p.PostComments)
                 .Include(p => p.PostLikes)
+                .Include(p => p.PostHides)
                 .FirstOrDefaultAsync(p => p.PostId == postId);
 
             if (post == null) return false;
+
+            var hides = await _context.PostHides.Where(h =>  h.PostId == postId).ToListAsync();
+            _context.PostHides.RemoveRange(hides);
 
             // B1: Xóa tất cả likes
             var likes = await _context.PostLikes.Where(l => l.PostId == postId).ToListAsync();
@@ -869,6 +884,42 @@ namespace API.Repositories
                 .ToListAsync();
 
             return query;
+        }
+
+        //lấy ra 
+        public async Task<PagedResult<Post>> GetPostHideByAccountId(int accountId, int pageNumber, int pageSize)
+        {
+
+
+            var query = _context.PostHides
+                .Where(ph => ph.AccountId == accountId)
+                .Include(ph => ph.Post)                   
+                .ThenInclude(p => p.PostMedia)        
+                .Select(ph => ph.Post)                    
+                 .OrderByDescending(p => p.CreateAt);
+    
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Post>(items, totalCount, pageNumber, pageSize);
+        }
+
+        public async Task DeletePostHideByPostIdAsync(int postId)
+        {
+            var items = await _context.PostHides
+                .Where(ph => ph.PostId == postId)
+                .ToListAsync();
+
+            if (items.Any())
+            {
+                _context.PostHides.RemoveRange(items);
+                await _context.SaveChangesAsync();
+            }
         }
 
     }

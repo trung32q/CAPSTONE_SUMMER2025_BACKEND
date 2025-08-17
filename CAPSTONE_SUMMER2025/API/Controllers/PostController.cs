@@ -151,6 +151,8 @@ namespace API.Controllers
             return success ? Ok("Unliked") : NotFound("Like not found");
         }
 
+      
+
         // hàm đếm số lượng like bài viết
         [HttpGet("{postId}/like-count")]
         public async Task<IActionResult> GetPostLikeCount(int postId)
@@ -434,9 +436,9 @@ namespace API.Controllers
             return Ok("Status updated successfully");
         }
 
-   
 
-    
+      
+
         [HttpGet("GetPostsByStartupId")]
         public async Task<IActionResult> GetPostsByStartupId(int startupId, int pageNumber = 1, int pageSize = 10)
         {
@@ -481,6 +483,26 @@ namespace API.Controllers
                 return NotFound("Internship post not found.");
 
             return Ok("update thành công");
+        }
+
+        [HttpDelete("unhide")]
+        public async Task<IActionResult> UnhidePost([FromBody] LikeRequestDTO dto)
+        {
+            var success = await _postService.UnhidePostAsync(dto);
+            return success ? Ok("Unhided") : NotFound("hide not found");
+        }
+
+        [HttpGet("GetPostHideByAccountId")]
+        public async Task<IActionResult> GetPostHideByAccountId(int accountId, int pageNumber = 1, int pageSize = 5)
+        {
+            var result = await _postService.GetPostHideByAccountId(accountId, pageNumber, pageSize);
+
+            if (result == null || result.Items.Count == 0)
+            {
+                return NotFound(new { error = "No posts found or startup does not exist" });
+            }
+
+            return Ok(result);
         }
     }
 }
